@@ -1520,6 +1520,9 @@
     }
     
     function setLockUIState(locked) {
+      if (testModeActive) {
+        locked = false; // Always unlocked in test mode
+      }
       isDeployedProductionLocked = locked;
       
       const dateInput = document.getElementById('team-start-date');
@@ -1534,7 +1537,7 @@
       if (locked) {
         banner.style.display = 'flex';
         dateInput.disabled = true;
-        testToggle.disabled = true;
+        testToggle.disabled = false; // Keep clickable to allow switching back to Test Mode
         btnTimes.disabled = true;
         btnDeploy.disabled = true;
         if (participantsInput) participantsInput.disabled = true;
@@ -1638,6 +1641,9 @@
         modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
         modeText.style.color = "var(--color-team1)";
         testWarning.style.display = 'flex';
+        
+        // Switch to test mode: Force unlock local UI
+        setLockUIState(false);
       } else {
         dateInput.disabled = false;
         dateBox.style.opacity = '1';
@@ -1645,6 +1651,9 @@
         modeText.style.color = "var(--color-green)";
         testWarning.style.display = 'none';
         dateInput.value = localStorage.getItem(`team_start_date_${activeTeam}`) || '';
+        
+        // Switch to standard mode: Re-evaluate lock status
+        fetchRemoteLockStatus();
       }
       
       if (playSound) SoundEngine.play('click');
