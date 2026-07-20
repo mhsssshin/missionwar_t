@@ -1373,10 +1373,11 @@
     }
 
     async function fetchRemoteLockStatus() {
-      const pat = document.getElementById('github-pat').value.trim();
-      const repoPath = document.getElementById('github-repo').value.trim();
-      
-      if (!repoPath || repoPath.split('/').length !== 2) {
+      try {
+        const pat = document.getElementById('github-pat').value.trim();
+        const repoPath = document.getElementById('github-repo').value.trim();
+        
+        if (!repoPath || repoPath.split('/').length !== 2) {
         setLockUIState(false);
         return;
       }
