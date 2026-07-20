@@ -1,0 +1,116 @@
+{
+  "discordWebhookUrl": "https://discord.com/api/webhooks/1528581421667717120/0nOHj5UucBqFl4gd5MGyMFy12EHoZotgFc4Auro_767x5NkBMqGK6FFD4YY4AdyU0p_2",
+  "geminiApiKey": "AIzaSyAzMcLcaBBW5o5ukJono7wgqmt0LcD6teM",
+  "webAppUrl": "http://localhost:3002",
+  "testModeActive": true,
+  "team1": {
+    "startDate": "🧪 테스트 모드 (실시간)",
+    "missions": [
+      {
+        "sessionIndex": 1,
+        "day": 1,
+        "sessionName": "세션 1 (이동/도착 오프닝)",
+        "timeRange": "13:00 ~ 16:00",
+        "scheduledTime": "2026-07-20T13:42:53+09:00",
+        "title": "신발 모으기",
+        "content": "조원들의 신발을 모아 단체 별 모양을 만들고 사진 찍기",
+        "duration": "3분",
+        "tip": "신발을 대칭으로 잘 배열하면 예쁜 5각/6각 별이 만들어집니다.",
+        "colorHex": 16724870,
+        "sent": false
+      },
+      {
+        "sessionIndex": 2,
+        "day": 1,
+        "sessionName": "세션 2 (오후 장보기/카페)",
+        "timeRange": "16:00 ~ 19:00",
+        "scheduledTime": "2026-07-20T13:44:53+09:00",
+        "title": "음료 색상 그라데이션",
+        "content": "주문한 음료들을 맑은 색상부터 짙은 색상 순서대로 나란히 줄 세워 감성 사진 찍기",
+        "duration": "5분",
+        "tip": "아메리카노, 에이드, 라떼 등을 멋지게 큐레이션 하세요.",
+        "colorHex": 3394662,
+        "sent": false
+      },
+      {
+        "sessionIndex": 3,
+        "day": 1,
+        "sessionName": "세션 3 (저녁 바비큐/첫날밤)",
+        "timeRange": "19:00 ~ 22:00",
+        "scheduledTime": "2026-07-20T13:46:53+09:00",
+        "title": "소주잔 하트 탑",
+        "content": "빈 소주잔 4개를 눕혀 하트 모양을 만들고 위에서 직각으로 찍은 탑뷰 사진",
+        "duration": "3분",
+        "tip": "잔에 물기가 있으면 하트가 미끄러지니 건조한 컵을 사용하세요.",
+        "colorHex": 16763904,
+        "sent": false
+      },
+      {
+        "sessionIndex": 4,
+        "day": 2,
+        "sessionName": "세션 1 (아침 모임/기상)",
+        "timeRange": "08:00 ~ 11:30",
+        "scheduledTime": "2026-07-20T13:48:53+09:00",
+        "title": "동서남북 수호자",
+        "content": "조원 4명이 서로 등을 딱 맞대고 동서남북 4방향을 각각 바라보며 정색한 단체 사진",
+        "duration": "3분",
+        "tip": "팔짱을 낀 보디가드 포즈를 취하면 완성도가 높아집니다.",
+        "colorHex": 16724870,
+        "sent": false
+      },
+      {
+        "sessionIndex": 5,
+        "day": 2,
+        "sessionName": "세션 2 (점심/야외 단합)",
+        "timeRange": "12:00 ~ 17:00",
+        "scheduledTime": "2026-07-20T13:50:53+09:00",
+        "title": "아스팔트 그림자 하트",
+        "content": "맑은 햇빛 아래 서서 조원들의 팔과 손 그림자를 합작해 바닥 위에 하트 실루엣 만들기",
+        "duration": "5분",
+        "tip": "그림자가 겹쳐서 찌그러지지 않게 각 조원들의 손 간격을 띄우세요.",
+        "colorHex": 3394662,
+        "sent": false
+      },
+      {
+        "sessionIndex": 6,
+        "day": 2,
+        "sessionName": "세션 3 (메인 회식/바비큐)",
+        "timeRange": "17:30 ~ 20:00",
+        "scheduledTime": "2026-07-20T13:52:53+09:00",
+        "title": "옆 사람 릴레이 쌈 배달",
+        "content": "조원들이 도란도란 둘러앉아 자기 왼쪽에 앉은 사람에게 차례로 쌈을 싸서 입에 넣어주는 15초 릴레이 릴",
+        "duration": "5분",
+        "tip": "카메라 무빙이 막힘없이 물 흐르듯 흘러가야 15초 안에 모두 성공 가능합니다.",
+        "colorHex": 16763904,
+        "sent": false
+      },
+      {
+        "sessionIndex": 7,
+        "day": 2,
+        "sessionName": "세션 4 (밤 레크리에이션)",
+        "timeRange": "20:00 ~ 22:00",
+        "scheduledTime": "2026-07-20T13:54:53+09:00",
+        "title": "손가락 탑 쌓기",
+        "content": "거실 바닥에 앉아 모든 조원의 손등을 교차해 우뚝 솟은 탑을 만들어 정중앙 사진 찍기",
+        "duration": "5분",
+        "tip": "아래부터 조의 최고령자부터 최연소자 순서대로 손을 쌓아 올리세요.",
+        "colorHex": 10040319,
+        "sent": false
+      },
+      {
+        "sessionIndex": 8,
+        "day": 3,
+        "sessionName": "세션 1 (피날레/퇴소)",
+        "timeRange": "08:00 ~ 10:00",
+        "scheduledTime": "2026-07-20T13:56:53+09:00",
+        "title": "피날레 슬로우 하이파이브",
+        "content": "퇴소 차량에 오르기 전 조원들이 차례대로 슬로우 모션으로 하이파이브를 교환하는 10초 샷",
+        "duration": "5분",
+        "tip": "뺨을 스치듯 아쉬워하는 과장된 연기를 섞으면 레전드 숏폼이 나옵니다.",
+        "colorHex": 3394815,
+        "sent": false
+      }
+    ]
+  },
+  "team2": null
+}
