@@ -30,7 +30,8 @@
         "duration": "5분",
         "tip": "아메리카노, 에이드, 라떼 등을 멋지게 큐레이션 하세요.",
         "colorHex": 3394662,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T06:57:45.774Z"
       },
       {
         "sessionIndex": 3,
@@ -43,7 +44,8 @@
         "duration": "3분",
         "tip": "잔에 물기가 있으면 하트가 미끄러지니 건조한 컵을 사용하세요.",
         "colorHex": 16763904,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T06:57:45.774Z"
       },
       {
         "sessionIndex": 4,
@@ -56,7 +58,8 @@
         "duration": "3분",
         "tip": "팔짱을 낀 보디가드 포즈를 취하면 완성도가 높아집니다.",
         "colorHex": 16724870,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T06:57:45.774Z"
       },
       {
         "sessionIndex": 5,
@@ -69,7 +72,8 @@
         "duration": "5분",
         "tip": "그림자가 겹쳐서 찌그러지지 않게 각 조원들의 손 간격을 띄우세요.",
         "colorHex": 3394662,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T06:57:45.774Z"
       },
       {
         "sessionIndex": 6,
@@ -82,7 +86,8 @@
         "duration": "5분",
         "tip": "카메라 무빙이 막힘없이 물 흐르듯 흘러가야 15초 안에 모두 성공 가능합니다.",
         "colorHex": 16763904,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T06:57:45.774Z"
       },
       {
         "sessionIndex": 7,
@@ -95,7 +100,8 @@
         "duration": "5분",
         "tip": "아래부터 조의 최고령자부터 최연소자 순서대로 손을 쌓아 올리세요.",
         "colorHex": 10040319,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T06:57:45.774Z"
       },
       {
         "sessionIndex": 8,
