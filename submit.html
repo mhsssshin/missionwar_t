@@ -571,7 +571,7 @@
       </div>
 
       <!-- Settings Panel Drawer -->
-      <div class="portal-settings-drawer" id="portal-keys-drawer">
+      <div class="portal-settings-drawer" id="portal-keys-drawer" style="display: none;">
         <div class="portal-settings-header" onclick="toggleSettingsDrawer()">
           <span><i class="fa-solid fa-gears"></i> ⚙️ 수신 키 및 웹훅 설정</span>
           <i class="fa-solid fa-chevron-down" id="drawer-chevron-icon"></i>
@@ -1122,6 +1122,13 @@
       if (geminiParam) {
         document.getElementById('portal-gemini').value = geminiParam;
         localStorage.setItem('config_gemini_key', geminiParam);
+      }
+      
+      // Auto-extract webhook URL passed securely from Discord callback URL
+      const webhookParam = urlParams.get('webhook') || '';
+      if (webhookParam) {
+        document.getElementById('portal-webhook').value = webhookParam;
+        localStorage.setItem('config_webhook_url', webhookParam);
       }
       
       // Initialize tabs UI

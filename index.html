@@ -1972,7 +1972,7 @@
       
       const geminiToken = localStorage.getItem('config_gemini_key') || atob('QUl6YVN5QkVlbmc2bmMxTFN3WjQ3NXZLbkVLaWwtNnVWeWpabjY4');
       
-      const callbackUrl = `${webUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${activeTeam}&type=individual&participant=${encodeURIComponent(entry.participant)}&title=${encodeURIComponent(entry.title)}&content=${encodeURIComponent(entry.content)}&gemini=${encodeURIComponent(geminiToken)}`;
+      const callbackUrl = `${webUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${activeTeam}&type=individual&participant=${encodeURIComponent(entry.participant)}&title=${encodeURIComponent(entry.title)}&content=${encodeURIComponent(entry.content)}&gemini=${encodeURIComponent(geminiToken)}&webhook=${encodeURIComponent(webhookUrl)}`;
       
       const payload = {
         username: `[개인 지령] 시크릿 지휘소`,
@@ -2336,8 +2336,8 @@
         }
       }
       
-      if (!webhook || !pat || !repoPath) {
-        showToast("배포 불가", "모든 설정 항목(웹훅, 깃허브 토큰, 경로)을 입력해 주세요.", "error");
+      if (!pat || !repoPath) {
+        showToast("배포 불가", "GitHub 토큰과 저장소 경로를 입력해 주세요.", "error");
         SoundEngine.play('failure');
         return;
       }
@@ -2373,7 +2373,7 @@
         setProgress(20, "CHECKING REMOTE DATA", "FETCHING EXISTING SCHEDULE.JSON FROM GITHUB...");
         
         let finalScheduleObj = {
-          discordWebhookUrl: webhook,
+          discordWebhookUrl: webhook || "",
           webAppUrl: webUrl,
           testModeActive: testModeActive,
           team1: null,
@@ -2399,7 +2399,7 @@
           console.warn("Initializing fresh schedule.json.", e);
         }
         
-        finalScheduleObj.discordWebhookUrl = webhook;
+        finalScheduleObj.discordWebhookUrl = webhook || finalScheduleObj.discordWebhookUrl || "";
         finalScheduleObj.webAppUrl = webUrl;
         finalScheduleObj.testModeActive = testModeActive;
         
@@ -2540,7 +2540,7 @@ async function sendIndividualWebhook(ind, teamName, teamKey) {
   const geminiApiKey = process.env.GEMINI_API_KEY || "";
   const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
   
-  const callbackUrl = \`\${webAppUrl}/submit.html?repo=\${encodeURIComponent(repoPath)}&pat=\${encodeURIComponent(pat)}&team=\${teamKey}&type=individual&participant=\${encodeURIComponent(ind.participant)}&title=\${encodeURIComponent(ind.title)}&content=\${encodeURIComponent(ind.content)}&gemini=\${encodeURIComponent(geminiApiKey)}\`;
+  const callbackUrl = \`\${webAppUrl}/submit.html?repo=\${encodeURIComponent(repoPath)}&pat=\${encodeURIComponent(pat)}&team=\${teamKey}&type=individual&participant=\${encodeURIComponent(ind.participant)}&title=\${encodeURIComponent(ind.title)}&content=\${encodeURIComponent(ind.content)}&gemini=\${encodeURIComponent(geminiApiKey)}&webhook=\${encodeURIComponent(webhookUrl)}\`;
 
   const payload = {
     username: "[개인 지령] 시크릿 지휘소",
@@ -2586,6 +2586,10 @@ async function sendIndividualWebhook(ind, teamName, teamKey) {
 }
 
 async function run() {
+  if (process.env.DISCORD_WEBHOOK_URL) {
+    schedule.discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    scheduleChanged = true;
+  }
   const teams = ['team1', 'team2'];
   for (const teamKey of teams) {
     const teamData = schedule[teamKey];
