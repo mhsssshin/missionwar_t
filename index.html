@@ -1,0 +1,2667 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>프로젝트 시크릿 카드 - 워크숍 오토 스케줄러</title>
+  
+  <!-- Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      --bg-dark: #05060a;
+      --panel-bg: rgba(11, 14, 25, 0.78);
+      --panel-border: rgba(255, 255, 255, 0.07);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      
+      /* Theme Neon Colors */
+      --color-primary: #8b5cf6;
+      --color-team1: #ff3366;
+      --color-team2: #33ccff;
+      --color-gold: #ffcc00;
+      --color-green: #10b981;
+      
+      --glow-team1: 0 0 15px rgba(255, 51, 102, 0.4);
+      --glow-team2: 0 0 15px rgba(51, 204, 255, 0.4);
+      --glow-primary: 0 0 15px rgba(139, 92, 246, 0.4);
+    }
+    
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Background Canvas */
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+    
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .glass-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    }
+    
+    .title-neon {
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--color-team1), var(--color-team2), var(--color-primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+    }
+    
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+    }
+    
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .brand-icon {
+      font-size: 2rem;
+      color: var(--color-primary);
+      filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
+      animation: pulse-glow 3s infinite ease-in-out;
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.5)); }
+      50% { transform: scale(1.08); filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.9)); }
+    }
+    
+    header h1 {
+      font-size: 1.8rem;
+    }
+    
+    header p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    
+    /* Config Panel */
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      padding: 24px;
+    }
+    
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .input-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .input-wrapper input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 12px 40px 12px 14px;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .input-wrapper input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+    }
+    
+    .input-wrapper input:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: rgba(255,255,255,0.03);
+    }
+    
+    .input-wrapper .toggle-pw {
+      position: absolute;
+      right: 14px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    
+    .input-wrapper .toggle-pw:hover {
+      color: var(--text-main);
+    }
+    
+    /* Custom Toggle Switch for Teams */
+    .team-toggle-group {
+      display: flex;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 4px;
+      position: relative;
+      height: 48px;
+      align-items: center;
+    }
+    
+    .team-btn {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      z-index: 2;
+      transition: all 0.3s;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+    }
+    
+    .team-btn.active {
+      color: #fff;
+    }
+    
+    .team-slider {
+      position: absolute;
+      top: 4px; bottom: 4px; left: 4px;
+      width: calc(50% - 4px);
+      background: linear-gradient(135deg, var(--color-team1), var(--color-primary));
+      border-radius: 6px;
+      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 1;
+      box-shadow: var(--glow-team1);
+    }
+    
+    .team-toggle-group.team2-active .team-slider {
+      transform: translateX(100%);
+      background: linear-gradient(135deg, var(--color-team2), var(--color-primary));
+      box-shadow: var(--glow-team2);
+    }
+    
+    /* Custom Toggle for Test Mode */
+    .test-switch-container {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 4px 12px;
+      height: 48px;
+      justify-content: space-between;
+    }
+    
+    .test-switch-container span {
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    
+    .test-switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    
+    .test-switch input {
+      opacity: 0; width: 0; height: 0;
+    }
+    
+    .slider-toggle {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: .3s;
+      border-radius: 24px;
+    }
+    
+    .slider-toggle:before {
+      position: absolute;
+      content: "";
+      height: 16px; width: 16px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider-toggle {
+      background-color: var(--color-green);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+    
+    input:checked + .slider-toggle:before {
+      transform: translateX(22px);
+    }
+    
+    /* Lock Banner */
+    .lock-banner {
+      grid-column: 1 / -1;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--color-team1);
+      color: var(--color-team1);
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--glow-team1);
+      animation: pulse-glow-red 2s infinite ease-in-out;
+    }
+    
+    @keyframes pulse-glow-red {
+      0%, 100% { box-shadow: 0 0 5px rgba(255, 51, 102, 0.2); }
+      50% { box-shadow: 0 0 15px rgba(255, 51, 102, 0.5); }
+    }
+    
+    /* Wide Timeline Dashboard Layout */
+    .timeline-dashboard {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 20px;
+      padding: 24px;
+    }
+    
+    /* Session Slots Visual Overhaul */
+    .session-slot-box {
+      aspect-ratio: 1.8 / 1;
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      overflow: hidden;
+    }
+    
+    /* Empty Neon dashed Slot style */
+    .slot-empty {
+      border: 2px dashed rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.005);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+    }
+    
+    .slot-empty i {
+      font-size: 1.8rem;
+      transition: transform 0.3s, color 0.3s;
+    }
+    
+    .slot-empty span {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    
+    .slot-empty:hover {
+      border-color: var(--color-primary);
+      background: rgba(139, 92, 246, 0.04);
+      color: var(--text-main);
+      box-shadow: inset 0 0 15px rgba(139, 92, 246, 0.1), 0 0 15px rgba(139, 92, 246, 0.05);
+    }
+    
+    .slot-empty.locked-disabled {
+      cursor: not-allowed;
+      border-color: rgba(255,255,255,0.03) !important;
+      color: rgba(255,255,255,0.15) !important;
+    }
+    
+    .slot-empty.locked-disabled:hover {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    
+    .slot-empty.locked-disabled i {
+      color: rgba(255,255,255,0.15) !important;
+    }
+    
+    .slot-empty:not(.locked-disabled):hover i {
+      transform: scale(1.15) rotate(90deg);
+      color: var(--color-primary);
+      text-shadow: var(--glow-primary);
+    }
+    
+    /* Filled Premium Slot Card style */
+    .slot-filled {
+      border: 1px solid var(--panel-border);
+      background: rgba(255, 255, 255, 0.02);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+    }
+    
+    .slot-filled[data-cat="time-attack"] { border-left: 5px solid var(--color-team1); border-color: rgba(255, 51, 102, 0.25); }
+    .slot-filled[data-cat="food"] { border-left: 5px solid var(--color-gold); border-color: rgba(255, 204, 0, 0.25); }
+    .slot-filled[data-cat="outdoor"] { border-left: 5px solid var(--color-green); border-color: rgba(16, 185, 129, 0.25); }
+    .slot-filled[data-cat="night"] { border-left: 5px solid var(--color-primary); border-color: rgba(139, 92, 246, 0.25); }
+    .slot-filled[data-cat="coop"] { border-left: 5px solid var(--color-team2); border-color: rgba(51, 204, 255, 0.25); }
+    
+    .slot-filled:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+    
+    .slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+    
+    .slot-session-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .slot-session-tag {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    
+    .slot-session-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    
+    .slot-category-badge {
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+    }
+    .slot-filled[data-cat="time-attack"] .slot-category-badge { color: var(--color-team1); }
+    .slot-filled[data-cat="food"] .slot-category-badge { color: var(--color-gold); }
+    .slot-filled[data-cat="outdoor"] .slot-category-badge { color: var(--color-green); }
+    .slot-filled[data-cat="night"] .slot-category-badge { color: var(--color-primary); }
+    .slot-filled[data-cat="coop"] .slot-category-badge { color: var(--color-team2); }
+    
+    .slot-body {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+      justify-content: center;
+    }
+    
+    .slot-mission-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .slot-scheduled-time {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--color-green);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    
+    .slot-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      padding-top: 8px;
+      margin-top: 6px;
+      width: 100%;
+    }
+    
+    .slot-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    
+    .slot-btn:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.15);
+    }
+    
+    .slot-btn-remove:hover {
+      background: rgba(255, 51, 102, 0.12);
+      border-color: rgba(255, 51, 102, 0.3);
+      color: var(--color-team1);
+    }
+
+    /* Modal selector */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 5, 8, 0.9);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      z-index: 12000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { display: flex; opacity: 1; }
+    .modal-content {
+      width: 90%;
+      max-width: 950px;
+      max-height: 85vh;
+      background: rgba(14, 18, 32, 0.95);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(139, 92, 246, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modal-overlay.show .modal-content { transform: scale(1); }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+    
+    .modal-search-bar {
+      padding: 14px 24px;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+    }
+    .modal-search-bar input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .modal-search-bar input:focus { outline: none; border-color: var(--color-primary); }
+    .modal-grid-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex-grow: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 18px;
+      max-height: 55vh;
+    }
+    .modal-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 18px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, transform 0.1s ease;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+    .modal-card[data-cat="time-attack"] { --th-c: var(--color-team1); --th-g: var(--glow-team1); }
+    .modal-card[data-cat="food"] { --th-c: var(--color-gold); --th-g: var(--glow-food); }
+    .modal-card[data-cat="outdoor"] { --th-c: var(--color-green); --th-g: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .modal-card[data-cat="night"] { --th-c: var(--color-primary); --th-g: var(--glow-primary); }
+    .modal-card[data-cat="coop"] { --th-c: var(--color-team2); --th-g: var(--glow-team2); }
+    
+    .modal-card:hover {
+      border-color: var(--th-c);
+      box-shadow: var(--th-g);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .modal-card-badge { font-size: 0.65rem; font-weight: 800; color: var(--th-c); margin-bottom: 8px; }
+    .modal-card-title { font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .modal-card-desc { font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 12px; }
+    .modal-card-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 8px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .modal-card-time { font-weight: 700; color: var(--th-c); }
+    .warning-banner {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px dashed #f59e0b;
+      color: #f59e0b;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Control Operations */
+    .ops-panel {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+    .ops-btn-group {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+    }
+    @media (max-width: 600px) {
+      .ops-btn-group { flex-direction: column; }
+    }
+    
+    .btn {
+      flex: 1;
+      height: 52px;
+      border-radius: 10px;
+      border: 1px solid var(--panel-border);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      color: #fff;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    
+    .btn-generator {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(168, 85, 247, 0.15));
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+    .btn-generator:not(:disabled):hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(168, 85, 247, 0.3));
+      border-color: var(--color-primary);
+      box-shadow: var(--glow-primary);
+    }
+    
+    .btn-deploy {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .btn-deploy:not(:disabled):hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6);
+    }
+    
+    .preview-panel pre {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      max-height: 250px;
+      overflow-y: auto;
+      color: #34d399;
+    }
+    
+    #transmitting-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 8, 0.95);
+      backdrop-filter: blur(15px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    /* Toast Notifications styling */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20000;
+      pointer-events: none;
+    }
+    
+    .toast {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px 20px;
+      min-width: 290px;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+      pointer-events: auto;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast-info { border-left: 4px solid var(--color-primary); }
+    .toast-success { border-left: 4px solid var(--color-green); }
+    .toast-error { border-left: 4px solid var(--color-team1); }
+    
+    .toast-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .toast-title {
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    
+    .toast-msg {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 30px 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--panel-border);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="confetti-canvas"></canvas>
+  
+  <!-- COMMANDER DASHBOARD -->
+  <div class="app-container" id="control-dashboard-container">
+    
+    <header class="glass-panel">
+      <div class="brand">
+        <i class="fa-solid fa-satellite-dish brand-icon"></i>
+        <div>
+          <h1 class="title-neon">Secret Mission War</h1>
+          <p>서버리스 오토 스케줄 통제본부</p>
+        </div>
+      </div>
+      <div class="header-decor">
+        <span class="slot-category-badge" style="font-family: monospace; font-size: 0.8rem;" id="live-time">00:00:00 KST</span>
+      </div>
+    </header>
+    
+    <!-- Config Grid -->
+    <section class="glass-panel config-grid">
+      <!-- Lock Indicator Banner -->
+      <div class="lock-banner" id="production-lock-banner" style="display: none;">
+        <i class="fa-solid fa-lock" style="font-size: 1.2rem;"></i>
+        <span>🔒 본 조의 미션 일정이 이미 GitHub에 배포/확정되었습니다. 프로덕션 규칙에 따라 배포된 미션은 변경이 금지됩니다. (읽기 전용 모드)</span>
+      </div>
+      
+      <div class="input-group">
+        <label><i class="fa-solid fa-user-gear"></i> 나의 커맨더 역할 선택</label>
+        <div class="team-toggle-group" id="team-selector-toggle">
+          <div class="team-slider"></div>
+          <button type="button" class="team-btn active" id="btn-t1" onclick="selectActiveTeam('team1')">1조 커맨더 (상대방: 2조)</button>
+          <button type="button" class="team-btn" id="btn-t2" onclick="selectActiveTeam('team2')">2조 커맨더 (상대방: 1조)</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label><i class="fa-solid fa-flask"></i> 예약 모드 설정</label>
+        <div class="test-switch-container">
+          <span style="color: var(--color-green);" id="mode-text">☀️ 표준 워크숍 일정 모드</span>
+          <label class="test-switch">
+            <input type="checkbox" id="test-mode-toggle" onchange="toggleTestMode(this)">
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+      </div>
+      <div class="input-group" id="team-date-group-box">
+        <label for="team-start-date"><i class="fa-solid fa-calendar-day"></i> 나의 워크숍 시작일 (YYYY-MM-DD)</label>
+        <div class="input-wrapper">
+          <input type="date" id="team-start-date" onchange="saveConfig()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="webhook-url"><i class="fa-brands fa-discord"></i> Discord Webhook URL</label>
+        <div class="input-wrapper">
+          <input type="password" id="webhook-url" placeholder="https://discord.com/api/webhooks/..." oninput="saveConfig()">
+          <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('webhook-url', this)"></i>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="github-pat"><i class="fa-brands fa-github"></i> GitHub PAT (Token)</label>
+        <div class="input-wrapper">
+          <input type="password" id="github-pat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" oninput="saveConfig(); fetchRemoteLockStatus();">
+          <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('github-pat', this)"></i>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="github-repo"><i class="fa-solid fa-folder-tree"></i> GitHub Repository Path</label>
+        <div class="input-wrapper">
+          <input type="text" id="github-repo" placeholder="owner/repo-name" oninput="saveConfig(); fetchRemoteLockStatus();">
+        </div>
+      </div>
+      <div class="input-group" style="grid-column: 1 / -1;">
+        <label for="team-participants"><i class="fa-solid fa-users"></i> 본 조의 참여자 명단 (쉼표로 구분)</label>
+        <div class="input-wrapper">
+          <input type="text" id="team-participants" placeholder="홍길동, 이순신, 강감찬" oninput="rebuildIndividualMissionsList();">
+        </div>
+      </div>
+    </section>
+    
+    <!-- Timeline Board -->
+    <section class="glass-panel timeline-dashboard">
+      <div class="panel-header">
+        <h2 id="deck-team-header"><i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (8개 세션)</h2>
+        <span class="slot-category-badge" id="deck-status-badge" style="background: rgba(139, 92, 246, 0.1); color: var(--color-primary);">0 / 8 선택됨</span>
+      </div>
+      
+      <div class="timeline-grid" id="session-slots-container">
+        <!-- Session cards generated dynamically by JS -->
+      </div>
+    </section>
+
+    <!-- Individual Missions Panel -->
+    <section class="glass-panel timeline-dashboard" id="individual-missions-section">
+      <div class="panel-header">
+        <h2 id="individual-team-header"><i class="fa-solid fa-users-gear" style="color: var(--color-team1);"></i> 1조 조원별 개인 지령 구성</h2>
+        <button type="button" class="slot-btn" style="background:var(--color-primary); color:#fff; border:none;" onclick="assignIndividualMissions()" id="btn-assign-individual">
+          <i class="fa-solid fa-shuffle"></i> 🎲 개인과제 무작위 배정
+        </button>
+      </div>
+      <div class="timeline-grid" id="individual-slots-container" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));">
+        <!-- Individual participant slots will be populated here -->
+      </div>
+    </section>
+    
+    <!-- Operations Panel -->
+    <section class="glass-panel ops-panel">
+      <div class="ops-btn-group">
+        <button type="button" class="btn btn-generator" id="btn-times-generate" onclick="generateRandomTimesForActiveTeam()">
+          <i class="fa-solid fa-shuffle"></i> 🎲 무작위 예약시간 생성
+        </button>
+        <button type="button" class="btn btn-deploy" id="btn-github-deploy" onclick="deployToGitHub()">
+          <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ GitHub에 스케줄 등록
+        </button>
+      </div>
+    </section>
+    
+    <!-- JSON Preview -->
+    <section class="glass-panel preview-panel">
+      <div class="panel-header" style="border-bottom: none; padding-bottom: 10px;">
+        <h3><i class="fa-solid fa-code"></i> Live Generated schedule.json Preview (My Team)</h3>
+      </div>
+      <pre id="json-preview">// 무작위 예약시간 생성 시 이곳에 실시간 빌드 내역이 미리보기됩니다.</pre>
+    </section>
+    
+    <footer>
+      <p>&copy; 2026 Project Secret Card Commander. Serverless GitHub Actions Integration.</p>
+    </footer>
+    
+  </div>
+
+  <!-- Holographic Deployment Overlay -->
+  <div id="transmitting-overlay">
+    <div class="holo-scanner">
+      <i class="fa-solid fa-network-wired holo-center-icon"></i>
+    </div>
+    <div class="holo-text">
+      <div class="holo-title" id="holo-action-title">COMMUNICATION TUNNEL SECURED</div>
+      <div class="holo-subtitle" id="holo-action-subtitle">UPLOADING DATA TO GITHUB REPOSITORY</div>
+    </div>
+    <div class="holo-progress-container">
+      <div class="holo-progress-bar" id="holo-progress-bar"></div>
+    </div>
+  </div>
+  
+  <!-- Modal Selector -->
+  <div class="modal-overlay" id="mission-selector-modal" onclick="closeModalOnOuter(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title-text"><i class="fa-solid fa-folder-open"></i> 세션 미션 카드 선택</h3>
+        <button class="modal-close" onclick="closeSelectorModal()">&times;</button>
+      </div>
+      
+      <!-- Test Warning inside Modal -->
+      <div class="warning-banner" id="modal-test-warning" style="display: none; margin: 12px 24px 0 24px;">
+        <i class="fa-solid fa-flask"></i>
+        <span><strong>테스트 모드 작동 중:</strong> 미션 카드의 제한 시간 설정과 무관하게, 배포 시 현재 시각 기준 2분 간격으로 초고속 발송됩니다.</span>
+      </div>
+      
+      <div class="modal-search-bar">
+        <input type="text" id="modal-search-input" placeholder="키워드 검색 (미션명 또는 상세 내용)..." oninput="filterModalMissions()">
+      </div>
+      
+      <div class="modal-grid-body" id="modal-grid-container">
+        <!-- Candidate cards dynamically rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+  
+  <script>
+    // ----------------------------------------------------
+    // Sound Generator (Web Audio API Synthesizer)
+    // ----------------------------------------------------
+    const SoundEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      },
+      play(type) {
+        try {
+          this.init();
+          const now = this.ctx.currentTime;
+          if (type === 'click') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(1300, now + 0.08);
+            gain.connect(this.ctx.destination); osc.connect(gain);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+            osc.start(now); osc.stop(now + 0.08);
+          } else if (type === 'add') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(500, now);
+            osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+            gain.connect(this.ctx.destination); osc.connect(gain);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+            osc.start(now); osc.stop(now + 0.12);
+          } else if (type === 'success') {
+            const freqs = [523.25, 659.25, 783.99, 1046.50];
+            freqs.forEach((f, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.frequency.setValueAtTime(f, now + i * 0.06);
+              gain.connect(this.ctx.destination); osc.connect(gain);
+              gain.gain.setValueAtTime(0.08, now + i * 0.06);
+              gain.gain.exponentialRampToValueAtTime(0.005, now + i * 0.06 + 0.25);
+              osc.start(now + i * 0.06); osc.stop(now + i * 0.06 + 0.25);
+            });
+          } else if (type === 'failure') {
+            const playBuzz = (freq, delay) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(freq, now + delay);
+              gain.connect(this.ctx.destination); osc.connect(gain);
+              gain.gain.setValueAtTime(0.15, now + delay);
+              gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.3);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(now + delay); osc.stop(now + delay + 0.3);
+            };
+            playBuzz(110, 0); playBuzz(110, 0.12);
+          }
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+    };
+    
+    ['mousedown', 'touchstart', 'keydown'].forEach(evt => {
+      document.addEventListener(evt, () => SoundEngine.init(), { once: true });
+    });
+
+    // ----------------------------------------------------
+    // BACKGROUND CANVAS ANIMATION
+    // ----------------------------------------------------
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 35;
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    class Particle {
+      constructor() {
+        this.reset();
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 0.2 - 0.1;
+        this.speedY = Math.random() * 0.2 - 0.1;
+        this.alpha = Math.random() * 0.4 + 0.1;
+        this.color = Math.random() > 0.5 ? 'rgba(255, 51, 102, ' : 'rgba(51, 204, 255, ';
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.fillStyle = this.color + this.alpha + ')';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+    
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#05060a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // ----------------------------------------------------
+    // DIGITAL CONFETTI ENGINE
+    // ----------------------------------------------------
+    const confCanvas = document.getElementById('confetti-canvas');
+    const confCtx = confCanvas.getContext('2d');
+    let confParticles = [];
+    let isConfettiRunning = false;
+    
+    function resizeConfetti() {
+      confCanvas.width = window.innerWidth;
+      confCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+    
+    class ConfettiPiece {
+      constructor(x, y, color) {
+        this.x = x; this.y = y; this.color = color;
+        this.size = Math.random() * 6 + 3;
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * -10 - 4;
+        this.gravity = 0.3;
+        this.alpha = 1;
+      }
+      update() {
+        this.speedY += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= 0.02;
+      }
+      draw() {
+        confCtx.fillStyle = this.color.replace(')', `, ${this.alpha})`);
+        confCtx.fillRect(this.x, this.y, this.size, this.size);
+      }
+    }
+    
+    function triggerConfettiBurst() {
+      const colors = ['rgba(255, 51, 102)', 'rgba(51, 204, 255)', 'rgba(255, 204, 0)'];
+      for (let i = 0; i < 30; i++) {
+        confParticles.push(new ConfettiPiece(confCanvas.width/3, confCanvas.height, colors[Math.floor(Math.random() * colors.length)]));
+        confParticles.push(new ConfettiPiece(confCanvas.width * 2/3, confCanvas.height, colors[Math.floor(Math.random() * colors.length)]));
+      }
+      if (!isConfettiRunning) {
+        isConfettiRunning = true;
+        animateConfetti();
+      }
+    }
+    
+    function animateConfetti() {
+      if (confParticles.length === 0) {
+        isConfettiRunning = false;
+        confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+        return;
+      }
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      confParticles.forEach((p, idx) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) confParticles.splice(idx, 1);
+      });
+      requestAnimationFrame(animateConfetti);
+    }
+
+    // ----------------------------------------------------
+    // TOAST NOTIFICATIONS Helper
+    // ----------------------------------------------------
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      let icon = 'fa-circle-info';
+      if (type === 'success') icon = 'fa-circle-check';
+      if (type === 'error') icon = 'fa-triangle-exclamation';
+      
+      toast.innerHTML = `
+        <i class="fa-solid ${icon}" style="font-size: 1.1rem; color: ${type === 'success' ? 'var(--color-green)' : type === 'error' ? 'var(--color-team1)' : 'var(--color-primary)'}"></i>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-msg">${message}</div>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.add('show'); }, 50);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { toast.remove(); }, 300);
+      }, 4000);
+    }
+
+    // Live clock ticking
+    function updateClock() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} KST`;
+      const el = document.getElementById('live-time');
+      if (el) el.innerText = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ----------------------------------------------------
+    // MISSION & SESSION SPECIFICATION
+    // ----------------------------------------------------
+    const sessionsSpec = [
+      { index: 1, day: 1, sessionName: "세션 1 (이동/도착 오프닝)", timeRange: "13:00 ~ 16:00", hourMin: 13, hourMax: 16 },
+      { index: 2, day: 1, sessionName: "세션 2 (오후 장보기/카페)", timeRange: "16:00 ~ 19:00", hourMin: 16, hourMax: 19 },
+      { index: 3, day: 1, sessionName: "세션 3 (저녁 바비큐/첫날밤)", timeRange: "19:00 ~ 22:00", hourMin: 19, hourMax: 22 },
+      { index: 4, day: 2, sessionName: "세션 1 (아침 모임/기상)", timeRange: "08:00 ~ 11:30", hourMin: 8, hourMax: 11.5 },
+      { index: 5, day: 2, sessionName: "세션 2 (점심/야외 단합)", timeRange: "12:00 ~ 17:00", hourMin: 12, hourMax: 17 },
+      { index: 6, day: 2, sessionName: "세션 3 (메인 회식/바비큐)", timeRange: "17:30 ~ 20:00", hourMin: 17.5, hourMax: 20 },
+      { index: 7, day: 2, sessionName: "세션 4 (밤 레크리에이션)", timeRange: "20:00 ~ 22:00", hourMin: 20, hourMax: 22 },
+      { index: 8, day: 3, sessionName: "세션 1 (피날레/퇴소)", timeRange: "08:00 ~ 10:00", hourMin: 8, hourMax: 10 }
+    ];
+
+    // 50 Clean/Non-nuisance Missions mapped to Session indexes (1-8)
+    const missionsDatabase = [
+      { id: 1, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "신발 모으기", content: "조원들의 신발을 모아 단체 별 모양을 만들고 사진 찍기", duration: "3분", tip: "신발을 대칭으로 잘 배열하면 예쁜 5각/6각 별이 만들어집니다.", colorHex: 16724870 },
+      { id: 2, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "배터리 최저 사용자", content: "상대 조원 중 휴대폰 배터리 잔량이 가장 적은 사람의 화면을 캡처해 올리기", duration: "2분", tip: "단톡방에 배터리 잔량 숫자가 나오도록 캡처본을 올리세요.", colorHex: 16724870 },
+      { id: 3, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "이동 중 창문 하트", content: "이동 차량 안에서 손가락 하트 릴레이로 창문에 대고 사진 찍기", duration: "5분", tip: "차창 밖 풍경과 하트 손가락이 포커스되게 아련하게 촬영해보세요.", colorHex: 16724870 },
+      { id: 4, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "웰컴 단체 브이", content: "숙소 또는 도착지 웰컴 보드/간판 앞에서 전원이 브이 포즈로 단체 샷 찍기", duration: "5분", tip: "웃음 가득한 도착 기념 컷을 연출해보세요.", colorHex: 16724870 },
+      { id: 5, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "안경 모아 하트", content: "조원들의 안경 또는 선글라스를 바닥에 둥글게 하트 모양으로 모아 촬영하기", duration: "3분", tip: "렌즈에 조명이 반사되지 않게 비스듬히 찍으세요.", colorHex: 16724870 },
+      { id: 6, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "웰컴 캔 건배", content: "물잔이나 음료수 캔을 둥글게 모아 위에서 건배하는 손가락 줌인 샷 올리기", duration: "3분", tip: "모두의 손등과 캔 뚜껑이 조화롭게 나와야 합니다.", colorHex: 16724870 },
+      { id: 7, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "슬로우 모션 음료 시음", content: "카페 음료 수령 후 조원 전원이 동시에 슬로우 모션으로 마시는 15초 영상 찍기", duration: "10분", tip: "스마트폰 카메라의 슬로우 모션 기능을 활성화하고 과장된 목넘김을 표현하세요.", colorHex: 3394662 },
+      { id: 8, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "최장 야채 찾기", content: "마트에서 쇼핑 중 발견한 가장 긴 야채(예: 대파, 오이)와 함께 조원 코믹 투샷", duration: "5분", tip: "야채가 부러지지 않게 매너 있게 조심해서 다뤄주세요.", colorHex: 3394662 },
+      { id: 9, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "정돈된 카트 샷", content: "마트 카트에 구매한 물품을 테트리스처럼 아름답고 반듯하게 정돈하여 항공샷 촬영", duration: "5분", tip: "물건 라벨이 위를 향하게 정렬하면 더 프로페셔널해 보입니다.", colorHex: 3394662 },
+      { id: 10, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "디저트 브이(V) 대형", content: "카페 테이블에 주문한 빵이나 케이크, 쿠키 등을 브이 모양 대형으로 조각 정렬해 찍기", duration: "5분", tip: "접시 배치를 센스있게 디자인해보세요.", colorHex: 3394662 },
+      { id: 11, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "음료 색상 그라데이션", content: "주문한 음료들을 맑은 색상부터 짙은 색상 순서대로 나란히 줄 세워 감성 사진 찍기", duration: "5분", tip: "아메리카노, 에이드, 라떼 등을 멋지게 큐레이션 하세요.", colorHex: 3394662 },
+      { id: 12, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "카페 거울 요정들", content: "카페 내 전신거울이나 볼록거울을 활용하여 조원들이 옹기종기 뭉친 거울 셀카 샷", duration: "5분", tip: "얼굴이 다른 동료에 의해 가려지지 않게 높낮이를 조절하세요.", colorHex: 3394662 },
+      { id: 13, sessionIndex: 3, category: "food", emoji: "🍖", title: "팀장님 정성 쌈 싸주기", content: "가장 막내가 상급자에게 가장 거대하고 맛있는 정성 쌈을 싸서 먹여주는 사진 올리기", duration: "3분", tip: "고기, 마늘, 쌈장을 푸짐하고 훈훈하게 얹어 대접하세요.", colorHex: 16763904 },
+      { id: 14, sessionIndex: 3, category: "food", emoji: "🍖", title: "냅킨 로즈 데코", content: "식탁 위에 흰색 냅킨을 돌돌 말아 예쁜 장미꽃 1송이를 접어 중앙에 올린 사진", duration: "5분", tip: "인터넷에 냅킨 장미 접기를 검색하면 30초 만에 뚝딱 가능합니다.", colorHex: 16763904 },
+      { id: 15, sessionIndex: 3, category: "food", emoji: "🍖", title: "소주잔 하트 탑", content: "빈 소주잔 4개를 눕혀 하트 모양을 만들고 위에서 직각으로 찍은 탑뷰 사진", duration: "3분", tip: "잔에 물기가 있으면 하트가 미끄러지니 건조한 컵을 사용하세요.", colorHex: 16763904 },
+      { id: 16, sessionIndex: 3, category: "food", emoji: "🍖", title: "의리 넘치는 한잔", content: "조원 전원이 웃음기 가득한 얼굴로 맥주/음료 잔을 테이블 중앙에서 맞대어 건배하는 샷", duration: "3분", tip: "연사(연속 사진)로 찍어 가장 해맑게 웃는 프레임을 골라 전송하세요.", colorHex: 16763904 },
+      { id: 17, sessionIndex: 3, category: "food", emoji: "🍖", title: "초대형 바비큐 꼬치", content: "바비큐 재료(고기, 버섯, 양파 등)를 한 꼬치에 순서대로 가장 길게 끼워 완성해 굽는 인증샷", duration: "5분", tip: "재료가 꼬치 끝으로 떨어져 화상을 입지 않게 주의하세요.", colorHex: 16763904 },
+      { id: 18, sessionIndex: 3, category: "food", emoji: "🍖", title: "바비큐 셰프 크로스", content: "고기 굽는 집게와 가위를 가슴팍 앞에서 엑스(X)자로 결합해 들고 비장하게 선 조원 10초 영상", duration: "3분", tip: "영웅물 영화 배경음악이 떠오르는 비장한 포즈를 주문하세요.", colorHex: 16763904 },
+      { id: 19, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "얼음! 그대로 멈춰라", content: "기습 미션 수신 즉시 현재 취하고 있는 동작 그대로 멈춰 단체 셀카 촬영 및 업로드", duration: "3분", tip: "정말 멈춘 것처럼 어색하고 우스꽝스러운 동작일수록 재미가 증폭됩니다.", colorHex: 16724870 },
+      { id: 20, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "네이버 정밀 시계 맞추기", content: "초 단위까지 흘러가는 네이버 시계 화면 옆에 손가락 3개를 함께 대고 인증샷 찍기", duration: "2분", tip: "듀얼 스크린이나 다른 폰 화면에 네이버 시계를 띄우세요.", colorHex: 16724870 },
+      { id: 21, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "동시 기지개 스트레칭", content: "아침 조원 3명 이상이 일렬로 뒤돌아서서 하늘을 향해 시원하게 기지개를 켜는 뒷모습 샷", duration: "3분", tip: "대열의 수평을 맞추면 대단히 예술적인 컷이 연출됩니다.", colorHex: 16724870 },
+      { id: 22, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "맑은 아침 텀블러", content: "아침 물컵이나 텀블러를 들고 맑은 하늘/아침 햇살을 배경으로 쨍하게 촬영하기", duration: "3분", tip: "아웃포커싱 기능을 사용하여 컵을 돋보이게 하세요.", colorHex: 16724870 },
+      { id: 23, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "세수 요정 브이", content: "방금 세수를 마친 뽀송뽀송하거나 촉촉한 얼굴의 조원 2명이 상큼한 브이 포즈 셀카", duration: "3분", tip: "민낯이라도 당당하고 환한 웃음이 성공 열쇠!", colorHex: 16724870 },
+      { id: 24, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "동서남북 수호자", content: "조원 4명이 서로 등을 딱 맞대고 동서남북 4방향을 각각 바라보며 정색한 단체 사진", duration: "3분", tip: "팔짱을 낀 보디가드 포즈를 취하면 완성도가 높아집니다.", colorHex: 16724870 },
+      { id: 25, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "인간 대형 하트", content: "안전한 야외 잔디밭이나 넓은 지상 공간에서 조원 전원이 몸을 모아 거대한 하트 대형 연출 사진", duration: "10분", tip: "카메라를 위에서 아래로 비스듬히 찍어야 하트의 형태가 잘 드러납니다.", colorHex: 3394662 },
+      { id: 26, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "인간 이정표", content: "관광지 안내판이나 길목 갈림길에서 조원들이 일렬로 서서 화살표 방향을 온몸으로 묘사한 사진", duration: "10분", tip: "다 같이 머리, 팔, 다리로 한 방향의 화살표를 기괴하게 만들어보세요.", colorHex: 3394662 },
+      { id: 27, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "공중 부양 점프 챌린지", content: "야외 잔디밭/광장에서 조원 전체가 공중에 동시에 뜬 최고의 순간 포착 샷", duration: "10분", tip: "휴대폰 카메라의 '고속 연사' 모드를 꾹 눌러 점프 타이밍을 잡아내세요.", colorHex: 3394662 },
+      { id: 28, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "아스팔트 그림자 하트", content: "맑은 햇빛 아래 서서 조원들의 팔과 손 그림자를 합작해 바닥 위에 하트 실루엣 만들기", duration: "5분", tip: "그림자가 겹쳐서 찌그러지지 않게 각 조원들의 손 간격을 띄우세요.", colorHex: 3394662 },
+      { id: 29, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "자연의 하트 조형", content: "야외에서 하트 모양을 닮은 돌멩이, 조개껍데기, 나뭇잎 등을 직접 발굴해 손바닥 위에 얹기", duration: "5분", tip: "인공 조형물이 아닌 실제 순수 자연물 중에서 발굴해야 인정됩니다.", colorHex: 3394662 },
+      { id: 30, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "거인 손의 요정", content: "원근법을 활용해 조원 한 명이 다른 조원의 커다란 손바닥 위에 사뿐히 서 있는 듯한 사진", duration: "10분", tip: "손을 내민 조원은 카메라 초근접에 서고, 올라설 조원은 멀리 이동해 위치를 겹치세요.", colorHex: 3394662 },
+      { id: 31, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "일렬종대 기차 대형", content: "키 순서대로 똑바른 기차 대형으로 일렬로 서서 앞사람 어깨에 양손을 착 올린 사진", duration: "5분", tip: "초등학교 때 번호 순서로 서듯 칼같이 수평을 맞춰보세요.", colorHex: 3394662 },
+      { id: 32, sessionIndex: 6, category: "food", emoji: "🍖", title: "테이블 크로스 러브샷", content: "조에서 직급 차이가 가장 크거나 세대 차이가 가장 많이 나는 두 사람의 정겨운 러브샷 샷", duration: "5분", tip: "잔을 들고 팔을 X자로 다정하게 꼬아 건배하고 원샷하는 화기애애한 모습을 남기세요.", colorHex: 16763904 },
+      { id: 33, sessionIndex: 6, category: "food", emoji: "🍖", title: "스텔스 컵 쌓기 탑", content: "상대 조원에게 전혀 들키지 않게 술자리 중앙에 조용히 빈 일회용 컵 5개를 일렬로 쌓아 인증", duration: "5분", tip: "대화 주제로 모두의 이목이 집중되는 순간을 틈타 슥슥 올려보세요.", colorHex: 16763904 },
+      { id: 34, sessionIndex: 6, category: "food", emoji: "🍖", title: "옆 사람 릴레이 쌈 배달", content: "조원들이 도란도란 둘러앉아 자기 왼쪽에 앉은 사람에게 차례로 쌈을 싸서 입에 넣어주는 15초 릴레이 릴", duration: "5분", tip: "카메라 무빙이 막힘없이 물 흐르듯 흘러가야 15초 안에 모두 성공 가능합니다.", colorHex: 16763904 },
+      { id: 35, sessionIndex: 6, category: "food", emoji: "🍖", title: "냅킨 위 이쑤시개 조 이름", content: "테이블 냅킨 위에 이쑤시개 여러 개를 사용해 조 번호(예: '1조')를 조립하여 사진 찍기", duration: "5분", tip: "바비큐 불 바람에 날리지 않게 잔으로 살짝 눌러주는 지혜가 필요합니다.", colorHex: 16763904 },
+      { id: 36, sessionIndex: 6, category: "food", emoji: "🍖", title: "식사 중 이색 칵테일 제조", content: "물과 탄산수, 주스 등을 조합해 창의적인 비율의 음료를 제조해 조원들에게 시음시키는 사진", duration: "5분", tip: "시음자가 미소 지으며 맛을 음미하는 모습을 담아내세요.", colorHex: 16763904 },
+      { id: 37, sessionIndex: 6, category: "food", emoji: "🍖", title: "우렁찬 건배사 3종 릴레이", content: "조원 3명이 끊김 없이 우렁찬 목소리로 워크숍 대박을 기원하는 건배사를 차례로 외치는 15초 영상", duration: "5분", tip: "미리 각자의 짧고 강력한 슬로건 멘트를 지정해두면 에러가 없습니다.", colorHex: 16763904 },
+      { id: 38, sessionIndex: 7, category: "night", emoji: "🎤", title: "유쾌한 엽기 필터 단체샷", content: "카메라 보정 앱의 가장 엽기적이거나 웃긴 마스크 필터를 전원에 씌우고 단체 촬영", duration: "5분", tip: "망가짐을 두려워하지 말고 눈코입을 크게 벌려 효과 필터를 작동시키세요.", colorHex: 10040319 },
+      { id: 39, sessionIndex: 7, category: "night", emoji: "🎤", title: "ASMR 릴레이 포부", content: "속속이는 소리로 오늘의 한 줄 소감과 내일의 각오를 릴레이로 말하는 15초 오디오", duration: "5분", tip: "마이크에 숨소리가 너무 들어가지 않도록 입을 약간 떼고 소박하게 전파하세요.", colorHex: 10040319 },
+      { id: 40, sessionIndex: 7, category: "night", emoji: "🎤", title: "마네킹 챌린지 5초", content: "레크레이션 2차 도중 신호에 맞춰 전원이 마네킹처럼 5초 동안 완전 정지 동작 유지 영상", duration: "5분", tip: "잔을 입에 대고 마시는 중이거나 숟가락을 든 채 정지하면 극적인 연출이 됩니다.", colorHex: 10040319 },
+      { id: 41, sessionIndex: 7, category: "night", emoji: "🎤", title: "암흑 속 촛불 아카펠라", content: "불을 모두 끈 숙소 방에서 핸드폰 플래시 1개만 켜고 10초간 한 목소리로 화음 노래 부르기", duration: "5분", tip: "애국가나 로고송 등 조원 모두가 아는 친숙한 노래의 한 구절을 선택하세요.", colorHex: 10040319 },
+      { id: 42, sessionIndex: 7, category: "night", emoji: "🎤", title: "손가락 탑 쌓기", content: "거실 바닥에 앉아 모든 조원의 손등을 교차해 우뚝 솟은 탑을 만들어 정중앙 사진 찍기", duration: "5분", tip: "아래부터 조의 최고령자부터 최연소자 순서대로 손을 쌓아 올리세요.", colorHex: 10040319 },
+      { id: 43, sessionIndex: 7, category: "night", emoji: "🎤", title: "수면양말 발 모음 하트", content: "숙소 거실에 누워서 각자의 수면양말이나 캐릭터 슬리퍼를 신은 발을 중앙에 모아 하트 대형 샷", duration: "3분", tip: "가장 튀는 비비드 컬러 양말을 신은 사람이 정가운데 정렬합니다.", colorHex: 10040319 },
+      { id: 44, sessionIndex: 7, category: "night", emoji: "🎤", title: "거울 2인조 미러 댄스", content: "거울 앞에서 두 명의 조원이 완전 똑같은 동작으로 코믹 댄스를 10초간 소화하는 영상", duration: "5분", tip: "좌우 반전처럼 환상의 듀오 싱크로율을 발휘해보세요.", colorHex: 10040319 },
+      { id: 45, sessionIndex: 8, category: "coop", emoji: "🧠", title: "3개 국어 릴레이 감사 인사", content: "릴레이로 한국어, 영어, 그리고 제3의 언어(중국어/일어 등)로 감사 소감 소통 15초 영상", duration: "5분", tip: "완벽할 필요 없이 '상케~', '오하요~', '땡큐~' 등 드립 섞인 유쾌한 인사가 합격 기준입니다.", colorHex: 3394815 },
+      { id: 46, sessionIndex: 8, category: "coop", emoji: "🧠", title: "깔끔한 숙소 하트 샷", content: "정리가 완벽히 끝나 분리수거 및 청소를 완료한 텅 빈 거실 한가운데에서 단체 손하트 사진", duration: "5분", tip: "매너 워크숍의 완성은 퇴소 직전의 뒷정리 상태입니다.", colorHex: 3394662 },
+      { id: 47, sessionIndex: 8, category: "coop", emoji: "🧠", title: "트렁크 테트리스 장인", content: "트럭 차량 트렁크에 조원들의 모든 짐 캐리어를 틈새 없이 완벽하게 수납 정돈한 정밀 탑샷", duration: "5분", tip: "사이즈와 모서리를 칼같이 끼워 맞추는 조의 살림꾼 요원을 투입하세요.", colorHex: 3394815 },
+      { id: 48, sessionIndex: 8, category: "coop", emoji: "🧠", title: "피날레 슬로우 하이파이브", content: "퇴소 차량에 오르기 전 조원들이 차례대로 슬로우 모션으로 하이파이브를 교환하는 10초 샷", duration: "5분", tip: "뺨을 스치듯 아쉬워하는 과장된 연기를 섞으면 레전드 숏폼이 나옵니다.", colorHex: 3394815 },
+      { id: 49, sessionIndex: 8, category: "coop", emoji: "🧠", title: "추억의 스냅샷 엄선", content: "2박 3일 동안 워크숍 현장에서 찍은 스마트폰 앨범 사진 중 최고 명작 단체사진 1장 업로드", duration: "5분", tip: "가장 역동적이고 훈훈하게 조원 전체의 표정이 잘 나온 사진을 엄선해 올리세요.", colorHex: 3394815 },
+      { id: 50, sessionIndex: 8, category: "coop", emoji: "🧠", title: "수작업 종이 문자 합작", content: "각자 종이에 한 글자씩 적어 '우.리.조.최.고.다.' 문장을 차례로 배치해 들고 찍은 단체샷", duration: "5분", tip: "글자가 선명하게 보일 수 있게 검은색 펜으로 굵게 타이틀을 적어주세요.", colorHex: 3394815 }
+    ];
+
+    const individualMissionsDatabase = [
+      { id: 101, emoji: "☕", title: "동료에게 커피 배달", content: "조원 중 한 명에게 음료를 타서 대접하고 인증샷", duration: "10분", tip: "마시는 조원의 밝은 미소를 프레임에 담아주세요." },
+      { id: 102, emoji: "✋", title: "하이파이브 릴레이", content: "조원 3명 이상과 하이파이브하는 손바닥 인증샷", duration: "3분", tip: "손을 마주 댄 우정 가득한 앵글이 핵심입니다." },
+      { id: 103, emoji: "💧", title: "시원한 생수 요정", content: "동료에게 생수를 건네며 파이팅 외치고 물병 인증샷", duration: "5분", tip: "물병 라벨이 잘 보이게 직각으로 촬영하세요." },
+      { id: 104, emoji: "🍫", title: "당 충전 초콜릿 배달", content: "동료의 자리나 주머니에 간식을 몰래 얹고 놀란 표정/뒷모습 인증샷", duration: "5분", tip: "상대방이 알아채기 전에 재빨리 스텔스로 촬영하세요." },
+      { id: 105, emoji: "🚮", title: "환경 수호 요정", content: "주변의 재활용 쓰레기 3개 이상을 주워 분리수거통에 넣는 인증샷", duration: "5분", tip: "분리수거함과 쓰레기가 선명하게 나오게 하세요." },
+      { id: 106, emoji: "👍", title: "동료 칭찬 한마디", content: "조원 한 명에게 칭찬을 건네고 다정하게 쌍 따봉 투샷 촬영", duration: "5분", tip: "인위적인 표정보다 정말 수줍어하는 웃음이 고득점의 비결!" },
+      { id: 107, emoji: "🌞", title: "하늘 보기 스트레칭", content: "야외에서 하늘을 배경으로 양팔을 쭉 뻗은 시원한 스트레칭 실루엣 샷", duration: "3분", tip: "태양 광선을 등지고 실루엣 위주로 촬영하면 멋진 화보가 됩니다." },
+      { id: 108, emoji: "📸", title: "동료의 멋진 도촬 샷", content: "활동에 몰두하고 있는 다른 조원의 프로페셔널한 모습을 몰래 도촬하여 선물하고 인증샷", duration: "10분", tip: "얼굴이 흔들리지 않게 집중하여 아련한 아웃포커싱으로 담아내세요." },
+      { id: 109, emoji: "🥤", title: "분리수거 컵 정리", content: "테이블 위에 방치된 일회용 컵들을 가지런히 모아 정리한 컵 탑 샷", duration: "5분", tip: "깨끗하게 비워진 정돈 상태가 돋보여야 합니다." },
+      { id: 110, emoji: "🔋", title: "배터리 충전 요정", content: "배터리가 없는 동료의 휴대폰을 충전기/보조배터리에 연결해 주는 훈훈한 샷", duration: "3분", tip: "충전 표시 번개가 들어오는 액정이 선명하게 보여야 합니다." },
+      { id: 111, emoji: "🍎", title: "비타민/과일 나눔", content: "동료에게 과일이나 비타민을 건네주는 손바닥 투샷", duration: "5분", tip: "비타민 패키지나 과일이 쨍하게 나오게 하세요." },
+      { id: 112, emoji: "🧻", title: "테이블 청소 장인", content: "식사나 간식 시간 후 빈 테이블을 물티슈로 깨끗하게 닦아 정돈한 광택 샷", duration: "5분", tip: "기름기가 남지 않게 깔끔하게 닦인 반사광이 포인트!" },
+      { id: 113, emoji: "👟", title: "구겨진 동료 신발 정돈", content: "어지러진 신발이나 슬리퍼를 가지런히 돌려 정돈한 정밀 샷", duration: "3분", tip: "나란히 코끝이 맞춰진 슬리퍼 샷이 정돈력을 입증합니다." },
+      { id: 114, emoji: "✌️", title: "비밀의 윙크 셀카", content: "카메라를 보며 한쪽 눈을 상큼하게 윙크한 셀카 촬영", duration: "2분", tip: "눈밑 애교살이 도드라지게 유쾌하게 윙크해 보세요." },
+      { id: 115, emoji: "👥", title: "동료와의 데칼코마니", content: "동료와 거울을 보듯 똑같은 포즈를 취하고 찍은 대칭 셀카", duration: "5분", tip: "손가락 브이나 하트 포즈를 거울처럼 맞춰보세요." },
+      { id: 116, emoji: "✈️", title: "종이 비행기 날리기", content: "종이 비행기를 접어 날리는 역동적인 순간 포착 샷", duration: "5분", tip: "비행기가 날아가는 공중 포착 샷이 고득점 기준입니다." },
+      { id: 117, emoji: "🤟", title: "손가락 하트 발사", content: "조원 중 한 명 몰래 그 사람의 등 뒤에서 손가락 하트를 조준해 찍은 샷", duration: "5분", tip: "배경의 동료는 초점이 흐리고 손가락이 선명해야 합니다." },
+      { id: 118, emoji: "📚", title: "독서하는 지성인", content: "주변에 보이는 책이나 가이드북을 비장하게 정독하는 연출 샷", duration: "3분", tip: "책 표지와 진지한 눈빛이 렌즈에 잡히도록 하세요." },
+      { id: 119, emoji: "✏️", title: "종이컵 낙서 드로잉", content: "일회용 종이컵에 조원의 얼굴을 간단하게 캐리커처로 그려 선물하고 인증샷", duration: "5분", tip: "어색하게 웃는 조원과 그려진 컵을 함께 찍어보세요." },
+      { id: 120, emoji: "👍", title: "조용한 엄지척", content: "회의나 식사 도중 조용히 카메라를 보며 엄지척을 내미는 샷", duration: "2분", tip: "배경의 회의 분위기와 내 손가락이 고대비로 나오게 하세요." },
+      { id: 121, emoji: "🥤", title: "하트 빨대 만들기", content: "음료용 빨대를 꺾거나 겹쳐 하트 모양으로 만들어 컵에 꽂은 샷", duration: "5분", tip: "음료 잔과 하트 빨대 실루엣이 부각되게 항공샷으로 촬영하세요." },
+      { id: 122, emoji: "🤝", title: "따뜻한 악수 교환", content: "조원 한 명과 두 손으로 정중하게 악수하며 감사 인사를 나누는 투샷", duration: "3분", tip: "서로 맞잡은 두 손이 프레임 한가운데에 오게 배치하세요." },
+      { id: 123, emoji: "⌚", title: "손목시계 단체 동기화", content: "조원 3명 이상의 손목시계 화면을 나란히 모아 동일한 시각임을 인증하는 샷", duration: "5분", tip: "시계 바늘이나 디지털 숫자가 선명하게 초점이 맺혀야 합니다." },
+      { id: 124, emoji: "💍", title: "나의 애장품 소개", content: "본인이 가져온 소지품 중 가장 아끼는 물건을 한 손으로 들고 쨍하게 촬영", duration: "5분", tip: "사물 광고 컷처럼 멋지고 선명한 앵글로 촬영해보세요." },
+      { id: 125, emoji: "📄", title: "워크숍 교재 정돈", content: "회의 테이블 위의 흩어진 프린트물이나 필기구를 가지런히 줄 세워 정렬한 샷", duration: "5분", tip: "깔끔하고 줄이 맞게 쌓아올린 모습이 찍혀야 합니다." },
+      { id: 126, emoji: "🌸", title: "꽃받침 꽃가루 포즈", content: "야외 자연물 앞에서 턱 밑에 꽃받침 포즈를 한 귀여운 셀카", duration: "3분", tip: "야외 풍경과 꽃받침이 뽀샤시하게 어우러지게 하세요." },
+      { id: 127, emoji: "📌", title: "종이 포스트잇 응원", content: "동료의 노트북이나 물품에 '오늘도 힘내요!' 포스트잇 메모를 남긴 샷", duration: "5분", tip: "메모지 글씨가 또렷하게 클로즈업되도록 하세요." },
+      { id: 128, emoji: "🎒", title: "백팩 지퍼 잠금 천사", content: "동료가 깜빡 열어둔 가방 지퍼를 상냥하게 잠가주며 찍은 손가락 줌인 샷", duration: "3분", tip: "열려 있던 지퍼를 올리는 역동적인 손을 포착하세요." },
+      { id: 129, emoji: "⭐", title: "손가락 별(V) 크로스", content: "두 조원이 검지와 중지를 엇갈려 겹쳐 만든 별 모양 샷", duration: "3분", tip: "접촉한 마디가 수평이 되고 깔끔하게 겹쳐지도록 조절하세요." },
+      { id: 130, emoji: "✨", title: "어깨 먼지 털기 격려", content: "동료의 어깨를 털어주며 활짝 웃는 격려 샷", duration: "3분", tip: "환하게 웃는 상호 대화 앵글을 연출하여 전송하세요." }
+    ];
+
+    // ----------------------------------------------------
+    // STATE & CONFIG MANAGEMENT (SINGLE TEAM FOCUSED)
+    // ----------------------------------------------------
+    let activeTeam = 'team1';
+    let activeSlotIndex = null;
+    let testModeActive = false;
+    let isDeployedProductionLocked = false;
+    
+    let activeDeck = Array(8).fill(null);
+    let activeSchedules = Array(8).fill(null);
+    let activeIndividualMissions = { team1: [], team2: [] };
+
+    function loadConfig() {
+      // 1. Determine active team and load its deck/schedules into memory first to prevent race condition wipes
+      const savedTeam = localStorage.getItem('active_team_role') || 'team1';
+      selectActiveTeam(savedTeam, false);
+
+      // 2. Load inputs
+      document.getElementById('webhook-url').value = localStorage.getItem('config_webhook_url') || '';
+      document.getElementById('github-pat').value = localStorage.getItem('config_github_pat') || '';
+      document.getElementById('github-repo').value = localStorage.getItem('config_github_repo') || 'mhsssshin/missionwar_t';
+      
+      // 3. Load test mode toggle checkbox
+      const savedTestMode = localStorage.getItem('config_test_mode_active');
+      if (savedTestMode === 'true') {
+        const toggleCheckbox = document.getElementById('test-mode-toggle');
+        toggleCheckbox.checked = true;
+        toggleTestMode(toggleCheckbox, false);
+      }
+      
+      fetchRemoteLockStatus();
+    }
+    
+    function saveConfig() {
+      if (isDeployedProductionLocked) return;
+      
+      localStorage.setItem('config_webhook_url', document.getElementById('webhook-url').value.trim());
+      localStorage.setItem('config_github_pat', document.getElementById('github-pat').value.trim());
+      localStorage.setItem('config_github_repo', document.getElementById('github-repo').value.trim());
+      localStorage.setItem('config_test_mode_active', testModeActive);
+      
+      localStorage.setItem('active_team_role', activeTeam);
+      if (!testModeActive) {
+        localStorage.setItem(`team_start_date_${activeTeam}`, document.getElementById('team-start-date').value);
+      }
+      
+      localStorage.setItem(`deck_${activeTeam}`, JSON.stringify(activeDeck.map(m => m ? {id: m.id} : null)));
+      localStorage.setItem(`schedules_${activeTeam}`, JSON.stringify(activeSchedules));
+      localStorage.setItem(`individual_missions_${activeTeam}`, JSON.stringify(activeIndividualMissions[activeTeam] || []));
+      
+      updatePreviewJSON();
+    }
+
+    async function fetchRemoteLockStatus() {
+      const pat = document.getElementById('github-pat').value.trim();
+      const repoPath = document.getElementById('github-repo').value.trim();
+      
+      if (!pat || !repoPath || repoPath.split('/').length !== 2) {
+        setLockUIState(false);
+        return;
+      }
+      
+      const [owner, repo] = repoPath.split('/');
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/schedule.json`;
+      
+      try {
+        const res = await fetch(url, {
+          headers: {
+            'Authorization': `token ${pat}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (res.ok) {
+          const fileData = await res.json();
+          const contentDecoded = decodeURIComponent(escape(atob(fileData.content)));
+          const remoteJson = JSON.parse(contentDecoded);
+          
+          // Sync basic configurations from remote back to local (GitHub as the Source of Truth DB)
+          if (remoteJson.discordWebhookUrl) {
+            document.getElementById('webhook-url').value = remoteJson.discordWebhookUrl;
+            localStorage.setItem('config_webhook_url', remoteJson.discordWebhookUrl);
+          }
+
+
+          if (remoteJson.testModeActive !== undefined) {
+            const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
+            testModeActive = isTest;
+            document.getElementById('test-mode-toggle').checked = isTest;
+            localStorage.setItem('config_test_mode_active', isTest);
+            
+            const modeText = document.getElementById('mode-text');
+            const dateInput = document.getElementById('team-start-date');
+            const dateBox = document.getElementById('team-date-group-box');
+            const testWarning = document.getElementById('modal-test-warning');
+            if (isTest) {
+              dateInput.disabled = true;
+              dateBox.style.opacity = '0.5';
+              modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
+              modeText.style.color = "var(--color-team1)";
+              testWarning.style.display = 'flex';
+            } else {
+              dateInput.disabled = false;
+              dateBox.style.opacity = '1';
+              modeText.innerText = "☀️ 표준 워크숍 일정 모드";
+              modeText.style.color = "var(--color-green)";
+              testWarning.style.display = 'none';
+            }
+          }
+          
+          // Sync decks and schedules from remote to restore state on other browsers/refresh
+          ['team1', 'team2'].forEach(teamKey => {
+            const teamData = remoteJson[teamKey];
+            if (teamData) {
+              if (teamData.missions && teamData.missions.length > 0) {
+                const restoredDeck = Array(8).fill(null);
+                const restoredSchedules = Array(8).fill(null);
+                
+                teamData.missions.forEach((m) => {
+                  if (m) {
+                    const dbMission = missionsDatabase.find(db => db.title === m.title);
+                    if (dbMission) {
+                      restoredDeck[m.sessionIndex - 1] = dbMission;
+                      restoredSchedules[m.sessionIndex - 1] = m.scheduledTime;
+                    }
+                  }
+                });
+                
+                localStorage.setItem(`deck_${teamKey}`, JSON.stringify(restoredDeck.map(m => m ? {id: m.id} : null)));
+                localStorage.setItem(`schedules_${teamKey}`, JSON.stringify(restoredSchedules));
+                if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
+                  localStorage.setItem(`team_start_date_${teamKey}`, teamData.startDate);
+                }
+                
+                if (teamKey === activeTeam) {
+                  activeDeck = restoredDeck;
+                  activeSchedules = restoredSchedules;
+                  if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
+                    document.getElementById('team-start-date').value = teamData.startDate;
+                  }
+                  renderSlotsList();
+                  updateDeckSizeBadge();
+                  updatePreviewJSON();
+                }
+              }
+              
+              if (teamData.individualMissions) {
+                activeIndividualMissions[teamKey] = teamData.individualMissions;
+                localStorage.setItem(`individual_missions_${teamKey}`, JSON.stringify(teamData.individualMissions));
+                
+                if (teamKey === activeTeam) {
+                  const participantsInput = document.getElementById('team-participants');
+                  if (participantsInput) {
+                    participantsInput.value = teamData.individualMissions.map(m => m.participant).join(', ');
+                  }
+                  renderIndividualSlots();
+                }
+              }
+            }
+          });
+          
+          const teamSchedule = remoteJson[activeTeam];
+          if (teamSchedule && teamSchedule.startDate && teamSchedule.missions && teamSchedule.missions.length > 0) {
+            const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
+            if (!isTest) {
+              setLockUIState(true);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Could not determine remote lock status:", err);
+      }
+      setLockUIState(false);
+    }
+    
+    function setLockUIState(locked) {
+      isDeployedProductionLocked = locked;
+      
+      const dateInput = document.getElementById('team-start-date');
+      const testToggle = document.getElementById('test-mode-toggle');
+      const btnTimes = document.getElementById('btn-times-generate');
+      const btnDeploy = document.getElementById('btn-github-deploy');
+      const banner = document.getElementById('production-lock-banner');
+      
+      const participantsInput = document.getElementById('team-participants');
+      const btnAssignInd = document.getElementById('btn-assign-individual');
+      
+      if (locked) {
+        banner.style.display = 'flex';
+        dateInput.disabled = true;
+        testToggle.disabled = true;
+        btnTimes.disabled = true;
+        btnDeploy.disabled = true;
+        if (participantsInput) participantsInput.disabled = true;
+        if (btnAssignInd) btnAssignInd.disabled = true;
+        showToast("스케줄 편집 차단", "프로덕션 일정이 이미 깃허브에 게시되어 변경이 차단되었습니다.", "error");
+      } else {
+        banner.style.display = 'none';
+        dateInput.disabled = testModeActive;
+        testToggle.disabled = false;
+        btnTimes.disabled = false;
+        btnDeploy.disabled = false;
+        if (participantsInput) participantsInput.disabled = false;
+        if (btnAssignInd) btnAssignInd.disabled = false;
+      }
+      
+      renderSlotsList();
+      renderIndividualSlots();
+    }
+    
+    function selectActiveTeam(teamKey, playSound = true) {
+      activeTeam = teamKey;
+      
+      const toggle = document.getElementById('team-selector-toggle');
+      const btn1 = document.getElementById('btn-t1');
+      const btn2 = document.getElementById('btn-t2');
+      const header = document.getElementById('deck-team-header');
+      const indHeader = document.getElementById('individual-team-header');
+      
+      if (teamKey === 'team1') {
+        toggle.classList.remove('team2-active');
+        btn1.classList.add('active');
+        btn2.classList.remove('active');
+        header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (수신: 2조)`;
+        if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team1);"></i> 1조 조원별 개인 지령 구성`;
+      } else {
+        toggle.classList.add('team2-active');
+        btn2.classList.add('active');
+        btn1.classList.remove('active');
+        header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성 (수신: 1조)`;
+        if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team2);"></i> 2조 조원별 개인 지령 구성`;
+      }
+      
+      if (playSound) SoundEngine.play('click');
+      
+      if (!testModeActive) {
+        document.getElementById('team-start-date').value = localStorage.getItem(`team_start_date_${activeTeam}`) || '';
+      }
+      
+      try {
+        const savedDeck = localStorage.getItem(`deck_${activeTeam}`);
+        if (savedDeck) {
+          const parsed = JSON.parse(savedDeck);
+          activeDeck = parsed.map(m => m ? missionsDatabase.find(db => db.id === m.id) : null);
+        } else {
+          activeDeck = Array(8).fill(null);
+        }
+        
+        const savedSchedules = localStorage.getItem(`schedules_${activeTeam}`);
+        if (savedSchedules) {
+          activeSchedules = JSON.parse(savedSchedules);
+        } else {
+          activeSchedules = Array(8).fill(null);
+        }
+        
+        const savedInd = localStorage.getItem(`individual_missions_${activeTeam}`);
+        if (savedInd) {
+          activeIndividualMissions[activeTeam] = JSON.parse(savedInd);
+        } else {
+          activeIndividualMissions[activeTeam] = [];
+        }
+      } catch (e) {
+        activeDeck = Array(8).fill(null);
+        activeSchedules = Array(8).fill(null);
+        activeIndividualMissions[activeTeam] = [];
+      }
+      
+      const participantsInput = document.getElementById('team-participants');
+      if (participantsInput) {
+        participantsInput.value = (activeIndividualMissions[activeTeam] || []).map(m => m.participant).join(', ');
+      }
+      
+      activeSlotIndex = null;
+      fetchRemoteLockStatus();
+      renderSlotsList();
+      renderIndividualSlots();
+      updateDeckSizeBadge();
+      updatePreviewJSON();
+    }
+    
+    function toggleTestMode(checkbox, playSound = true) {
+      testModeActive = checkbox.checked;
+      
+      const dateInput = document.getElementById('team-start-date');
+      const modeText = document.getElementById('mode-text');
+      const dateBox = document.getElementById('team-date-group-box');
+      const testWarning = document.getElementById('modal-test-warning');
+      
+      if (testModeActive) {
+        dateInput.disabled = true;
+        dateBox.style.opacity = '0.5';
+        modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
+        modeText.style.color = "var(--color-team1)";
+        testWarning.style.display = 'flex';
+      } else {
+        dateInput.disabled = false;
+        dateBox.style.opacity = '1';
+        modeText.innerText = "☀️ 표준 워크숍 일정 모드";
+        modeText.style.color = "var(--color-green)";
+        testWarning.style.display = 'none';
+        dateInput.value = localStorage.getItem(`team_start_date_${activeTeam}`) || '';
+      }
+      
+      if (playSound) SoundEngine.play('click');
+      saveConfig();
+      fetchRemoteLockStatus();
+    }
+    
+    function togglePw(id, icon) {
+      const input = document.getElementById(id);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye-slash';
+      }
+      SoundEngine.play('click');
+    }
+
+    function updateDeckSizeBadge() {
+      const count = activeDeck.filter(m => m !== null).length;
+      const badge = document.getElementById('deck-status-badge');
+      if (badge) {
+        badge.innerText = `${count} / 8 선택됨`;
+      }
+    }
+
+    // ----------------------------------------------------
+    // TIMELINE SLOTS GRID RENDERER (LEFT BOARD)
+    // ----------------------------------------------------
+    function renderSlotsList() {
+      const container = document.getElementById('session-slots-container');
+      container.innerHTML = '';
+      
+      sessionsSpec.forEach((spec, idx) => {
+        const slotCard = document.createElement('div');
+        const mission = activeDeck[idx];
+        
+        if (mission) {
+          slotCard.className = "session-slot-box slot-filled";
+          slotCard.setAttribute('data-cat', mission.category);
+          
+          let scheduledTimeText = "";
+          if (activeSchedules[idx]) {
+            const date = new Date(activeSchedules[idx]);
+            const pad = (n) => String(n).padStart(2, '0');
+            scheduledTimeText = `
+              <div class="slot-scheduled-time">
+                <i class="fa-regular fa-clock"></i> 
+                ⏰ ${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())} KST
+              </div>
+            `;
+          }
+          
+          const actionsHtml = isDeployedProductionLocked
+            ? `<div class="slot-actions"><span style="font-size:0.7rem; color:var(--text-muted);"><i class="fa-solid fa-lock"></i> 확정됨</span></div>`
+            : `
+              <div class="slot-actions">
+                <button type="button" class="slot-btn" onclick="event.stopPropagation(); openSelectorModalForSlot(${idx})">
+                  <i class="fa-solid fa-pen"></i> 변경
+                </button>
+                <button type="button" class="slot-btn slot-btn-remove" onclick="event.stopPropagation(); clearSlot(${idx})">
+                  <i class="fa-solid fa-trash-can"></i> 비우기
+                </button>
+              </div>
+            `;
+          
+          slotCard.innerHTML = `
+            <div class="slot-header">
+              <div class="slot-session-info">
+                <span class="slot-session-tag">${spec.day}일차 • ${spec.sessionName.split(' ')[1]}</span>
+                <span class="slot-session-name">${spec.sessionName}</span>
+              </div>
+              <span class="slot-category-badge">${mission.emoji} M${String(mission.id).padStart(2, '0')}</span>
+            </div>
+            <div class="slot-body">
+              <div class="slot-mission-title">${mission.title}</div>
+              ${scheduledTimeText}
+            </div>
+            ${actionsHtml}
+          `;
+          
+          if (!isDeployedProductionLocked) {
+            slotCard.addEventListener('click', (e) => {
+              if (!e.target.closest('.slot-btn-remove')) {
+                openSelectorModalForSlot(idx);
+              }
+            });
+          }
+        } else {
+          const lockedClass = isDeployedProductionLocked ? 'locked-disabled' : '';
+          slotCard.className = `session-slot-box slot-empty ${lockedClass}`;
+          slotCard.innerHTML = `
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>${spec.sessionName} 장착하기</span>
+            <div style="font-size:0.7rem; opacity:0.7;">(${spec.timeRange})</div>
+          `;
+          if (!isDeployedProductionLocked) {
+            slotCard.addEventListener('click', () => {
+              openSelectorModalForSlot(idx);
+            });
+          }
+        }
+        
+        container.appendChild(slotCard);
+      });
+    }
+    
+    function rebuildIndividualMissionsList() {
+      const inputVal = document.getElementById('team-participants').value || '';
+      const names = inputVal.split(',').map(n => n.trim()).filter(n => n !== '');
+      
+      const currentList = activeIndividualMissions[activeTeam] || [];
+      const updatedList = [];
+      
+      names.forEach(name => {
+        const existing = currentList.find(m => m.participant === name);
+        if (existing) {
+          updatedList.push(existing);
+        } else {
+          updatedList.push({
+            participant: name,
+            id: null,
+            title: "",
+            content: "",
+            emoji: "",
+            duration: "",
+            tip: "",
+            scheduledTime: "",
+            sent: false,
+            sentAt: null
+          });
+        }
+      });
+      
+      activeIndividualMissions[activeTeam] = updatedList;
+      renderIndividualSlots();
+      saveConfig();
+    }
+
+    function getRandomIndividualTime(startDateStr, index, totalParticipants) {
+      const date = new Date(startDateStr);
+      const dayOffset = index % 3; // spread across Day 1, 2, 3
+      date.setDate(date.getDate() + dayOffset);
+      
+      let hourMin = 8.0;
+      let hourMax = 22.0;
+      if (dayOffset === 0) { // Day 1
+        hourMin = 13.0; // 13:00 ~ 22:00
+        hourMax = 22.0;
+      } else if (dayOffset === 2) { // Day 3
+        hourMin = 8.0; // 08:00 ~ 12:00
+        hourMax = 12.0;
+      }
+      
+      const totalSecondsRange = (hourMax - hourMin) * 3600;
+      const randomSecondsOffset = Math.floor(Math.random() * totalSecondsRange);
+      
+      const startHour = Math.floor(hourMin);
+      const startMinute = (hourMin % 1) * 60;
+      const baseSessionSeconds = (startHour * 3600) + (startMinute * 60) + randomSecondsOffset;
+      
+      const finalHour = Math.floor(baseSessionSeconds / 3600);
+      const finalMinute = Math.floor((baseSessionSeconds % 3600) / 60);
+      const finalSecond = Math.floor(baseSessionSeconds % 60);
+      
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(finalHour)}:${pad(finalMinute)}:${pad(finalSecond)}+09:00`;
+    }
+
+    function assignIndividualMissions() {
+      try {
+        console.log("assignIndividualMissions called. activeTeam:", activeTeam, "testModeActive:", testModeActive, "list:", activeIndividualMissions[activeTeam]);
+        
+        if (isDeployedProductionLocked) {
+          showToast("배정 불가", "프로덕션 일정이 이미 확정(잠금)되었습니다.", "error");
+          return;
+        }
+        
+        const teamStart = document.getElementById('team-start-date').value;
+        if (!testModeActive && !teamStart) {
+          showToast("배정 실패", "나의 워크숍 시작 일자를 먼저 선택해 주세요.", "error");
+          SoundEngine.play('failure');
+          return;
+        }
+        
+        const list = activeIndividualMissions[activeTeam] || [];
+        if (list.length === 0) {
+          showToast("배정 불가", "먼저 상단에 조원 참여자 명단을 입력해 주세요.", "error");
+          SoundEngine.play('failure');
+          return;
+        }
+        
+        list.forEach((entry, idx) => {
+          const randIdx = Math.floor(Math.random() * individualMissionsDatabase.length);
+          const dbMission = individualMissionsDatabase[randIdx];
+          if (!dbMission) {
+            throw new Error(`개인 미션 데이터베이스에서 인덱스 ${randIdx}의 값을 찾을 수 없습니다.`);
+          }
+          
+          entry.id = dbMission.id;
+          entry.title = dbMission.title;
+          entry.content = dbMission.content;
+          entry.emoji = dbMission.emoji;
+          entry.duration = dbMission.duration;
+          entry.tip = dbMission.tip;
+          entry.colorHex = dbMission.colorHex || 3394815;
+          
+          if (testModeActive) {
+            const nowMs = Date.now();
+            const testOffsetMs = (1 + idx) * 60 * 1000; // 1 min, 2 min...
+            const targetTestDate = new Date(nowMs + testOffsetMs);
+            const pad = (n) => String(n).padStart(2, '0');
+            entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
+          } else {
+            entry.scheduledTime = getRandomIndividualTime(teamStart, idx, list.length);
+          }
+          
+          entry.sent = false;
+          entry.sentAt = null;
+        });
+        
+        console.log("assignIndividualMissions assignment done. list:", list);
+        
+        showToast("배정 완료", `${list.length}명의 조원에게 개인 미션 및 발송 시간이 무작위 배부되었습니다.`, "success");
+        SoundEngine.play('success');
+        triggerConfettiBurst();
+        saveConfig();
+        renderIndividualSlots();
+      } catch (err) {
+        console.error("Error inside assignIndividualMissions:", err);
+        showToast("배정 중 오류 발생", err.message, "error");
+        SoundEngine.play('failure');
+      }
+    }
+
+    function renderIndividualSlots() {
+      const container = document.getElementById('individual-slots-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      const list = activeIndividualMissions[activeTeam] || [];
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fa-solid fa-users" style="font-size: 2rem; margin-bottom: 12px; display: block; opacity: 0.5;"></i>
+            상단 설정에서 본 조의 참여자 명단을 입력해 주세요. (예: 홍길동, 이순신, 강감찬)
+          </div>
+        `;
+        return;
+      }
+      
+      list.forEach((entry) => {
+        const card = document.createElement('div');
+        
+        if (entry.id) {
+          card.className = "session-slot-box slot-filled";
+          card.style.aspectRatio = "auto";
+          card.style.minHeight = "165px";
+          card.style.borderColor = "var(--color-primary)";
+          
+          const statusBadge = entry.sent 
+            ? `<span class="slot-category-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--color-green); border-color: var(--color-green);">발송완료</span>`
+            : `<span class="slot-category-badge" style="background: rgba(245, 158, 11, 0.1); color: var(--color-gold); border-color: var(--color-gold);">대기중</span>`;
+            
+          let scheduledTimeText = "";
+          if (entry.scheduledTime) {
+            const date = new Date(entry.scheduledTime);
+            const pad = (n) => String(n).padStart(2, '0');
+            scheduledTimeText = `
+              <div class="slot-scheduled-time" style="margin-top: 8px;">
+                <i class="fa-regular fa-clock"></i> 
+                ⏰ ${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())} KST
+              </div>
+            `;
+          }
+          
+          const actionsHtml = isDeployedProductionLocked
+            ? `<div class="slot-actions" style="margin-top: 10px;"><span style="font-size:0.7rem; color:var(--text-muted);"><i class="fa-solid fa-lock"></i> 확정됨</span></div>`
+            : `
+              <div class="slot-actions" style="margin-top: 10px;">
+                <button type="button" class="slot-btn" style="background: var(--color-green); color: #fff; border: none; padding: 4px 10px; font-size: 0.75rem; border-radius: 4px;" onclick="sendIndividualMissionInstantly('${entry.participant}')">
+                  <i class="fa-solid fa-bolt"></i> ⚡ 즉시 발송
+                </button>
+                ${statusBadge}
+              </div>
+            `;
+            
+          card.innerHTML = `
+            <div class="slot-header" style="align-items: flex-start;">
+              <div class="slot-session-info">
+                <span class="slot-session-tag" style="background: rgba(139, 92, 246, 0.15); color: var(--color-primary); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;">👤 요원 개인 지령</span>
+                <span class="slot-session-name" style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-top: 4px;">${entry.participant} 요원</span>
+              </div>
+              <span class="slot-category-badge" style="font-size: 0.76rem;">${entry.emoji} ${entry.title}</span>
+            </div>
+            <div class="slot-body" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <div class="slot-mission-title" style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted); line-height: 1.4; margin-top: 6px;">
+                ${entry.content}
+              </div>
+              ${scheduledTimeText}
+            </div>
+            ${actionsHtml}
+          `;
+        } else {
+          card.className = "session-slot-box slot-empty";
+          card.style.aspectRatio = "auto";
+          card.style.height = "120px";
+          card.style.cursor = "default";
+          card.innerHTML = `
+            <i class="fa-solid fa-user-tag" style="font-size: 1.4rem; color: var(--text-muted);"></i>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #fff; margin-top: 4px;">${entry.participant} 요원</span>
+            <div style="font-size:0.7rem; opacity:0.7; color: var(--text-muted);">개인 미션 배정 대기중</div>
+          `;
+        }
+        
+        container.appendChild(card);
+      });
+    }
+
+    async function sendIndividualMissionInstantly(participantName) {
+      const webhookUrl = document.getElementById('webhook-url').value.trim();
+      if (!webhookUrl) {
+        showToast("발송 실패", "먼저 Discord Webhook URL을 입력해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      const repoPath = document.getElementById('github-repo').value.trim() || 'mhsssshin/missionwar_t';
+      const pat = document.getElementById('github-pat').value.trim();
+      
+      const entry = (activeIndividualMissions[activeTeam] || []).find(m => m.participant === participantName);
+      if (!entry || !entry.id) {
+        showToast("발송 실패", "배정된 미션을 찾을 수 없습니다.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      let webUrl = window.location.origin;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const repoParts = repoPath.split('/');
+        if (repoParts.length === 2) {
+          webUrl = `https://${repoParts[0].toLowerCase()}.github.io/${repoParts[1]}`;
+        } else {
+          webUrl = "https://glistening-phoenix-ef3ff4.netlify.app";
+        }
+      }
+      
+      const geminiToken = localStorage.getItem('config_gemini_key') || atob('QUl6YVN5QkVlbmc2bmMxTFN3WjQ3NXZLbkVLaWwtNnVWeWpabjY4');
+      
+      const callbackUrl = `${webUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${activeTeam}&type=individual&participant=${encodeURIComponent(entry.participant)}&title=${encodeURIComponent(entry.title)}&content=${encodeURIComponent(entry.content)}&gemini=${encodeURIComponent(geminiToken)}`;
+      
+      const payload = {
+        username: `[개인 지령] 시크릿 지휘소`,
+        avatar_url: "https://i.imgur.com/83p1jep.png",
+        embeds: [{
+          title: `👤 🚨 [개인 기습 지령 발령] 🚨`,
+          description: `**${activeTeam === 'team1' ? '1조' : '2조'}**의 **${entry.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\n\n📷 **[여기서 개인 미션 사진 인증 제출하기](${callbackUrl})**`,
+          color: entry.colorHex || 3394815,
+          fields: [
+            { name: "👤 대상 요원", value: `**${entry.participant} 요원**`, inline: true },
+            { name: "🎯 개인 미션", value: `**${entry.title}**`, inline: true },
+            { name: "⏳ 제한 시간", value: `⏳ **${entry.duration} 이내 인증**`, inline: true },
+            { name: "📋 미션 상세 내용", value: `>>> ${entry.content}`, inline: false },
+            { name: "💡 수행 팁", value: `*${entry.tip}*`, inline: false }
+          ],
+          footer: {
+            text: "워크숍 미션전쟁 • 개인 지령 제어 장치",
+            icon_url: "https://i.imgur.com/83p1jep.png"
+          },
+          timestamp: new Date().toISOString()
+        }]
+      };
+      
+      try {
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast("즉시 발송 성공", `${entry.participant} 요원의 개인 미션이 디스코드로 전송되었습니다!`, "success");
+          SoundEngine.play('success');
+          
+          entry.sent = true;
+          entry.sentAt = new Date().toISOString();
+          saveConfig();
+          renderIndividualSlots();
+        } else {
+          showToast("발송 실패", `디스코드 웹훅 전송 실패 (HTTP ${res.status})`, "error");
+          SoundEngine.play('failure');
+        }
+      } catch (e) {
+        showToast("발송 오류", e.message, "error");
+        SoundEngine.play('failure');
+      }
+    }
+
+    function clearSlot(idx) {
+      if (isDeployedProductionLocked) return;
+      activeDeck[idx] = null;
+      activeSchedules[idx] = null;
+      SoundEngine.play('failure');
+      showToast("장착 해제", `세션 ${idx + 1}의 카드를 비웠습니다.`, "info");
+      saveConfig();
+      renderSlotsList();
+      updateDeckSizeBadge();
+    }
+
+    // ----------------------------------------------------
+    // HOLOGRAPHIC CARD SELECTOR MODAL
+    // ----------------------------------------------------
+    function openSelectorModalForSlot(slotIdx) {
+      if (isDeployedProductionLocked) return;
+      activeSlotIndex = slotIdx;
+      
+      const modal = document.getElementById('mission-selector-modal');
+      const titleText = document.getElementById('modal-title-text');
+      const searchInput = document.getElementById('modal-search-input');
+      
+      const spec = sessionsSpec[slotIdx];
+      titleText.innerHTML = `<i class="fa-solid fa-folder-open" style="color: var(--color-primary);"></i> [ 세션 ${slotIdx + 1} 미션 선택 ] <span style="font-size:0.85rem; color:var(--text-muted); font-weight:normal;">${spec.sessionName} • 범위: ${spec.timeRange}</span>`;
+      searchInput.value = '';
+      
+      renderModalGrid();
+      
+      modal.style.display = 'flex';
+      setTimeout(() => { modal.classList.add('show'); }, 30);
+      SoundEngine.play('click');
+    }
+    
+    function closeSelectorModal() {
+      const modal = document.getElementById('mission-selector-modal');
+      modal.classList.remove('show');
+      setTimeout(() => { modal.style.display = 'none'; }, 300);
+      SoundEngine.play('click');
+    }
+    
+    function closeModalOnOuter(event) {
+      if (event.target.id === 'mission-selector-modal') {
+        closeSelectorModal();
+      }
+    }
+    
+    function renderModalGrid() {
+      const container = document.getElementById('modal-grid-container');
+      container.innerHTML = '';
+      
+      if (activeSlotIndex === null) return;
+      
+      const spec = sessionsSpec[activeSlotIndex];
+      const searchVal = document.getElementById('modal-search-input').value.toLowerCase();
+      
+      const matchingMissions = missionsDatabase.filter(m => {
+        if (m.sessionIndex !== spec.index) return false;
+        if (searchVal) {
+          return m.title.toLowerCase().includes(searchVal) || m.content.toLowerCase().includes(searchVal);
+        }
+        return true;
+      });
+      
+      if (matchingMissions.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+            <i class="fa-solid fa-face-frown" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+            검색어와 일치하는 미션 카드가 없습니다.
+          </div>
+        `;
+        return;
+      }
+      
+      const currentSelected = activeDeck[activeSlotIndex];
+      
+      matchingMissions.forEach(mission => {
+        const isSelected = currentSelected && currentSelected.id === mission.id;
+        const card = document.createElement('div');
+        card.className = `modal-card ${isSelected ? 'selected' : ''}`;
+        card.setAttribute('data-cat', mission.category);
+        
+        card.innerHTML = `
+          <div>
+            <div class="modal-card-badge">${mission.emoji} ${mission.category.toUpperCase()}</div>
+            <div class="modal-card-title">${mission.title}</div>
+            <p class="modal-card-desc">${mission.content}</p>
+          </div>
+          <div class="modal-card-footer">
+            <span>⏱️ 제한시간: <strong class="modal-card-time">${mission.duration}</strong></span>
+            <span>M${String(mission.id).padStart(2, '0')}</span>
+          </div>
+        `;
+        
+        bind3DTilt(card);
+        card.addEventListener('click', () => {
+          selectMissionFromModal(mission);
+        });
+        
+        container.appendChild(card);
+      });
+    }
+    
+    function selectMissionFromModal(mission) {
+      if (activeSlotIndex === null) return;
+      activeDeck[activeSlotIndex] = mission;
+      SoundEngine.play('add');
+      showToast("미션 장착 완료", `슬롯 ${activeSlotIndex + 1}에 [${mission.title}] 카드가 선택되었습니다.`, "success");
+      
+      saveConfig();
+      renderSlotsList();
+      updateDeckSizeBadge();
+      closeSelectorModal();
+      triggerConfettiBurst();
+    }
+    
+    function filterModalMissions() {
+      renderModalGrid();
+    }
+
+    function bind3DTilt(card) {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((centerY - y) / centerY) * 12;
+        const rotateY = ((x - centerX) / centerX) * 12;
+        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+      });
+    }
+
+    // ----------------------------------------------------
+    // RANDOM TIME GENERATION ALGORITHM (WITH TEST MODE)
+    // ----------------------------------------------------
+    function generateRandomTimesForActiveTeam() {
+      if (isDeployedProductionLocked) return;
+      
+      const teamStart = document.getElementById('team-start-date').value;
+      if (!testModeActive && !teamStart) {
+        showToast("생성 실패", "나의 워크숍 시작 일자를 선택해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      const tEmpty = activeDeck.some(m => m === null);
+      if (tEmpty) {
+        showToast("생성 불가", "나의 타임라인의 모든 세션(8개)에 미션 카드 장착을 완료해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      if (testModeActive) {
+        const nowMs = Date.now();
+        sessionsSpec.forEach((spec, idx) => {
+          const testOffsetMs = (1 + idx * 2) * 60 * 1000;
+          const targetTestDate = new Date(nowMs + testOffsetMs);
+          
+          const pad = (n) => String(n).padStart(2, '0');
+          const year = targetTestDate.getFullYear();
+          const month = pad(targetTestDate.getMonth() + 1);
+          const day = pad(targetTestDate.getDate());
+          const hh = pad(targetTestDate.getHours());
+          const mm = pad(targetTestDate.getMinutes());
+          const ss = pad(targetTestDate.getSeconds());
+          
+          activeSchedules[idx] = `${year}-${month}-${day}T${hh}:${mm}:${ss}+09:00`;
+        });
+        showToast("테스트 시간 생성", "현재 시각 기준 2분 간격으로 초고속 발송 스케줄이 생성되었습니다!", "success");
+      } else {
+        sessionsSpec.forEach((spec, idx) => {
+          activeSchedules[idx] = getRandomTimeInSession(teamStart, spec);
+        });
+        showToast("표준 시간 생성", "타임슬롯 허용 범위 내의 무작위 예약 시간이 자동 생성되었습니다.", "success");
+      }
+      
+      SoundEngine.play('success');
+      triggerConfettiBurst();
+      saveConfig();
+      renderSlotsList();
+    }
+    
+    function getRandomTimeInSession(dateStr, spec) {
+      const date = new Date(dateStr);
+      date.setDate(date.getDate() + (spec.day - 1));
+      
+      const startMs = spec.hourMin * 60 * 60 * 1000;
+      const endMs = spec.hourMax * 60 * 60 * 1000;
+      
+      const randomOffsetMs = startMs + Math.random() * (endMs - startMs);
+      const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      const totalSecondsRange = (spec.hourMax - spec.hourMin) * 3600;
+      const randomSecondsOffset = Math.floor(Math.random() * totalSecondsRange);
+      
+      const startHour = Math.floor(spec.hourMin);
+      const startMinute = (spec.hourMin % 1) * 60;
+      const baseSessionSeconds = (startHour * 3600) + (startMinute * 60) + randomSecondsOffset;
+      
+      const finalHour = Math.floor(baseSessionSeconds / 3600);
+      const finalMinute = Math.floor((baseSessionSeconds % 3600) / 60);
+      const finalSecond = Math.floor(baseSessionSeconds % 60);
+      
+      const pad = (n) => String(n).padStart(2, '0');
+      const year = date.getFullYear();
+      const month = pad(date.getMonth() + 1);
+      const dayVal = pad(date.getDate());
+      
+      return `${year}-${month}-${dayVal}T${pad(finalHour)}:${pad(finalMinute)}:${pad(finalSecond)}+09:00`;
+    }
+    
+    function updatePreviewJSON() {
+      const preview = document.getElementById('json-preview');
+      const teamStart = testModeActive ? "🧪 테스트 모드 (실시간)" : (document.getElementById('team-start-date').value || "미지정");
+      const webhook = document.getElementById('webhook-url').value.trim() || "미입력";
+      
+      const buildMissionsArray = () => {
+        return activeDeck.map((m, idx) => {
+          if (!m) return null;
+          const spec = sessionsSpec[idx];
+          return {
+            sessionIndex: spec.index,
+            day: spec.day,
+            sessionName: spec.sessionName,
+            timeRange: spec.timeRange,
+            scheduledTime: activeSchedules[idx] || "예약 시간 미생성",
+            title: m.title,
+            content: m.content,
+            duration: m.duration,
+            tip: m.tip,
+            colorHex: m.colorHex,
+            sent: false
+          };
+        });
+      };
+      
+      const activeTeamSchedule = {
+        startDate: teamStart,
+        missions: buildMissionsArray(),
+        individualMissions: activeIndividualMissions[activeTeam] || []
+      };
+      
+      if (preview) {
+        preview.innerText = JSON.stringify(activeTeamSchedule, null, 2);
+      }
+      return activeTeamSchedule;
+    }
+
+    // ----------------------------------------------------
+    // GITHUB DEPLOYMENT INTEGRATION
+    // ----------------------------------------------------
+    async function commitToGitHub(owner, repo, pat, path, contentText, message) {
+      const authHeader = `token ${pat}`;
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+      
+      let sha = undefined;
+      try {
+        const getRes = await fetch(url, {
+          headers: {
+            'Authorization': authHeader,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        if (getRes.ok) {
+          const fileData = await getRes.json();
+          sha = fileData.sha;
+        }
+      } catch (err) {
+        console.warn(`File ${path} SHA fetch check skipped: ${err.message}`);
+      }
+      
+      const base64Content = btoa(unescape(encodeURIComponent(contentText)));
+      
+      const body = {
+        message: message,
+        content: base64Content
+      };
+      if (sha) body.sha = sha;
+      
+      const putRes = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': authHeader,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      
+      if (!putRes.ok) {
+        const errInfo = await putRes.json();
+        throw new Error(`GitHub API Error (${path}): ${errInfo.message || putRes.statusText}`);
+      }
+      
+      return true;
+    }
+    
+    async function deployToGitHub() {
+      if (isDeployedProductionLocked) return;
+      
+      const webhook = document.getElementById('webhook-url').value.trim();
+      const pat = document.getElementById('github-pat').value.trim();
+      const repoPath = document.getElementById('github-repo').value.trim();
+      let webUrl = window.location.origin;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const urlParts = repoPath.split('/');
+        if (urlParts.length === 2) {
+          webUrl = `https://${urlParts[0].toLowerCase()}.github.io/${urlParts[1]}`;
+        } else {
+          webUrl = "https://glistening-phoenix-ef3ff4.netlify.app";
+        }
+      }
+      
+      if (!webhook || !pat || !repoPath) {
+        showToast("배포 불가", "모든 설정 항목(웹훅, 깃허브 토큰, 경로)을 입력해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      const parts = repoPath.split('/');
+      if (parts.length !== 2) {
+        showToast("경로 이상", "GitHub 저장소 경로는 '소유자명/저장소명' 형태여야 합니다.", "error");
+        return;
+      }
+      const [owner, repoName] = parts;
+      
+      const myScheduleData = updatePreviewJSON();
+      const isSchedulesEmpty = activeSchedules.some(s => s === null);
+      if (isSchedulesEmpty) {
+        showToast("예약 누락", "먼저 '🎲 무작위 예약시간 생성' 버튼을 클릭해 주세요.", "error");
+        return;
+      }
+      
+      SoundEngine.play('click');
+      
+      const overlay = document.getElementById('transmitting-overlay');
+      const progressBar = document.getElementById('holo-progress-bar');
+      overlay.style.display = 'flex';
+      progressBar.style.width = '0%';
+      
+      const setProgress = (w, title, sub) => {
+        progressBar.style.width = `${w}%`;
+        document.getElementById('holo-action-title').innerText = title;
+        document.getElementById('holo-action-subtitle').innerText = sub;
+      };
+      
+      try {
+        setProgress(20, "CHECKING REMOTE DATA", "FETCHING EXISTING SCHEDULE.JSON FROM GITHUB...");
+        
+        let finalScheduleObj = {
+          discordWebhookUrl: webhook,
+          webAppUrl: webUrl,
+          testModeActive: testModeActive,
+          team1: null,
+          team2: null
+        };
+        
+        const scheduleUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/schedule.json`;
+        try {
+          const scheduleRes = await fetch(scheduleUrl, {
+            headers: {
+              'Authorization': `token ${pat}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+          
+          if (scheduleRes.ok) {
+            const data = await scheduleRes.json();
+            const contentDecoded = decodeURIComponent(escape(atob(data.content)));
+            const parsed = JSON.parse(contentDecoded);
+            finalScheduleObj = parsed;
+          }
+        } catch (e) {
+          console.warn("Initializing fresh schedule.json.", e);
+        }
+        
+        finalScheduleObj.discordWebhookUrl = webhook;
+        finalScheduleObj.webAppUrl = webUrl;
+        finalScheduleObj.testModeActive = testModeActive;
+        
+        // Remove legacy key from remote DB if we overwrite it
+        delete finalScheduleObj.geminiApiKey;
+        
+        if (activeTeam === 'team1') {
+          finalScheduleObj.team1 = myScheduleData;
+        } else {
+          finalScheduleObj.team2 = myScheduleData;
+        }
+        
+        // Step 2: Upload Workflow YML
+        setProgress(40, "PREPARING ACTIONS", "COMMITTING GITHUB ACTIONS WORKFLOW YML");
+        const workflowYml = `name: Secret Mission War Scheduler
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Run scheduler
+        env:
+          DISCORD_WEBHOOK_URL: \${{ secrets.DISCORD_WEBHOOK_URL }}
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/check_and_send.js
+
+      - name: Commit changes
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          if [ -n "$(git status --porcelain schedule.json)" ]; then
+            git add schedule.json
+            git commit -m "🤖 update: mission sent status [skip ci]"
+            git push
+          else
+            echo "No changes to schedule.json"
+          fi
+`;
+        await commitToGitHub(owner, repoName, pat, ".github/workflows/mission_war.yml", workflowYml, `🤖 deploy: update workflow for ${activeTeam}`);
+        
+        // Step 3: Upload check_and_send.js
+        setProgress(60, "PREPARING SCRIPTS", "COMMITTING RUNNER SCRIPT TO SCRIPTS/");
+        const runnerJs = `const fs = require('fs');
+const path = require('path');
+
+const schedulePath = path.join(__dirname, '..', 'schedule.json');
+if (!fs.existsSync(schedulePath)) {
+  console.error("schedule.json not found!");
+  process.exit(1);
+}
+
+const schedule = JSON.parse(fs.readFileSync(schedulePath, 'utf8'));
+const webhookUrl = process.env.DISCORD_WEBHOOK_URL || schedule.discordWebhookUrl;
+
+if (!webhookUrl || !webhookUrl.startsWith('http')) {
+  console.error("Invalid or missing Discord Webhook URL!");
+  process.exit(1);
+}
+
+const now = new Date();
+let scheduleChanged = false;
+
+async function sendWebhook(mission, teamName) {
+  const repoPath = process.env.GITHUB_REPOSITORY || "";
+  const pat = process.env.GITHUB_TOKEN || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || "";
+  const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
+  
+  const callbackUrl = \`\${webAppUrl}/submit.html?repo=\${encodeURIComponent(repoPath)}&pat=\${encodeURIComponent(pat)}&team=\${teamName === '1조' ? 'team1' : 'team2'}&session=\${mission.sessionIndex}&gemini=\${encodeURIComponent(geminiApiKey)}\`;
+
+  const payload = {
+    username: \`[\${teamName}] 시크릿 커맨더\`,
+    avatar_url: teamName.includes("1조") 
+      ? "https://raw.githubusercontent.com/run-llama/llama_index/main/docs/_static/favicon.ico"
+      : "https://i.imgur.com/83p1jep.png",
+    embeds: [{
+      title: \`🚨 [기습 미션 발령] \${teamName === '1조' ? '2조는 들으라!' : '1조는 들으라!'} 🚨\`,
+      description: \`**\${teamName} 시크릿 커맨더**로부터 기습 미션 카드가 투척되었습니다.\\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\\n\\n📷 **[여기서 미션 사진 인증 제출하기](\${callbackUrl})**\`,
+      color: mission.colorHex || 16724870,
+      fields: [
+        { name: "🎯 미션명", value: \`**\${mission.title}**\`, inline: false },
+        { name: "📋 미션 상세 내용", value: \`>>> \${mission.content}\`, inline: false },
+        { name: "📍 발동 시간대", value: \`\${mission.sessionName} (\${mission.timeRange})\`, inline: true },
+        { name: "⏱️ 제한 시간", value: \`⏳ **\${mission.duration} 이내 인증**\`, inline: true },
+        { name: "💡 수행 팁", value: \`*\${mission.tip}*\`, inline: false }
+      ],
+      footer: {
+        text: "워크숍 미션전쟁 • 자동 스케줄러 시스템",
+        icon_url: "https://i.imgur.com/83p1jep.png"
+      },
+      timestamp: new Date().toISOString()
+    }]
+  };
+
+  console.log(\`Sending webhook for mission: \${mission.title} (\${teamName})...\`);
+  
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+      console.log(\`Successfully sent mission: \${mission.title}\`);
+      return true;
+    } else {
+      console.error(\`Failed to send webhook: HTTP \${response.status}\`);
+      return false;
+    }
+  } catch (err) {
+    console.error(\`Error sending webhook: \${err.message}\`);
+    return false;
+  }
+}
+
+async function sendIndividualWebhook(ind, teamName, teamKey) {
+  const repoPath = process.env.GITHUB_REPOSITORY || "";
+  const pat = process.env.GITHUB_TOKEN || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || "";
+  const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
+  
+  const callbackUrl = \`\${webAppUrl}/submit.html?repo=\${encodeURIComponent(repoPath)}&pat=\${encodeURIComponent(pat)}&team=\${teamKey}&type=individual&participant=\${encodeURIComponent(ind.participant)}&title=\${encodeURIComponent(ind.title)}&content=\${encodeURIComponent(ind.content)}&gemini=\${encodeURIComponent(geminiApiKey)}\`;
+
+  const payload = {
+    username: "[개인 지령] 시크릿 지휘소",
+    avatar_url: "https://i.imgur.com/83p1jep.png",
+    embeds: [{
+      title: "👤 🚨 [개인 기습 지령 발령] 🚨",
+      description: \`**\${teamName}**의 **\${ind.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\\n\\n📷 **[여기서 개인 미션 사진 인증 제출하기](\${callbackUrl})**\`,
+      color: ind.colorHex || 3394815,
+      fields: [
+        { name: "👤 대상 요원", value: \`**\${ind.participant} 요원**\`, inline: true },
+        { name: "🎯 개인 미션", value: \`**\${ind.title}**\`, inline: true },
+        { name: "⏳ 제한 시간", value: \`⏳ **\${ind.duration} 이내 인증**\`, inline: true },
+        { name: "📋 미션 상세 내용", value: \`>>> \${ind.content}\`, inline: false },
+        { name: "💡 수행 팁", value: \`*\${ind.tip}*\`, inline: false }
+      ],
+      footer: {
+        text: "워크숍 미션전쟁 • 개인 지령 제어 장치",
+        icon_url: "https://i.imgur.com/83p1jep.png"
+      },
+      timestamp: new Date().toISOString()
+    }]
+  };
+
+  console.log(\`Sending individual webhook for \${ind.participant}...\\n\`);
+  
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+      console.log(\`Successfully sent individual mission for \${ind.participant}\`);
+      return true;
+    } else {
+      console.error(\`Failed to send individual webhook: HTTP \${response.status}\`);
+      return false;
+    }
+  } catch (err) {
+    console.error(\`Error sending individual webhook: \${err.message}\`);
+    return false;
+  }
+}
+
+async function run() {
+  const teams = ['team1', 'team2'];
+  for (const teamKey of teams) {
+    const teamData = schedule[teamKey];
+    if (!teamData) continue;
+    const teamName = teamKey === 'team1' ? '1조' : '2조';
+    
+    // 1. Process Team Scheduled Missions
+    if (teamData.missions) {
+      for (const mission of teamData.missions) {
+        if (mission.sent) continue;
+        const scheduledDate = new Date(mission.scheduledTime);
+        if (now >= scheduledDate) {
+          const success = await sendWebhook(mission, teamName);
+          if (success) {
+            mission.sent = true;
+            mission.sentAt = now.toISOString();
+            scheduleChanged = true;
+          }
+        }
+      }
+    }
+    
+    // 2. Process Individual Scheduled Missions
+    if (teamData.individualMissions) {
+      for (const ind of teamData.individualMissions) {
+        if (ind.sent) continue;
+        const scheduledDate = new Date(ind.scheduledTime);
+        if (now >= scheduledDate) {
+          const success = await sendIndividualWebhook(ind, teamName, teamKey);
+          if (success) {
+            ind.sent = true;
+            ind.sentAt = now.toISOString();
+            scheduleChanged = true;
+          }
+        }
+      }
+    }
+  }
+  if (scheduleChanged) {
+    fs.writeFileSync(schedulePath, JSON.stringify(schedule, null, 2), 'utf8');
+    console.log("schedule.json updated.");
+  } else {
+    console.log("No pending scheduled missions.");
+  }
+}
+run();
+`;
+        await commitToGitHub(owner, repoName, pat, "scripts/check_and_send.js", runnerJs, `🤖 deploy: update check_and_send.js runner`);
+        
+        // Step 4: Upload schedule.json (Merged)
+        setProgress(85, "MERGING CONFIGURATION", "UPLOADING MERGED SCHEDULE.JSON TO REPOSITORY");
+        await commitToGitHub(owner, repoName, pat, "schedule.json", JSON.stringify(finalScheduleObj, null, 2), `🤖 deploy: update schedule.json for ${activeTeam}`);
+        
+        setProgress(100, "DEPLOYMENT SUCCESSFUL", `${activeTeam} SCHEDULE INTEGRATED!`);
+        
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          showToast("배포 성공", `${activeTeam === 'team1' ? '1조' : '2조'}의 스케줄이 배포되었습니다!`, "success");
+          SoundEngine.play('success');
+          triggerConfettiBurst();
+          fetchRemoteLockStatus();
+        }, 1200);
+        
+      } catch (err) {
+        overlay.style.display = 'none';
+        showToast("배포 오류", err.message, "error");
+        SoundEngine.play('failure');
+      }
+    }
+
+    // ----------------------------------------------------
+    // INITIALIZATION RUN
+    // ----------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+    });
+  </script>
+</body>
+</html>

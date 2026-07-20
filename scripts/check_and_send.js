@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
+// Load schedule.json
 const schedulePath = path.join(__dirname, '..', 'schedule.json');
 if (!fs.existsSync(schedulePath)) {
   console.error("schedule.json not found!");
@@ -8,6 +9,8 @@ if (!fs.existsSync(schedulePath)) {
 }
 
 const schedule = JSON.parse(fs.readFileSync(schedulePath, 'utf8'));
+
+// Determine Discord Webhook URL: environment variable takes precedence
 const webhookUrl = process.env.DISCORD_WEBHOOK_URL || schedule.discordWebhookUrl;
 
 if (!webhookUrl || !webhookUrl.startsWith('http')) {
@@ -18,13 +21,15 @@ if (!webhookUrl || !webhookUrl.startsWith('http')) {
 const now = new Date();
 let scheduleChanged = false;
 
+// Function to send Discord Webhook
 async function sendWebhook(mission, teamName) {
-  const repoPath = process.env.GITHUB_REPOSITORY || "";
-  const pat = process.env.GITHUB_TOKEN || "";
-  const geminiApiKey = process.env.GEMINI_API_KEY || "";
+  // Try to find repository info and token from GitHub Action environment
+  const repoPath = process.env.GITHUB_REPOSITORY || ""; // format: owner/repo
+  const pat = process.env.GITHUB_TOKEN || ""; // Actions standard write token
   const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
   
-  const callbackUrl = `${webAppUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${teamName === '1조' ? 'team1' : 'team2'}&session=${mission.sessionIndex}&gemini=${encodeURIComponent(geminiApiKey)}`;
+  // Construct Callback URL for Submission (points directly to submit.html)
+  const callbackUrl = `${webAppUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${teamName === '1조' ? 'team1' : 'team2'}&session=${mission.sessionIndex}`;
 
   const payload = {
     username: `[${teamName}] 시크릿 커맨더`,
@@ -58,6 +63,7 @@ async function sendWebhook(mission, teamName) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    
     if (response.ok) {
       console.log(`Successfully sent mission: ${mission.title}`);
       return true;
@@ -73,15 +79,21 @@ async function sendWebhook(mission, teamName) {
 
 async function run() {
   const teams = ['team1', 'team2'];
+  
   for (const teamKey of teams) {
     const teamData = schedule[teamKey];
     if (!teamData || !teamData.missions) continue;
+    
     const teamName = teamKey === 'team1' ? '1조' : '2조';
     
     for (const mission of teamData.missions) {
       if (mission.sent) continue;
+      
       const scheduledDate = new Date(mission.scheduledTime);
+      
+      // If current time is past the scheduled time
       if (now >= scheduledDate) {
+        // Send webhook
         const success = await sendWebhook(mission, teamName);
         if (success) {
           mission.sent = true;
@@ -91,11 +103,13 @@ async function run() {
       }
     }
   }
+  
   if (scheduleChanged) {
     fs.writeFileSync(schedulePath, JSON.stringify(schedule, null, 2), 'utf8');
-    console.log("schedule.json updated.");
+    console.log("schedule.json updated successfully.");
   } else {
-    console.log("No pending scheduled missions.");
+    console.log("No pending scheduled missions found to send.");
   }
 }
+
 run();

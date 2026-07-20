@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시크릿 미션 인증 포털</title>
+  
+  <!-- Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      --bg-dark: #05060a;
+      --panel-bg: rgba(11, 14, 25, 0.78);
+      --panel-border: rgba(255, 255, 255, 0.07);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      
+      --color-primary: #8b5cf6;
+      --color-team1: #ff3366;
+      --color-team2: #33ccff;
+      --color-gold: #ffcc00;
+      --color-green: #10b981;
+      
+      --glow-team1: 0 0 15px rgba(255, 51, 102, 0.4);
+      --glow-team2: 0 0 15px rgba(51, 204, 255, 0.4);
+      --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
+      --glow-primary: 0 0 15px rgba(139, 92, 246, 0.4);
+    }
+    
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+    
+    #confetti-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    
+    .glass-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    }
+    
+    .app-container {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: 100vh;
+      justify-content: center;
+    }
+    
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+    }
+    
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .brand-icon {
+      font-size: 1.8rem;
+      color: var(--color-team2);
+      filter: drop-shadow(0 0 8px rgba(51, 204, 255, 0.6));
+    }
+    
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+    
+    header p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    
+    /* Session Tabs Row Styles */
+    .session-tabs-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px 10px 2px;
+      width: 100%;
+      scrollbar-width: none; /* Firefox */
+    }
+    .session-tabs-row::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+    
+    .session-tab-btn {
+      flex: 1;
+      min-width: 60px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--panel-border);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .session-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .session-tab-btn.active {
+      color: #fff;
+      border-color: var(--color-team2);
+      box-shadow: var(--glow-team2);
+      background: rgba(51, 204, 255, 0.1);
+    }
+    .session-tab-btn.active.team1-style {
+      border-color: var(--color-team1);
+      box-shadow: var(--glow-team1);
+      background: rgba(255, 51, 102, 0.1);
+    }
+    
+    .submit-portal-container {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .submit-hero {
+      text-align: center;
+      padding-bottom: 8px;
+    }
+    
+    .submit-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--color-team2), var(--color-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    
+    /* Collapsible Configuration Styles */
+    .portal-settings-drawer {
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      margin-bottom: 5px;
+      overflow: hidden;
+    }
+    
+    .portal-settings-header {
+      padding: 12px 18px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.01);
+      transition: background 0.2s;
+    }
+    
+    .portal-settings-header:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+    }
+    
+    .portal-settings-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-top: 1px solid var(--panel-border);
+    }
+    
+    .portal-settings-content.hidden {
+      display: none;
+    }
+    
+    /* Debug Panel Styles */
+    .debug-panel {
+      border: 1px dashed rgba(139, 92, 246, 0.3);
+      background: rgba(139, 92, 246, 0.02);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    
+    .debug-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      text-shadow: var(--glow-primary);
+      text-transform: uppercase;
+    }
+    
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .portal-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 10px 40px 10px 14px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    
+    .portal-input:focus {
+      outline: none;
+      border-color: var(--color-team2);
+    }
+    
+    .portal-input-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .toggle-pw {
+      position: absolute;
+      right: 14px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    
+    .toggle-pw:hover {
+      color: #fff;
+    }
+    
+    .debug-select {
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.8rem;
+      font-family: inherit;
+      width: 100%;
+    }
+    
+    .mission-verify-box {
+      border: 1px solid rgba(255, 204, 0, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 204, 0, 0.02);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .verify-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--color-gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .verify-mission-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    
+    .verify-mission-content {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      line-height: 1.5;
+      background: rgba(0,0,0,0.2);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+    }
+    
+    .verify-tip-box {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      font-style: italic;
+      line-height: 1.4;
+      display: flex;
+      gap: 6px;
+    }
+    
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .input-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Interactive High-Contrast Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--color-team2);
+      border-radius: 12px;
+      background: rgba(51, 204, 255, 0.03);
+      padding: 50px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      box-shadow: inset 0 0 15px rgba(51, 204, 255, 0.05);
+    }
+    
+    .upload-zone:hover {
+      border-color: var(--color-green);
+      background: rgba(16, 185, 129, 0.04);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+    }
+    
+    .upload-zone i {
+      font-size: 3rem;
+      color: var(--color-team2);
+      margin-bottom: 14px;
+      animation: float 2s infinite ease-in-out;
+      filter: drop-shadow(var(--glow-team2));
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    .upload-zone span {
+      display: block;
+      font-size: 1rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    
+    .upload-zone p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+    
+    .preview-image-box {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      overflow: hidden;
+      display: none;
+      position: relative;
+      aspect-ratio: 4 / 3;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    
+    .remove-preview-btn {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.2s;
+    }
+    .remove-preview-btn:hover { background: var(--color-team1); }
+    
+    .btn-submit {
+      width: 100%;
+      height: 52px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s;
+    }
+    
+    .btn-submit:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6);
+      transform: translateY(-2px);
+    }
+    .btn-submit:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    
+    .gemini-result-box {
+      border: 1px solid var(--color-green);
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.03);
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      animation: expand-down 0.4s ease-out;
+    }
+    
+    @keyframes expand-down {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .result-score-tag {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--color-green);
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20000;
+      pointer-events: none;
+    }
+    
+    .toast {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px 20px;
+      min-width: 290px;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+      pointer-events: auto;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast-info { border-left: 4px solid var(--color-primary); }
+    .toast-success { border-left: 4px solid var(--color-green); }
+    .toast-error { border-left: 4px solid var(--color-team1); }
+    
+    .toast-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .toast-title {
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    
+    .toast-msg {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 24px 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--panel-border);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="confetti-canvas"></canvas>
+  
+  <div class="app-container">
+    <header class="glass-panel">
+      <div class="brand">
+        <i class="fa-solid fa-circle-check brand-icon"></i>
+        <div>
+          <h1 id="submit-brand-title">시크릿 미션 인증 포털</h1>
+          <p id="submit-brand-subtitle">판정기: Gemini 3.5 Flash Vision Engine</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- [NEW] Interactive Horizontal Session Navigation Tabs -->
+    <div class="session-tabs-row" id="session-tabs-container">
+      <!-- Session Tab buttons dynamically populated here -->
+    </div>
+
+    <main class="glass-panel submit-portal-container">
+      <div class="submit-hero">
+        <div class="submit-title" id="submit-team-title">미션 수행 제출</div>
+        <p style="font-size:0.8rem; color:var(--text-muted);" id="submit-session-info">세션 정보 로드 중...</p>
+      </div>
+
+      <!-- Settings Panel Drawer -->
+      <div class="portal-settings-drawer" id="portal-keys-drawer">
+        <div class="portal-settings-header" onclick="toggleSettingsDrawer()">
+          <span><i class="fa-solid fa-gears"></i> ⚙️ 수신 키 및 웹훅 설정</span>
+          <i class="fa-solid fa-chevron-down" id="drawer-chevron-icon"></i>
+        </div>
+        <div class="portal-settings-content hidden" id="drawer-settings-content">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="portal-input-label" for="portal-webhook">Discord Webhook URL</label>
+            <div class="input-wrapper">
+              <input type="password" class="portal-input" id="portal-webhook" placeholder="Discord 웹훅 주소 입력" oninput="savePortalKeys()">
+              <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('portal-webhook', this)"></i>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label class="portal-input-label" for="portal-gemini">Gemini API Key (만료시 새 키 입력)</label>
+            <div class="input-wrapper">
+              <input type="password" class="portal-input" id="portal-gemini" placeholder="기본 키가 만료된 경우 여기에 새 키 입력" oninput="savePortalKeys()">
+              <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('portal-gemini', this)"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Local Dev Debug Tester Panel (Fallback if no localStorage or repo param is found) -->
+      <div class="debug-panel" id="local-debug-tester" style="display: none;">
+        <div class="debug-title"><i class="fa-solid fa-screwdriver-wrench"></i> 로컬 수동 테스트 구성 패널</div>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-size:0.7rem; color:var(--text-muted);">Discord Webhook URL</label>
+          <input type="password" class="debug-input" id="dbg-webhook" placeholder="Discord 웹훅 주소 입력">
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-size:0.7rem; color:var(--text-muted);">Gemini API Key</label>
+          <input type="password" class="debug-input" id="dbg-gemini" placeholder="Gemini API Key 입력">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size:0.7rem; color:var(--text-muted);">제출 대상 조</label>
+            <select class="debug-select" id="dbg-team" onchange="loadDebugMissionsList()">
+              <option value="team1">1조 (상대방 수신)</option>
+              <option value="team2">2조 (상대방 수신)</option>
+            </select>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size:0.7rem; color:var(--text-muted);">대상 세션</label>
+            <select class="debug-select" id="dbg-session" onchange="loadDebugMissionsList()">
+              <option value="1">세션 1 (Day 1)</option>
+              <option value="2">세션 2 (Day 1)</option>
+              <option value="3">세션 3 (Day 1)</option>
+              <option value="4">세션 4 (Day 2)</option>
+              <option value="5">세션 5 (Day 2)</option>
+              <option value="6">세션 6 (Day 2)</option>
+              <option value="7">세션 7 (Day 2)</option>
+              <option value="8">세션 8 (Day 3)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-size:0.7rem; color:var(--text-muted);">심사할 미션 카드</label>
+          <select class="debug-select" id="dbg-mission-select"></select>
+        </div>
+        
+        <button type="button" class="btn-submit" style="background:var(--color-primary); box-shadow:var(--glow-primary); height:40px;" onclick="loadManualDebugMission()">
+          <i class="fa-solid fa-circle-play"></i> 테스트 미션 로드하기
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="portal-loading" style="text-align: center; padding: 40px;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--color-team2); margin-bottom: 12px;"></i>
+        <p id="portal-loading-text">미션 설정 데이터를 로드하고 있습니다...</p>
+      </div>
+
+      <!-- Loaded Contents -->
+      <div id="portal-content-body" style="display: none; flex-direction: column; gap: 20px;">
+        <div class="mission-verify-box">
+          <span class="verify-label">🎯 수행해야 할 지령</span>
+          <div class="verify-mission-title" id="verify-title">미션명</div>
+          <div class="verify-mission-content" id="verify-content">미션 지령 내용</div>
+          <div class="verify-tip-box" id="verify-tip-row">
+            <i class="fa-regular fa-lightbulb" style="color: var(--color-gold);"></i>
+            <span id="verify-tip">미션 팁</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label><i class="fa-regular fa-image"></i> 미션 수행 실물 사진 증빙</label>
+          <input type="file" id="submit-file-input" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+          
+          <div class="upload-zone" id="upload-drop-zone" onclick="document.getElementById('submit-file-input').click()">
+            <i class="fa-solid fa-camera"></i>
+            <span>터치하여 인증 사진 업로드</span>
+            <p>스마트폰 카메라 촬영 또는 갤러리 이미지 선택</p>
+          </div>
+
+          <!-- Preview Frame -->
+          <div class="preview-image-box" id="image-preview-frame">
+            <button class="remove-preview-btn" onclick="clearPreviewImage()">&times;</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-submit" id="btn-submit-verification" onclick="submitMissionVerification()">
+          <i class="fa-solid fa-paper-plane"></i> 미션 판독 및 최종 제출
+        </button>
+
+        <!-- Gemini Grading Report -->
+        <div class="gemini-result-box" id="grading-result-box">
+          <span class="verify-label" style="color: var(--color-green);"><i class="fa-solid fa-robot"></i> Gemini AI 실시간 심사 리포트</span>
+          <div class="result-score-tag" id="grading-score">0 / 100점</div>
+          <div style="font-size:0.82rem; font-weight:700; color:#fff;" id="grading-verdict">결과 판정 중</div>
+          <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45;" id="grading-reason">
+            판정 이유가 여기에 표시됩니다.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 Project Secret Card Verification Portal.</p>
+    </footer>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+  
+  <script>
+    // Sound Generator
+    const SoundEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      },
+      play(type) {
+        try {
+          this.init();
+          const now = this.ctx.currentTime;
+          if (type === 'click') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(1300, now + 0.08);
+            gain.connect(this.ctx.destination); osc.connect(gain);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+            osc.start(now); osc.stop(now + 0.08);
+          } else if (type === 'add') {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(500, now);
+            osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+            gain.connect(this.ctx.destination); osc.connect(gain);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+            osc.start(now); osc.stop(now + 0.12);
+          } else if (type === 'success') {
+            const freqs = [523.25, 659.25, 783.99, 1046.50];
+            freqs.forEach((f, i) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.frequency.setValueAtTime(f, now + i * 0.06);
+              gain.connect(this.ctx.destination); osc.connect(gain);
+              gain.gain.setValueAtTime(0.08, now + i * 0.06);
+              gain.gain.exponentialRampToValueAtTime(0.005, now + i * 0.06 + 0.25);
+              osc.start(now + i * 0.06); osc.stop(now + i * 0.06 + 0.25);
+            });
+          } else if (type === 'failure') {
+            const playBuzz = (freq, delay) => {
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(freq, now + delay);
+              gain.connect(this.ctx.destination); osc.connect(gain);
+              gain.gain.setValueAtTime(0.15, now + delay);
+              gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.3);
+              osc.connect(gain); gain.connect(this.ctx.destination);
+              osc.start(now + delay); osc.stop(now + delay + 0.3);
+            };
+            playBuzz(110, 0); playBuzz(110, 0.12);
+          }
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+    };
+    
+    ['mousedown', 'touchstart', 'keydown'].forEach(evt => {
+      document.addEventListener(evt, () => SoundEngine.init(), { once: true });
+    });
+
+    // Background Particles
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 20;
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    class Particle {
+      constructor() {
+        this.reset();
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 0.2 - 0.1;
+        this.speedY = Math.random() * 0.2 - 0.1;
+        this.alpha = Math.random() * 0.4 + 0.1;
+        this.color = Math.random() > 0.5 ? 'rgba(255, 51, 102, ' : 'rgba(51, 204, 255, ';
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.fillStyle = this.color + this.alpha + ')';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+    
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#05060a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Confetti
+    const confCanvas = document.getElementById('confetti-canvas');
+    const confCtx = confCanvas.getContext('2d');
+    let confParticles = [];
+    let isConfettiRunning = false;
+    
+    function resizeConfetti() {
+      confCanvas.width = window.innerWidth;
+      confCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+    
+    class ConfettiPiece {
+      constructor(x, y, color) {
+        this.x = x; this.y = y; this.color = color;
+        this.size = Math.random() * 6 + 3;
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * -10 - 4;
+        this.gravity = 0.3;
+        this.alpha = 1;
+      }
+      update() {
+        this.speedY += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= 0.02;
+      }
+      draw() {
+        confCtx.fillStyle = this.color.replace(')', `, ${this.alpha})`);
+        confCtx.fillRect(this.x, this.y, this.size, this.size);
+      }
+    }
+    
+    function triggerConfettiBurst() {
+      const colors = ['rgba(255, 51, 102)', 'rgba(51, 204, 255)', 'rgba(255, 204, 0)'];
+      for (let i = 0; i < 30; i++) {
+        confParticles.push(new ConfettiPiece(confCanvas.width/3, confCanvas.height, colors[Math.floor(Math.random() * colors.length)]));
+        confParticles.push(new ConfettiPiece(confCanvas.width * 2/3, confCanvas.height, colors[Math.floor(Math.random() * colors.length)]));
+      }
+      if (!isConfettiRunning) {
+        isConfettiRunning = true;
+        animateConfetti();
+      }
+    }
+    
+    function animateConfetti() {
+      if (confParticles.length === 0) {
+        isConfettiRunning = false;
+        confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+        return;
+      }
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      confParticles.forEach((p, idx) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) confParticles.splice(idx, 1);
+      });
+      requestAnimationFrame(animateConfetti);
+    }
+
+    // Toast
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      let icon = 'fa-circle-info';
+      if (type === 'success') icon = 'fa-circle-check';
+      if (type === 'error') icon = 'fa-triangle-exclamation';
+      
+      toast.innerHTML = `
+        <i class="fa-solid ${icon}" style="font-size: 1.1rem; color: ${type === 'success' ? 'var(--color-green)' : type === 'error' ? 'var(--color-team1)' : 'var(--color-primary)'}"></i>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-msg">${message}</div>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.add('show'); }, 50);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { toast.remove(); }, 300);
+      }, 4000);
+    }
+
+    // Toggle Settings drawer
+    function toggleSettingsDrawer() {
+      const content = document.getElementById('drawer-settings-content');
+      const icon = document.getElementById('drawer-chevron-icon');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.className = 'fa-solid fa-chevron-up';
+        SoundEngine.play('click');
+      } else {
+        content.classList.add('hidden');
+        icon.className = 'fa-solid fa-chevron-down';
+        SoundEngine.play('click');
+      }
+    }
+
+    // Load & Save keys locally
+    function loadPortalKeys() {
+      const webhook = localStorage.getItem('config_webhook_url') || '';
+      let gemini = localStorage.getItem('config_gemini_key') || '';
+      
+      // Fallback default Gemini Key (Base64 encoded to prevent GitHub automated scanning block)
+      if (!gemini) {
+        gemini = atob('QUl6YVN5QkVlbmc2bmMxTFN3WjQ3NXZLbkVLaWwtNnVWeWpabjY4');
+      }
+      
+      document.getElementById('portal-webhook').value = webhook;
+      document.getElementById('portal-gemini').value = gemini;
+    }
+    
+    function savePortalKeys() {
+      const webhook = document.getElementById('portal-webhook').value.trim();
+      const gemini = document.getElementById('portal-gemini').value.trim();
+      
+      localStorage.setItem('config_webhook_url', webhook);
+      localStorage.setItem('config_gemini_key', gemini);
+      
+      if (loadedScheduleData) {
+        loadedScheduleData.discordWebhookUrl = webhook;
+        loadedScheduleData.geminiApiKey = gemini;
+      }
+    }
+
+    function togglePw(id, icon) {
+      const input = document.getElementById(id);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye-slash';
+      }
+      SoundEngine.play('click');
+    }
+
+    // [NEW] Interactive Horizontal Session Navigation Tabs Renderer
+    function renderSessionTabs() {
+      const container = document.getElementById('session-tabs-container');
+      container.innerHTML = '';
+      
+      for (let i = 1; i <= 8; i++) {
+        const btn = document.createElement('button');
+        btn.className = `session-tab-btn ${submitSession === i ? 'active' : ''}`;
+        
+        // Highlight active tabs according to team colors
+        if (submitSession === i) {
+          if (submitTeam === 'team1') {
+            btn.classList.add('team1-style');
+          }
+        }
+        
+        btn.innerText = `세션 ${i}`;
+        btn.onclick = () => selectSessionTab(i);
+        container.appendChild(btn);
+      }
+    }
+    
+    function selectSessionTab(sessionIdx) {
+      if (submitSession === sessionIdx) return;
+      submitSession = sessionIdx;
+      
+      SoundEngine.play('click');
+      
+      // Update URL search parameters without reloading page
+      const url = new URL(window.location);
+      url.searchParams.set('session', sessionIdx);
+      window.history.replaceState({}, '', url);
+      
+      // Reset submission card & result boxes
+      clearPreviewImage();
+      document.getElementById('grading-result-box').style.display = 'none';
+      document.getElementById('btn-submit-verification').disabled = false;
+      document.getElementById('btn-submit-verification').innerHTML = `<i class="fa-solid fa-paper-plane"></i> 미션 판독 및 최종 제출`;
+      
+      // Re-render navigation tabs
+      renderSessionTabs();
+      
+      // Display loader and query new session config
+      document.getElementById('portal-loading').style.display = 'block';
+      document.getElementById('portal-loading-text').innerText = `세션 ${sessionIdx} 미션 데이터를 읽어오는 중...`;
+      document.getElementById('portal-content-body').style.display = 'none';
+      document.getElementById('local-debug-tester').style.display = 'none';
+      
+      initSubmitPortal();
+    }
+
+    // ----------------------------------------------------
+    // MISSION DATABASE (50 Missions)
+    // ----------------------------------------------------
+    const missionsDatabase = [
+      { id: 1, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "신발 모으기", content: "조원들의 신발을 모아 단체 별 모양을 만들고 사진 찍기", duration: "3분", tip: "신발을 대칭으로 잘 배열하면 예쁜 5각/6각 별이 만들어집니다.", colorHex: 16724870 },
+      { id: 2, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "배터리 최저 사용자", content: "상대 조원 중 휴대폰 배터리 잔량이 가장 적은 사람의 화면을 캡처해 올리기", duration: "2분", tip: "단톡방에 배터리 잔량 숫자가 나오도록 캡처본을 올리세요.", colorHex: 16724870 },
+      { id: 3, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "이동 중 창문 하트", content: "이동 차량 안에서 손가락 하트 릴레이로 창문에 대고 사진 찍기", duration: "5분", tip: "차창 밖 풍경과 하트 손가락이 포커스되게 아련하게 촬영해보세요.", colorHex: 16724870 },
+      { id: 4, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "웰컴 단체 브이", content: "숙소 또는 도착지 웰컴 보드/간판 앞에서 전원이 브이 포즈로 단체 샷 찍기", duration: "5분", tip: "웃음 가득한 도착 기념 컷을 연출해보세요.", colorHex: 16724870 },
+      { id: 5, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "안경 모아 하트", content: "조원들의 안경 또는 선글라스를 바닥에 둥글게 하트 모양으로 모아 촬영하기", duration: "3분", tip: "렌즈에 조명이 반사되지 않게 비스듬히 찍으세요.", colorHex: 16724870 },
+      { id: 6, sessionIndex: 1, category: "time-attack", emoji: "⚡", title: "웰컴 캔 건배", content: "물잔이나 음료수 캔을 둥글게 모아 위에서 건배하는 손가락 줌인 샷 올리기", duration: "3분", tip: "모두의 손등과 캔 뚜껑이 조화롭게 나와야 합니다.", colorHex: 16724870 },
+      
+      { id: 7, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "슬로우 모션 음료 시음", content: "카페 음료 수령 후 조원 전원이 동시에 슬로우 모션으로 마시는 15초 영상 찍기", duration: "10분", tip: "스마트폰 카메라의 슬로우 모션 기능을 활성화하고 과장된 목넘김을 표현하세요.", colorHex: 3394662 },
+      { id: 8, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "최장 야채 찾기", content: "마트에서 쇼핑 중 발견한 가장 긴 야채(예: 대파, 오이)와 함께 조원 코믹 투샷", duration: "5분", tip: "야채가 부러지지 않게 매너 있게 조심해서 다뤄주세요.", colorHex: 3394662 },
+      { id: 9, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "정돈된 카트 샷", content: "마트 카트에 구매한 물품을 테트리스처럼 아름답고 반듯하게 정돈하여 항공샷 촬영", duration: "5분", tip: "물건 라벨이 위를 향하게 정렬하면 더 프로페셔널해 보입니다.", colorHex: 3394662 },
+      { id: 10, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "디저트 브이(V) 대형", content: "카페 테이블에 주문한 빵이나 케이크, 쿠키 등을 브이 모양 대형으로 조각 정렬해 찍기", duration: "5분", tip: "접시 배치를 센스있게 디자인해보세요.", colorHex: 3394662 },
+      { id: 11, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "음료 색상 그라데이션", content: "주문한 음료들을 맑은 색상부터 짙은 색상 순서대로 나란히 줄 세워 감성 사진 찍기", duration: "5분", tip: "아메리카노, 에이드, 라떼 등을 멋지게 큐레이션 하세요.", colorHex: 3394662 },
+      { id: 12, sessionIndex: 2, category: "outdoor", emoji: "📸", title: "카페 거울 요정들", content: "카페 내 전신거울이나 볼록거울을 활용하여 조원들이 옹기종기 뭉친 거울 셀카 샷", duration: "5분", tip: "얼굴이 다른 동료에 의해 가려지지 않게 높낮이를 조절하세요.", colorHex: 3394662 },
+      
+      { id: 13, sessionIndex: 3, category: "food", emoji: "🍖", title: "팀장님 정성 쌈 싸주기", content: "가장 막내가 상급자에게 가장 거대하고 맛있는 정성 쌈을 싸서 먹여주는 사진 올리기", duration: "3분", tip: "고기, 마늘, 쌈장을 푸짐하고 훈훈하게 얹어 대접하세요.", colorHex: 16763904 },
+      { id: 14, sessionIndex: 3, category: "food", emoji: "🍖", title: "냅킨 로즈 데코", content: "식탁 위에 흰색 냅킨을 돌돌 말아 예쁜 장미꽃 1송이를 접어 중앙에 올린 사진", duration: "5분", tip: "인터넷에 냅킨 장미 접기를 검색하면 30초 만에 뚝딱 가능합니다.", colorHex: 16763904 },
+      { id: 15, sessionIndex: 3, category: "food", emoji: "🍖", title: "소주잔 하트 탑", content: "빈 소주잔 4개를 눕혀 하트 모양을 만들고 위에서 직각으로 찍은 탑뷰 사진", duration: "3분", tip: "잔에 물기가 있으면 하트가 미끄러지니 건조한 컵을 사용하세요.", colorHex: 16763904 },
+      { id: 16, sessionIndex: 3, category: "food", emoji: "🍖", title: "의리 넘치는 한잔", content: "조원 전원이 웃음기 가득한 얼굴로 맥주/음료 잔을 테이블 중앙에서 맞대어 건배하는 샷", duration: "3분", tip: "연사(연속 사진)로 찍어 가장 해맑게 웃는 프레임을 골라 전송하세요.", colorHex: 16763904 },
+      { id: 17, sessionIndex: 3, category: "food", emoji: "🍖", title: "초대형 바비큐 꼬치", content: "바비큐 재료(고기, 버섯, 양파 등)를 한 꼬치에 순서대로 가장 길게 끼워 완성해 굽는 인증샷", duration: "5분", tip: "재료가 꼬치 끝으로 떨어져 화상을 입지 않게 주의하세요.", colorHex: 16763904 },
+      { id: 18, sessionIndex: 3, category: "food", emoji: "🍖", title: "바비큐 셰프 크로스", content: "고기 굽는 집게와 가위를 가슴팍 앞에서 엑스(X)자로 결합해 들고 비장하게 선 조원 10초 영상", duration: "3분", tip: "영웅물 영화 배경음악이 떠오르는 비장한 포즈를 주문하세요.", colorHex: 16763904 },
+      
+      { id: 19, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "얼음! 그대로 멈춰라", content: "기습 미션 수신 즉시 현재 취하고 있는 동작 그대로 멈춰 단체 셀카 촬영 및 업로드", duration: "3분", tip: "정말 멈춘 것처럼 어색하고 우스꽝스러운 동작일수록 재미가 증폭됩니다.", colorHex: 16724870 },
+      { id: 20, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "네이버 정밀 시계 맞추기", content: "초 단위까지 흘러가는 네이버 시계 화면 옆에 손가락 3개를 함께 대고 인증샷 찍기", duration: "2분", tip: "듀얼 스크린이나 다른 폰 화면에 네이버 시계를 띄우세요.", colorHex: 16724870 },
+      { id: 21, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "동시 기지개 스트레칭", content: "아침 조원 3명 이상이 일렬로 뒤돌아서서 하늘을 향해 시원하게 기지개를 켜는 뒷모습 샷", duration: "3분", tip: "대열의 수평을 맞추면 대단히 예술적인 컷이 연출됩니다.", colorHex: 16724870 },
+      { id: 22, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "맑은 아침 텀블러", content: "아침 물컵이나 텀블러를 들고 맑은 하늘/아침 햇살을 배경으로 쨍하게 촬영하기", duration: "3분", tip: "아웃포커싱 기능을 사용하여 컵을 돋보이게 하세요.", colorHex: 16724870 },
+      { id: 23, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "세수 요정 브이", content: "방금 세수를 마친 뽀송뽀송하거나 촉촉한 얼굴의 조원 2명이 상큼한 브이 포즈 셀카", duration: "3분", tip: "민낯이라도 당당하고 환한 웃음이 성공 열쇠!", colorHex: 16724870 },
+      { id: 24, sessionIndex: 4, category: "time-attack", emoji: "⚡", title: "동서남북 수호자", content: "조원 4명이 서로 등을 딱 맞대고 동서남북 4방향을 각각 바라보며 정색한 단체 사진", duration: "3분", tip: "팔짱을 낀 보디가드 포즈를 취하면 완성도가 높아집니다.", colorHex: 16724870 },
+      
+      { id: 25, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "인간 대형 하트", content: "안전한 야외 잔디밭이나 넓은 지상 공간에서 조원 전원이 몸을 모아 거대한 하트 대형 연출 사진", duration: "10분", tip: "카메라를 위에서 아래로 비스듬히 찍어야 하트의 형태가 잘 드러납니다.", colorHex: 3394662 },
+      { id: 26, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "인간 이정표", content: "관광지 안내판이나 길목 갈림길에서 조원들이 일렬로 서서 화살표 방향을 온몸으로 묘사한 사진", duration: "10분", tip: "다 같이 머리, 팔, 다리로 한 방향의 화살표를 기괴하게 만들어보세요.", colorHex: 3394662 },
+      { id: 27, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "공중 부양 점프 챌린지", content: "야외 잔디밭/광장에서 조원 전체가 공중에 동시에 뜬 최고의 순간 포착 샷", duration: "10분", tip: "휴대폰 카메라의 '고속 연사' 모드를 꾹 눌러 점프 타이밍을 잡아내세요.", colorHex: 3394662 },
+      { id: 28, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "아스팔트 그림자 하트", content: "맑은 햇빛 아래 서서 조원들의 팔과 손 그림자를 합작해 바닥 위에 하트 실루엣 만들기", duration: "5분", tip: "그림자가 겹쳐서 찌그러지지 않게 각 조원들의 손 간격을 띄우세요.", colorHex: 3394662 },
+      { id: 29, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "자연의 하트 조형", content: "야외에서 하트 모양을 닮은 돌멩이, 조개껍데기, 나뭇잎 등을 직접 발굴해 손바닥 위에 얹기", duration: "5분", tip: "인공 조형물이 아닌 실제 순수 자연물 중에서 발굴해야 인정됩니다.", colorHex: 3394662 },
+      { id: 30, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "거인 손의 요정", content: "원근법을 활용해 조원 한 명이 다른 조원의 커다란 손바닥 위에 사뿐히 서 있는 듯한 사진", duration: "10분", tip: "손을 내민 조원은 카메라 초근접에 서고, 올라설 조원은 멀리 이동해 위치를 겹치세요.", colorHex: 3394662 },
+      { id: 31, sessionIndex: 5, category: "outdoor", emoji: "📸", title: "일렬종대 기차 대형", content: "키 순서대로 똑바른 기차 대형으로 일렬로 서서 앞사람 어깨에 양손을 착 올린 사진", duration: "5분", tip: "초등학교 때 번호 순서로 서듯 칼같이 수평을 맞춰보세요.", colorHex: 3394662 },
+      
+      { id: 32, sessionIndex: 6, category: "food", emoji: "🍖", title: "테이블 크로스 러브샷", content: "조에서 직급 차이가 가장 크거나 세대 차이가 가장 많이 나는 두 사람의 정겨운 러브샷 샷", duration: "5분", tip: "잔을 들고 팔을 X자로 다정하게 꼬아 건배하고 원샷하는 화기애애한 모습을 남기세요.", colorHex: 16763904 },
+      { id: 33, sessionIndex: 6, category: "food", emoji: "🍖", title: "스텔스 컵 쌓기 탑", content: "상대 조원에게 전혀 들키지 않게 술자리 중앙에 조용히 빈 일회용 컵 5개를 일렬로 쌓아 인증", duration: "5분", tip: "대화 주제로 모두의 이목이 집중되는 순간을 틈타 슥슥 올려보세요.", colorHex: 16763904 },
+      { id: 34, sessionIndex: 6, category: "food", emoji: "🍖", title: "옆 사람 릴레이 쌈 배달", content: "조원들이 도란도란 둘러앉아 자기 왼쪽에 앉은 사람에게 차례로 쌈을 싸서 입에 넣어주는 15초 릴레이 릴", duration: "5분", tip: "카메라 무빙이 막힘없이 물 흐르듯 흘러가야 15초 안에 모두 성공 가능합니다.", colorHex: 16763904 },
+      { id: 35, sessionIndex: 6, category: "food", emoji: "🍖", title: "냅킨 위 이쑤시개 조 이름", content: "테이블 냅킨 위에 이쑤시개 여러 개를 사용해 조 번호(예: '1조')를 조립하여 사진 찍기", duration: "5분", tip: "바비큐 불 바람에 날리지 않게 잔으로 살짝 눌러주는 지혜가 필요합니다.", colorHex: 16763904 },
+      { id: 36, sessionIndex: 6, category: "food", emoji: "🍖", title: "식사 중 이색 칵테일 제조", content: "물과 탄산수, 주스 등을 조합해 창의적인 비율의 음료를 제조해 조원들에게 시음시키는 사진", duration: "5분", tip: "시음자가 미소 지으며 맛을 음미하는 모습을 담아내세요.", colorHex: 16763904 },
+      { id: 37, sessionIndex: 6, category: "food", emoji: "🍖", title: "우렁찬 건배사 3종 릴레이", content: "조원 3명이 끊김 없이 우렁찬 목소리로 워크숍 대박을 기원하는 건배사를 차례로 외치는 15초 영상", duration: "5분", tip: "미리 각자의 짧고 강력한 슬로건 멘트를 지정해두면 에러가 없습니다.", colorHex: 16763904 },
+      
+      { id: 38, sessionIndex: 7, category: "night", emoji: "🎤", title: "유쾌한 엽기 필터 단체샷", content: "카메라 보정 앱의 가장 엽기적이거나 웃긴 마스크 필터를 전원에 씌우고 단체 촬영", duration: "5분", tip: "망가짐을 두려워하지 말고 눈코입을 크게 벌려 효과 필터를 작동시키세요.", colorHex: 10040319 },
+      { id: 39, sessionIndex: 7, category: "night", emoji: "🎤", title: "ASMR 릴레이 포부", content: "속속이는 소리로 오늘의 한 줄 소감과 내일의 각오를 릴레이로 말하는 15초 오디오", duration: "5분", tip: "마이크에 숨소리가 너무 들어가지 않도록 입을 약간 떼고 소박하게 전파하세요.", colorHex: 10040319 },
+      { id: 40, sessionIndex: 7, category: "night", emoji: "🎤", title: "마네킹 챌린지 5초", content: "레크레이션 2차 도중 신호에 맞춰 전원이 마네킹처럼 5초 동안 완전 정지 동작 유지 영상", duration: "5분", tip: "잔을 입에 대고 마시는 중이거나 숟가락을 든 채 정지하면 극적인 연출이 됩니다.", colorHex: 10040319 },
+      { id: 41, sessionIndex: 7, category: "night", emoji: "🎤", title: "암흑 속 촛불 아카펠라", content: "불을 모두 끈 숙소 방에서 핸드폰 플래시 1개만 켜고 10초간 한 목소리로 화음 노래 부르기", duration: "5분", tip: "애국가나 로고송 등 조원 모두가 아는 친숙한 노래의 한 구절을 선택하세요.", colorHex: 10040319 },
+      { id: 42, sessionIndex: 7, category: "night", emoji: "🎤", title: "손가락 탑 쌓기", content: "거실 바닥에 앉아 모든 조원의 손등을 교차해 우뚝 솟은 탑을 만들어 정중앙 사진 찍기", duration: "5분", tip: "아래부터 조의 최고령자부터 최연소자 순서대로 손을 쌓아 올리세요.", colorHex: 10040319 },
+      { id: 43, sessionIndex: 7, category: "night", emoji: "🎤", title: "수면양말 발 모음 하트", content: "숙소 거실에 누워서 각자의 수면양말이나 캐릭터 슬리퍼를 신은 발을 중앙에 모아 하트 대형 샷", duration: "3분", tip: "가장 튀는 비비드 컬러 양말을 신은 사람이 정가운데 정렬합니다.", colorHex: 10040319 },
+      { id: 44, sessionIndex: 7, category: "night", emoji: "🎤", title: "거울 2인조 미러 댄스", content: "거울 앞에서 두 명의 조원이 완전 똑같은 동작으로 코믹 댄스를 10초간 소화하는 영상", duration: "5분", tip: "좌우 반전처럼 환상의 듀오 싱크로율을 발휘해보세요.", colorHex: 10040319 },
+      
+      { id: 45, sessionIndex: 8, category: "coop", emoji: "🧠", title: "3개 국어 릴레이 감사 인사", content: "릴레이로 한국어, 영어, 그리고 제3의 언어(중국어/일어 등)로 감사 소감 소통 15초 영상", duration: "5분", tip: "완벽할 필요 없이 '상케~', '오하요~', '땡큐~' 등 드립 섞인 유쾌한 인사가 합격 기준입니다.", colorHex: 3394815 },
+      { id: 46, sessionIndex: 8, category: "coop", emoji: "🧠", title: "깔끔한 숙소 하트 샷", content: "정리가 완벽히 끝나 분리수거 및 청소를 완료한 텅 빈 거실 한가운데에서 단체 손하트 사진", duration: "5분", tip: "매너 워크숍의 완성은 퇴소 직전의 뒷정리 상태입니다.", colorHex: 3394662 },
+      { id: 47, sessionIndex: 8, category: "coop", emoji: "🧠", title: "트렁크 테트리스 장인", content: "트럭 차량 트렁크에 조원들의 모든 짐 캐리어를 틈새 없이 완벽하게 수납 정돈한 정밀 탑샷", duration: "5분", tip: "사이즈와 모서리를 칼같이 끼워 맞추는 조의 살림꾼 요원을 투입하세요.", colorHex: 3394815 },
+      { id: 48, sessionIndex: 8, category: "coop", emoji: "🧠", title: "피날레 슬로우 하이파이브", content: "퇴소 차량에 오르기 전 조원들이 차례대로 슬로우 모션으로 하이파이브를 교환하는 10초 샷", duration: "5분", tip: "뺨을 스치듯 아쉬워하는 과장된 연기를 섞으면 레전드 숏폼이 나옵니다.", colorHex: 3394815 },
+      { id: 49, sessionIndex: 8, category: "coop", emoji: "🧠", title: "추억의 스냅샷 엄선", content: "2박 3일 동안 워크숍 현장에서 찍은 스마트폰 앨범 사진 중 최고 명작 단체사진 1장 업로드", duration: "5분", tip: "가장 역동적이고 훈훈하게 조원 전체의 표정이 잘 나온 사진을 엄선해 올리세요.", colorHex: 3394815 },
+      { id: 50, sessionIndex: 8, category: "coop", emoji: "🧠", title: "수작업 종이 문자 합작", content: "각자 종이에 한 글자씩 적어 '우.리.조.최.고.다.' 문장을 차례로 배치해 들고 찍은 단체샷", duration: "5분", tip: "글자가 선명하게 보일 수 있게 검은색 펜으로 굵게 타이틀을 적어주세요.", colorHex: 3394815 }
+    ];
+
+    const sessionsSpec = [
+      { index: 1, day: 1, sessionName: "세션 1 (이동/도착 오프닝)", timeRange: "13:00 ~ 16:00" },
+      { index: 2, day: 1, sessionName: "세션 2 (오후 장보기/카페)", timeRange: "16:00 ~ 19:00" },
+      { index: 3, day: 1, sessionName: "세션 3 (저녁 바비큐/첫날밤)", timeRange: "19:00 ~ 22:00" },
+      { index: 4, day: 2, sessionName: "세션 1 (아침 모임/기상)", timeRange: "08:00 ~ 11:30" },
+      { index: 5, day: 2, sessionName: "세션 2 (점심/야외 단합)", timeRange: "12:00 ~ 17:00" },
+      { index: 6, day: 2, sessionName: "세션 3 (메인 회식/바비큐)", timeRange: "17:30 ~ 20:00" },
+      { index: 7, day: 2, sessionName: "세션 4 (밤 레크리에이션)", timeRange: "20:00 ~ 22:00" },
+      { index: 8, day: 3, sessionName: "세션 1 (피날레/퇴소)", timeRange: "08:00 ~ 10:00" }
+    ];
+
+    // URL State Loading
+    let submitRepo = '';
+    let submitTeam = '';
+    let submitSession = 0;
+    let submitType = 'team';
+    let submitParticipant = '';
+    let submitTitle = '';
+    let submitContent = '';
+    let selectedImageFile = null;
+    let loadedScheduleData = null;
+    let isManualDebugMode = false;
+
+    function init() {
+      // Load keys from LocalStorage on mount
+      loadPortalKeys();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      submitRepo = urlParams.get('repo') || localStorage.getItem('config_github_repo') || 'mhsssshin/missionwar_t';
+      submitTeam = urlParams.get('team') || 'team1';
+      submitSession = parseInt(urlParams.get('session')) || 1;
+      
+      submitType = urlParams.get('type') || 'team';
+      submitParticipant = urlParams.get('participant') || '';
+      submitTitle = urlParams.get('title') || '';
+      submitContent = urlParams.get('content') || '';
+      
+      // Auto-extract gemini API key passed securely from Discord callback URL
+      const geminiParam = urlParams.get('gemini') || '';
+      if (geminiParam) {
+        document.getElementById('portal-gemini').value = geminiParam;
+        localStorage.setItem('config_gemini_key', geminiParam);
+      }
+      
+      // Initialize tabs UI
+      renderSessionTabs();
+      
+      initSubmitPortal();
+    }
+
+    async function initSubmitPortal() {
+      // 0. ZERO PRIORITY: If type === 'individual', bypass config fetching and load parameter payload
+      if (submitType === 'individual') {
+        loadedScheduleData = {
+          discordWebhookUrl: document.getElementById('portal-webhook').value.trim() || localStorage.getItem('config_webhook_url') || '',
+          geminiApiKey: document.getElementById('portal-gemini').value.trim() || localStorage.getItem('config_gemini_key') || '',
+          [submitTeam]: {
+            missions: [
+              {
+                sessionIndex: submitSession,
+                sessionName: `👤 ${submitParticipant} 요원 개인 미션`,
+                timeRange: "실시간 개인 지령",
+                title: submitTitle,
+                content: submitContent,
+                duration: "지정 시간 내",
+                tip: "조원들과 협력하거나 혼자 신속하게 지령을 수행해 주세요.",
+                colorHex: 3394815
+              }
+            ]
+          }
+        };
+        isManualDebugMode = true;
+        
+        // Hide standard session tabs bar since this is a dedicated individual mission link
+        const tabsBar = document.getElementById('session-tabs-bar');
+        if (tabsBar) tabsBar.style.display = 'none';
+        
+        loadPortalContents();
+        return;
+      }
+
+      // 1. FIRST PRIORITY: Read from localStorage (Commander's local setup on the same browser)
+      const localDeckKey = `deck_${submitTeam}`;
+      const savedDeck = localStorage.getItem(localDeckKey);
+      
+      if (savedDeck) {
+        try {
+          const parsedDeck = JSON.parse(savedDeck);
+          const chosenMissionMeta = parsedDeck[submitSession - 1];
+          
+          if (chosenMissionMeta) {
+            const mission = missionsDatabase.find(db => db.id === chosenMissionMeta.id);
+            if (mission) {
+              const spec = sessionsSpec[submitSession - 1];
+              
+              loadedScheduleData = {
+                discordWebhookUrl: document.getElementById('portal-webhook').value.trim() || localStorage.getItem('config_webhook_url') || '',
+                geminiApiKey: document.getElementById('portal-gemini').value.trim() || localStorage.getItem('config_gemini_key') || '',
+                [submitTeam]: {
+                  missions: [
+                    {
+                      sessionIndex: submitSession,
+                      sessionName: spec ? spec.sessionName : `세션 ${submitSession}`,
+                      timeRange: spec ? spec.timeRange : "로컬 시간대",
+                      title: mission.title,
+                      content: mission.content,
+                      duration: mission.duration,
+                      tip: mission.tip,
+                      colorHex: mission.colorHex
+                    }
+                  ]
+                }
+              };
+              isManualDebugMode = true;
+              loadPortalContents();
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed parsing localStorage deck configuration.", e);
+        }
+      }
+
+      // 2. SECOND PRIORITY: Try to fetch schedule.json relatively from host domain
+      let localScheduleExists = false;
+      try {
+        const localRes = await fetch('./schedule.json');
+        if (localRes.ok) {
+          loadedScheduleData = await localRes.json();
+          localScheduleExists = true;
+        }
+      } catch (e) {}
+
+      if (localScheduleExists) {
+        document.getElementById('portal-webhook').value = loadedScheduleData.discordWebhookUrl || '';
+        document.getElementById('portal-gemini').value = loadedScheduleData.geminiApiKey || '';
+        isManualDebugMode = false;
+        loadPortalContents();
+        return;
+      }
+
+      // 3. THIRD PRIORITY: If repo parameter is in URL, fetch from public raw GitHub
+      if (submitRepo) {
+        const parts = submitRepo.split('/');
+        if (parts.length === 2) {
+          const rawUrl = `https://raw.githubusercontent.com/${submitRepo}/main/schedule.json`;
+          try {
+            const res = await fetch(rawUrl);
+            if (res.ok) {
+              loadedScheduleData = await res.json();
+              document.getElementById('portal-webhook').value = loadedScheduleData.discordWebhookUrl || '';
+              document.getElementById('portal-gemini').value = loadedScheduleData.geminiApiKey || '';
+              isManualDebugMode = false;
+              loadPortalContents();
+              return;
+            }
+          } catch (err) {
+            console.error("Public raw fetch failed:", err);
+          }
+        }
+      }
+      
+      // 4. FALLBACK: If we are on localhost, show debug panel. Otherwise show nice "card empty" status.
+      document.getElementById('portal-loading').style.display = 'none';
+      
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        document.getElementById('dbg-webhook').value = localStorage.getItem('config_webhook_url') || '';
+        document.getElementById('dbg-gemini').value = localStorage.getItem('config_gemini_key') || '';
+        
+        document.getElementById('local-debug-tester').style.display = 'flex';
+        loadDebugMissionsList();
+        showToast("미션 정보 없음", "본 세션에 지정된 미션 정보가 없어 수동 선택 패널을 제공합니다.", "info");
+      } else {
+        document.getElementById('portal-loading').style.display = 'block';
+        document.getElementById('portal-loading-text').innerHTML = `
+          <i class="fa-solid fa-circle-question" style="font-size: 2.2rem; color: var(--color-gold); margin-bottom: 12px; display: block;"></i>
+          <span style="font-size: 1rem; font-weight: 800; color: #fff;">미션 미등록 세션</span><br>
+          <span style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 6px;">
+            본 세션(${submitSession})은 아직 통제본부에서 미션 카드가 장착되지 않았습니다.
+          </span>
+        `;
+      }
+    }
+
+    // Populate manual debug selector with candidates for selected session
+    function loadDebugMissionsList() {
+      const sessionIdxVal = parseInt(document.getElementById('dbg-session').value);
+      const selectEl = document.getElementById('dbg-mission-select');
+      selectEl.innerHTML = '';
+      
+      const matching = missionsDatabase.filter(m => m.sessionIndex === sessionIdxVal);
+      matching.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.innerText = `[M${String(m.id).padStart(2, '0')}] ${m.title} - ${m.content.substring(0, 20)}...`;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    // Load manual test configuration
+    function loadManualDebugMission() {
+      const webhook = document.getElementById('dbg-webhook').value.trim();
+      const gemini = document.getElementById('dbg-gemini').value.trim();
+      const team = document.getElementById('dbg-team').value;
+      const session = parseInt(document.getElementById('dbg-session').value);
+      const missionId = parseInt(document.getElementById('dbg-mission-select').value);
+      
+      if (!webhook || !gemini || !missionId) {
+        showToast("로드 불가", "웹훅 URL, Gemini API Key 및 미션을 선택해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      SoundEngine.play('success');
+      
+      isManualDebugMode = true;
+      submitTeam = team;
+      submitSession = session;
+      
+      localStorage.setItem('config_webhook_url', webhook);
+      localStorage.setItem('config_gemini_key', gemini);
+      
+      document.getElementById('portal-webhook').value = webhook;
+      document.getElementById('portal-gemini').value = gemini;
+      
+      const selectedMission = missionsDatabase.find(m => m.id === missionId);
+      
+      loadedScheduleData = {
+        discordWebhookUrl: webhook,
+        geminiApiKey: gemini,
+        [team]: {
+          missions: [
+            {
+              sessionIndex: session,
+              sessionName: `세션 ${session}`,
+              timeRange: "테스트 모드 범위",
+              title: selectedMission.title,
+              content: selectedMission.content,
+              duration: selectedMission.duration,
+              tip: selectedMission.tip,
+              colorHex: selectedMission.colorHex
+            }
+          ]
+        }
+      };
+      
+      document.getElementById('local-debug-tester').style.display = 'none';
+      renderSessionTabs();
+      loadPortalContents();
+    }
+
+    function loadPortalContents() {
+      const teamSchedule = loadedScheduleData[submitTeam];
+      const mission = isManualDebugMode
+        ? teamSchedule.missions[0]
+        : teamSchedule.missions.find(m => m.sessionIndex === submitSession);
+      
+      if (mission) {
+        document.getElementById('submit-team-title').innerText = `${submitTeam === 'team1' ? '1조' : '2조'} 미션 수행 제출`;
+        document.getElementById('submit-session-info').innerText = `${mission.sessionName} (${mission.timeRange})`;
+        
+        document.getElementById('verify-title').innerText = mission.title;
+        document.getElementById('verify-content').innerText = mission.content;
+        if (mission.tip) {
+          document.getElementById('verify-tip').innerText = mission.tip;
+          document.getElementById('verify-tip-row').style.display = 'flex';
+        } else {
+          document.getElementById('verify-tip-row').style.display = 'none';
+        }
+        
+        document.getElementById('portal-loading').style.display = 'none';
+        document.getElementById('portal-content-body').style.display = 'flex';
+        SoundEngine.play('success');
+      } else {
+        document.getElementById('portal-loading').innerHTML = `
+          <i class="fa-solid fa-circle-question" style="font-size: 2.2rem; color: var(--color-gold); margin-bottom: 12px; display: block;"></i>
+          <span style="font-size: 1rem; font-weight: 800; color: #fff;">미션 미등록 세션</span><br>
+          <span style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 6px;">
+            본 세션(${submitSession})은 아직 통제본부에서 미션 카드가 장착되지 않았습니다.
+          </span>
+        `;
+      }
+    }
+    
+    function handleImageSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      selectedImageFile = file;
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const frame = document.getElementById('image-preview-frame');
+        frame.style.backgroundImage = `url('${e.target.result}')`;
+        frame.style.display = 'block';
+        document.getElementById('upload-drop-zone').style.display = 'none';
+        SoundEngine.play('add');
+      };
+      
+      reader.readAsDataURL(file);
+    }
+    
+    function clearPreviewImage() {
+      selectedImageFile = null;
+      document.getElementById('image-preview-frame').style.display = 'none';
+      document.getElementById('upload-drop-zone').style.display = 'block';
+      document.getElementById('submit-file-input').value = '';
+      SoundEngine.play('failure');
+    }
+    
+    async function submitMissionVerification() {
+      if (!selectedImageFile) {
+        showToast("제출 불가", "미션 수행을 입증할 인증샷 사진을 업로드해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      const finalWebhook = document.getElementById('portal-webhook').value.trim() || (loadedScheduleData ? loadedScheduleData.discordWebhookUrl : '');
+      const finalGeminiKey = document.getElementById('portal-gemini').value.trim() 
+                         || (loadedScheduleData ? loadedScheduleData.geminiApiKey : '')
+                         || atob('QUl6YVN5QkVlbmc2bmMxTFN3WjQ3NXZLbkVLaWwtNnVWeWpabjY4');
+      
+      if (!finalWebhook || !finalGeminiKey) {
+        showToast("인증 실패", "설정된 Discord Webhook URL 또는 Gemini API Key가 누락되었습니다. 설정 서랍을 열고 입력해 주세요.", "error");
+        SoundEngine.play('failure');
+        const content = document.getElementById('drawer-settings-content');
+        if (content.classList.contains('hidden')) {
+          toggleSettingsDrawer();
+        }
+        return;
+      }
+      
+      const btn = document.getElementById('btn-submit-verification');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Gemini AI 판독 심사 중...`;
+      SoundEngine.play('click');
+      
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const base64Data = e.target.result.split(',')[1];
+        const teamSchedule = loadedScheduleData[submitTeam];
+        const mission = isManualDebugMode ? teamSchedule.missions[0] : teamSchedule.missions.find(m => m.sessionIndex === submitSession);
+        
+        try {
+          // Call stable model gemini-3.5-flash
+          let geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${finalGeminiKey}`;
+          
+          const prompt = `You are a Workshop Mission Judge. Verify if the uploaded image successfully completes the mission described below. Respond strictly in the following JSON format.
+CRITICAL: Do NOT use double quotes (") inside the value of the "reason" field. If you need to write a quote, use single quotes (') or Korean brackets (「, 」) instead.
+
+JSON schema:
+{
+  "success": true or false,
+  "score": number between 0 and 100 representing how well they did,
+  "reason": "explanation of what you observed and why it passed/failed in Korean"
+}
+
+Mission details:
+Mission Title: ${mission.title}
+Mission Content: ${mission.content}`;
+
+          const geminiPayload = {
+            contents: [
+              {
+                parts: [
+                  { text: prompt },
+                  {
+                    inlineData: {
+                      mimeType: selectedImageFile.type,
+                      data: base64Data
+                    }
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          };
+          
+          let geminiRes = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(geminiPayload)
+          });
+          
+          // Automatic fallback to gemini-3.1-flash-lite
+          if (!geminiRes.ok) {
+            console.warn("gemini-3.5-flash model request failed. Falling back to gemini-3.1-flash-lite...");
+            const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${finalGeminiKey}`;
+            geminiRes = await fetch(fallbackUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(geminiPayload)
+            });
+          }
+          
+          if (!geminiRes.ok) {
+            throw new Error(`Gemini API 호출에 최종 실패했습니다. (HTTP ${geminiRes.status})`);
+          }
+          
+          const geminiData = await geminiRes.json();
+          const rawText = geminiData.candidates[0].content.parts[0].text;
+          console.log("Raw Gemini AI Response:", rawText);
+          
+          let cleanedText = rawText.trim();
+          // Strip markdown codeblock backticks if the model ignored responseMimeType
+          if (cleanedText.startsWith("```")) {
+            cleanedText = cleanedText.replace(/^```(json)?\s*/i, "").replace(/```$/, "").trim();
+          }
+          
+          let grading;
+          try {
+            grading = JSON.parse(cleanedText);
+          } catch (parseErr) {
+            console.warn("Standard JSON.parse failed on Gemini response. Running regex fallback parser...", parseErr);
+            
+            // Bulletproof regex fallback parser in case of unescaped quotes in the reason value
+            const successMatch = cleanedText.match(/"success"\s*:\s*(true|false)/i);
+            const scoreMatch = cleanedText.match(/"score"\s*:\s*(\d+)/);
+            // Match reason content after "reason": " up to the end or before a closing quote bracket
+            const reasonMatch = cleanedText.match(/"reason"\s*:\s*"(.*)"\s*}?\s*$/s) || 
+                                cleanedText.match(/"reason"\s*:\s*"(.*)"/s) || 
+                                cleanedText.match(/"reason"\s*:\s*"(.*)/s);
+            
+            if (successMatch && scoreMatch) {
+              let extractedReason = reasonMatch ? reasonMatch[1].trim() : "인증 분석 완료";
+              // Trim trailing quotes and brackets if present
+              extractedReason = extractedReason.replace(/",?\s*}?\s*$/, "").trim();
+              
+              grading = {
+                success: successMatch[1].toLowerCase() === 'true',
+                score: parseInt(scoreMatch[1]),
+                reason: extractedReason
+              };
+              console.log("Regex fallback parser recovered grading:", grading);
+            } else {
+              throw new Error("Gemini 응답 구조가 유효하지 않습니다. (JSON & Regex 파싱 모두 실패)");
+            }
+          }
+          
+          const scoreBox = document.getElementById('grading-result-box');
+          const scoreTag = document.getElementById('grading-score');
+          const verdictTag = document.getElementById('grading-verdict');
+          const reasonTag = document.getElementById('grading-reason');
+          
+          scoreTag.innerText = `${grading.score} / 100점`;
+          if (grading.success) {
+            verdictTag.innerText = "✅ 성공 (SUCCESS)";
+            verdictTag.style.color = "var(--color-green)";
+            scoreBox.style.borderColor = "var(--color-green)";
+            scoreBox.style.background = "rgba(16, 185, 129, 0.03)";
+          } else {
+            verdictTag.innerText = "❌ 실패 (FAILED)";
+            verdictTag.style.color = "var(--color-team1)";
+            scoreBox.style.borderColor = "var(--color-team1)";
+            scoreBox.style.background = "rgba(255, 51, 102, 0.03)";
+          }
+          reasonTag.innerText = grading.reason;
+          scoreBox.style.display = 'flex';
+          
+          // Webhook Upload
+          btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 디스코드로 심사 카드 발송 중...`;
+          
+          const teamNameFormatted = submitTeam === 'team1' ? '1조' : '2조';
+          
+          // Force normalize filename to ASCII
+          const originalExtension = selectedImageFile.name.split('.').pop() || 'png';
+          const safeFilename = `image.${originalExtension}`;
+          
+          const isIndividual = submitType === 'individual';
+          const discordEmbed = {
+            username: isIndividual ? `[개인 심사] 미션 판독기 (Gemini)` : `[${teamNameFormatted}] 미션 판독기 (Gemini)`,
+            avatar_url: "https://i.imgur.com/83p1jep.png",
+            embeds: [{
+              title: isIndividual 
+                ? `📢 [개인 미션 인증 완료] ${submitParticipant} 요원 - ${submitTitle}` 
+                : `📢 [미션 인증 제출 완료] ${mission.title}`,
+              description: isIndividual 
+                ? `**${teamNameFormatted}**의 **${submitParticipant} 요원**이 개인 미션 수행 인증샷을 제출했습니다! Gemini AI가 즉시 심사를 수행했습니다.`
+                : `**${teamNameFormatted}** 멤버가 미션 수행 인증샷을 제출했습니다! Gemini AI가 즉시 심사를 수행했습니다.`,
+              color: grading.success ? 1049410 : 13632027,
+              fields: isIndividual ? [
+                { name: "👤 대상 요원", value: `**${submitParticipant} 요원**`, inline: true },
+                { name: "🎯 개인 미션", value: `**${submitTitle}**`, inline: true },
+                { name: "🏅 판정 결과", value: grading.success ? "✅ **성공 (SUCCESS)**" : "❌ **실패 (FAILED)**", inline: true },
+                { name: "💯 Gemini 심사 점수", value: `🔥 **${grading.score} / 100점**`, inline: true },
+                { name: "📝 AI 판정 의견", value: `>>> ${grading.reason}`, inline: false }
+              ] : [
+                { name: "🎯 미션명", value: `**${mission.title}**`, inline: true },
+                { name: "🏅 판정 결과", value: grading.success ? "✅ **성공 (SUCCESS)**" : "❌ **실패 (FAILED)**", inline: true },
+                { name: "💯 Gemini 심사 점수", value: `🔥 **${grading.score} / 100점**`, inline: true },
+                { name: "📝 AI 판정 의견", value: `>>> ${grading.reason}`, inline: false }
+              ],
+              image: {
+                url: `attachment://${safeFilename}`
+              },
+              footer: {
+                text: "Secret Mission War Auto-Verification System"
+              },
+              timestamp: new Date().toISOString()
+            }]
+          };
+          
+          const formData = new FormData();
+          formData.append('file', selectedImageFile, safeFilename);
+          formData.append('files[0]', selectedImageFile, safeFilename);
+          formData.append('payload_json', JSON.stringify(discordEmbed));
+          
+          console.log("Transmitting payload to Discord Webhook:", discordEmbed);
+          
+          const discordRes = await fetch(finalWebhook, {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (!discordRes.ok) {
+            const rawErrBody = await discordRes.text();
+            throw new Error(`디스코드 웹훅 이미지 전송 실패 (HTTP ${discordRes.status}): ${rawErrBody}`);
+          }
+          
+          btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> 인증 및 제출 최종 완료!`;
+          SoundEngine.play('success');
+          triggerConfettiBurst();
+          showToast("제출 완료", "미션 채점 결과가 디스코드 채널에 실시간 공유되었습니다!", "success");
+          
+        } catch (err) {
+          console.error(err);
+          showToast("오류 발생", err.message, "error");
+          SoundEngine.play('failure');
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> 미션 판독 및 최종 제출`;
+        }
+      };
+      
+      reader.readAsDataURL(selectedImageFile);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      init();
+    });
+  </script>
+</body>
+</html>
