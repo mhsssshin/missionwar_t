@@ -1943,9 +1943,9 @@
     }
 
     async function sendIndividualMissionInstantly(participantName) {
-      const webhookUrl = document.getElementById('webhook-url').value.trim();
+      const webhookUrl = document.getElementById('webhook-url').value.trim() || localStorage.getItem('config_webhook_url') || '';
       if (!webhookUrl) {
-        showToast("발송 실패", "먼저 Discord Webhook URL을 입력해 주세요.", "error");
+        showToast("발송 실패", "웹훅 주소가 없습니다. GitHub Actions를 1회 실행(Run workflow)하여 시크릿 키를 schedule.json에 동기화해 주시거나, 직접 웹훅 주소를 대시보드에 입력해 주세요.", "error");
         SoundEngine.play('failure');
         return;
       }
