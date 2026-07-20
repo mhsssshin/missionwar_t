@@ -21,9 +21,10 @@ let scheduleChanged = false;
 async function sendWebhook(mission, teamName) {
   const repoPath = process.env.GITHUB_REPOSITORY || "";
   const pat = process.env.GITHUB_TOKEN || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || "";
   const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
   
-  const callbackUrl = `${webAppUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${teamName === '1조' ? 'team1' : 'team2'}&session=${mission.sessionIndex}`;
+  const callbackUrl = `${webAppUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${teamName === '1조' ? 'team1' : 'team2'}&session=${mission.sessionIndex}&gemini=${encodeURIComponent(geminiApiKey)}`;
 
   const payload = {
     username: `[${teamName}] 시크릿 커맨더`,
