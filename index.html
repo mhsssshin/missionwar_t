@@ -1376,32 +1376,55 @@
       const pat = document.getElementById('github-pat').value.trim();
       const repoPath = document.getElementById('github-repo').value.trim();
       
-      if (!pat || !repoPath || repoPath.split('/').length !== 2) {
+      if (!repoPath || repoPath.split('/').length !== 2) {
         setLockUIState(false);
         return;
       }
       
       const [owner, repo] = repoPath.split('/');
-      const url = `https://api.github.com/repos/${owner}/${repo}/contents/schedule.json`;
+      let remoteJson = null;
+      let isRemoteLocked = false;
       
-      try {
-        const res = await fetch(url, {
-          headers: {
-            'Authorization': `token ${pat}`,
-            'Accept': 'application/vnd.github.v3+json'
+      // 1. Try authenticated API fetch if PAT is provided
+      if (pat) {
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/schedule.json`;
+        try {
+          const res = await fetch(url, {
+            headers: {
+              'Authorization': `token ${pat}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+          if (res.ok) {
+            const fileData = await res.json();
+            const contentDecoded = decodeURIComponent(escape(atob(fileData.content)));
+            remoteJson = JSON.parse(contentDecoded);
+            isRemoteLocked = true;
           }
-        });
-        
-        if (res.ok) {
-          const fileData = await res.json();
-          const contentDecoded = decodeURIComponent(escape(atob(fileData.content)));
-          const remoteJson = JSON.parse(contentDecoded);
-          
-          // Sync basic configurations from remote back to local (GitHub as the Source of Truth DB)
-          if (remoteJson.discordWebhookUrl) {
-            document.getElementById('webhook-url').value = remoteJson.discordWebhookUrl;
-            localStorage.setItem('config_webhook_url', remoteJson.discordWebhookUrl);
+        } catch (err) {
+          console.warn("Authenticated fetch failed:", err);
+        }
+      }
+      
+      // 2. Fallback to unauthenticated public raw fetch if PAT is empty or fetch failed
+      if (!remoteJson) {
+        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/schedule.json`;
+        try {
+          const res = await fetch(rawUrl);
+          if (res.ok) {
+            remoteJson = await res.json();
           }
+        } catch (err) {
+          console.warn("Unauthenticated raw fetch failed:", err);
+        }
+      }
+      
+      if (remoteJson) {
+        // Sync basic configurations from remote back to local (GitHub as the Source of Truth DB)
+        if (remoteJson.discordWebhookUrl) {
+          document.getElementById('webhook-url').value = remoteJson.discordWebhookUrl;
+          localStorage.setItem('config_webhook_url', remoteJson.discordWebhookUrl);
+        }
 
 
           if (remoteJson.testModeActive !== undefined) {
@@ -1483,7 +1506,7 @@
           const teamSchedule = remoteJson[activeTeam];
           if (teamSchedule && teamSchedule.startDate && teamSchedule.missions && teamSchedule.missions.length > 0) {
             const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
-            if (!isTest) {
+            if (!isTest && isRemoteLocked) {
               setLockUIState(true);
               return;
             }
