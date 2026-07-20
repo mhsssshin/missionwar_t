@@ -17,7 +17,8 @@
         "duration": "3분",
         "tip": "신발을 대칭으로 잘 배열하면 예쁜 5각/6각 별이 만들어집니다.",
         "colorHex": 16724870,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T04:48:56.444Z"
       },
       {
         "sessionIndex": 2,
