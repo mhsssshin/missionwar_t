@@ -1984,7 +1984,7 @@
       }
       
       let webUrl = window.location.origin;
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      if (window.location.hostname.includes('.github.io') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         const repoParts = repoPath.split('/');
         if (repoParts.length === 2) {
           webUrl = `https://${repoParts[0].toLowerCase()}.github.io/${repoParts[1]}`;
@@ -2350,7 +2350,7 @@
       const pat = document.getElementById('github-pat').value.trim();
       const repoPath = document.getElementById('github-repo').value.trim();
       let webUrl = window.location.origin;
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      if (window.location.hostname.includes('.github.io') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         const urlParts = repoPath.split('/');
         if (urlParts.length === 2) {
           webUrl = `https://${urlParts[0].toLowerCase()}.github.io/${urlParts[1]}`;
