@@ -16,7 +16,8 @@
         "duration": "2분",
         "tip": "단톡방에 배터리 잔량 숫자가 나오도록 캡처본을 올리세요.",
         "colorHex": 16724870,
-        "sent": false
+        "sent": true,
+        "sentAt": "2026-07-20T06:09:08.080Z"
       },
       {
         "sessionIndex": 2,
