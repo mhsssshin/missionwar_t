@@ -971,7 +971,12 @@
       const container = document.getElementById('session-tabs-container');
       container.innerHTML = '';
       
-      for (let i = 1; i <= 8; i++) {
+      const teamMissions = (loadedScheduleData && loadedScheduleData[submitTeam]) 
+        ? loadedScheduleData[submitTeam].missions 
+        : [];
+      const numSessions = teamMissions.length > 0 ? teamMissions.length : 5;
+      
+      for (let i = 1; i <= numSessions; i++) {
         const btn = document.createElement('button');
         btn.className = `session-tab-btn ${submitSession === i ? 'active' : ''}`;
         
