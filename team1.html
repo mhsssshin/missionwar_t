@@ -2520,15 +2520,15 @@ function loadConfig() {
       const indHeader = document.getElementById('individual-team-header');
       
       if (teamKey === 'team1') {
-        toggle.classList.remove('team2-active');
-        btn1.classList.add('active');
-        btn2.classList.remove('active');
+        if (toggle) toggle.classList.remove('team2-active');
+        if (btn1) btn1.classList.add('active');
+        if (btn2) btn2.classList.remove('active');
         header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (수신: 2조)`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team1);"></i> 1조 조원별 개인 지령 구성`;
       } else {
-        toggle.classList.add('team2-active');
-        btn2.classList.add('active');
-        btn1.classList.remove('active');
+        if (toggle) toggle.classList.add('team2-active');
+        if (btn2) btn2.classList.add('active');
+        if (btn1) btn1.classList.remove('active');
         header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성 (수신: 1조)`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team2);"></i> 2조 조원별 개인 지령 구성`;
       }
