@@ -3359,6 +3359,7 @@
           return {
             sessionIndex: spec.index,
             day: spec.day,
+            id: m.id,
             sessionName: spec.sessionName,
             timeRange: spec.timeRange,
             scheduledTime: activeSchedules[idx] || "예약 시간 미생성",
@@ -3776,7 +3777,49 @@ run();
     // ----------------------------------------------------
     // INITIALIZATION RUN
     // ----------------------------------------------------
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('./schedule.json');
+        if (response.ok) {
+          const remoteConfig = await response.json();
+          console.log("Successfully fetched remote config:", remoteConfig);
+          
+          if (remoteConfig.discordWebhookUrl) {
+            localStorage.setItem('config_webhook_url', remoteConfig.discordWebhookUrl);
+            const webhookInput = document.getElementById('webhook-url');
+            if (webhookInput) webhookInput.value = remoteConfig.discordWebhookUrl;
+          }
+          if (remoteConfig.testModeActive !== undefined) {
+            localStorage.setItem('config_test_mode_active', String(remoteConfig.testModeActive));
+          }
+          
+          const teamData = remoteConfig[activeTeam];
+          if (teamData) {
+            if (teamData.startDate) {
+              if (!teamData.startDate.includes("🧪")) {
+                localStorage.setItem(`team_start_date_${activeTeam}`, teamData.startDate);
+              }
+            }
+            if (teamData.missions && teamData.missions.length > 0) {
+              const deckIds = teamData.missions.map(m => {
+                if (!m) return null;
+                if (m.id) return { id: m.id };
+                const dbM = missionsDatabase.find(db => db.title === m.title);
+                return dbM ? { id: dbM.id } : null;
+              });
+              localStorage.setItem(`deck_${activeTeam}`, JSON.stringify(deckIds));
+              
+              const schedules = teamData.missions.map(m => m ? m.scheduledTime : null);
+              localStorage.setItem(`schedules_${activeTeam}`, JSON.stringify(schedules));
+            }
+            if (teamData.individualMissions) {
+              localStorage.setItem(`individual_missions_${activeTeam}`, JSON.stringify(teamData.individualMissions));
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Could not load remote schedule.json:", e);
+      }
       loadConfig();
     });
   
