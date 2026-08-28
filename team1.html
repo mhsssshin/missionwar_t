@@ -974,7 +974,7 @@
       flex-shrink: 0 !important;
     }
   </style>
-  
+    
 </style>
 </head>
 <body>
@@ -1778,14 +1778,14 @@
           const parsed = JSON.parse(savedDeck);
           activeDeck = parsed.map(m => m ? missionsDatabase.find(db => db.id === m.id) : null);
         } else {
-          activeDeck = Array(8).fill(null);
+          activeDeck = Array(5).fill(null);
         }
         
         const savedSchedules = localStorage.getItem(`schedules_${activeTeam}`);
         if (savedSchedules) {
           activeSchedules = JSON.parse(savedSchedules);
         } else {
-          activeSchedules = Array(8).fill(null);
+          activeSchedules = Array(5).fill(null);
         }
         
         const savedInd = localStorage.getItem(`individual_missions_${activeTeam}`);
@@ -1795,20 +1795,20 @@
           activeIndividualMissions[activeTeam] = [];
         }
       } catch (e) {
-        activeDeck = Array(8).fill(null);
-        activeSchedules = Array(8).fill(null);
+        activeDeck = Array(5).fill(null);
+        activeSchedules = Array(5).fill(null);
         activeIndividualMissions[activeTeam] = [];
       }
       
       const participantsInput = document.getElementById('team-participants');
       if (participantsInput) {
         
-    const localSavedParticipants = (activeIndividualMissions[activeTeam] || []).map(m => m.participant).join(', ');
-    participantsInput.value = localSavedParticipants || '권남훈, 조성대, 권지민, 임승하, 신명호, 오상철, 이영준, 김상민, 이재헌, 박소연';
-    if (!localSavedParticipants) {
-      rebuildIndividualMissionsList();
-    }
-    
+      const localSavedParticipants = (activeIndividualMissions[activeTeam] || []).map(m => m.participant).join(', ');
+      participantsInput.value = localSavedParticipants || '권남훈, 조성대, 권지민, 임승하, 신명호, 오상철, 이영준, 김상민, 이재헌, 박소연';
+      if (!localSavedParticipants) {
+        rebuildIndividualMissionsList();
+      }
+      
       }
       
       activeSlotIndex = null;
@@ -1941,7 +1941,273 @@
         badge.innerText = `${selectedCount} / 5 선택됨`;
       }
     }
-  
+    
+    function rebuildIndividualMissionsList() {
+      const inputVal = document.getElementById('team-participants').value || '';
+      const names = inputVal.split(',').map(n => n.trim()).filter(n => n !== '');
+      
+      const currentList = activeIndividualMissions[activeTeam] || [];
+      const updatedList = [];
+      
+      names.forEach(name => {
+        const existing = currentList.find(m => m.participant === name);
+        if (existing) {
+          updatedList.push(existing);
+        } else {
+          updatedList.push({
+            participant: name,
+            id: null,
+            title: "",
+            content: "",
+            emoji: "",
+            duration: "",
+            tip: "",
+            scheduledTime: "",
+            sent: false,
+            sentAt: null
+          });
+        }
+      });
+      
+      activeIndividualMissions[activeTeam] = updatedList;
+      renderIndividualSlots();
+      saveConfig();
+    }
+
+    function getRandomIndividualTime(startDateStr, index, totalParticipants) {
+      const date = new Date(startDateStr);
+      const dayOffset = index % 3; // spread across Day 1, 2, 3
+      date.setDate(date.getDate() + dayOffset);
+      
+      let hourMin = 8.0;
+      let hourMax = 22.0;
+      if (dayOffset === 0) { // Day 1
+        hourMin = 13.0; // 13:00 ~ 22:00
+        hourMax = 22.0;
+      } else if (dayOffset === 2) { // Day 3
+        hourMin = 8.0; // 08:00 ~ 12:00
+        hourMax = 12.0;
+      }
+      
+      const totalSecondsRange = (hourMax - hourMin) * 3600;
+      const randomSecondsOffset = Math.floor(Math.random() * totalSecondsRange);
+      
+      const startHour = Math.floor(hourMin);
+      const startMinute = (hourMin % 1) * 60;
+      const baseSessionSeconds = (startHour * 3600) + (startMinute * 60) + randomSecondsOffset;
+      
+      const finalHour = Math.floor(baseSessionSeconds / 3600);
+      const finalMinute = Math.floor((baseSessionSeconds % 3600) / 60);
+      const finalSecond = Math.floor(baseSessionSeconds % 60);
+      
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(finalHour)}:${pad(finalMinute)}:${pad(finalSecond)}+09:00`;
+    }
+
+    function assignIndividualMissions() {
+      try {
+        console.log("assignIndividualMissions called. activeTeam:", activeTeam, "testModeActive:", testModeActive, "list:", activeIndividualMissions[activeTeam]);
+        
+        if (isDeployedProductionLocked) {
+          showToast("배정 불가", "프로덕션 일정이 이미 확정(잠금)되었습니다.", "error");
+          return;
+        }
+        
+        const teamStart = document.getElementById('team-start-date').value;
+        if (!testModeActive && !teamStart) {
+          showToast("배정 실패", "나의 워크숍 시작 일자를 먼저 선택해 주세요.", "error");
+          SoundEngine.play('failure');
+          return;
+        }
+        
+        const list = activeIndividualMissions[activeTeam] || [];
+        if (list.length === 0) {
+          showToast("배정 불가", "먼저 상단에 조원 참여자 명단을 입력해 주세요.", "error");
+          SoundEngine.play('failure');
+          return;
+        }
+        
+        list.forEach((entry, idx) => {
+          const randIdx = Math.floor(Math.random() * individualMissionsDatabase.length);
+          const dbMission = individualMissionsDatabase[randIdx];
+          if (!dbMission) {
+            throw new Error(`개인 미션 데이터베이스에서 인덱스 ${randIdx}의 값을 찾을 수 없습니다.`);
+          }
+          
+          entry.id = dbMission.id;
+          entry.title = dbMission.title;
+          entry.content = dbMission.content;
+          entry.emoji = dbMission.emoji;
+          entry.duration = dbMission.duration;
+          entry.tip = dbMission.tip;
+          entry.colorHex = dbMission.colorHex || 3394815;
+          
+          if (testModeActive) {
+            const nowMs = Date.now();
+            const testOffsetMs = (1 + idx) * 60 * 1000; // 1 min, 2 min...
+            const targetTestDate = new Date(nowMs + testOffsetMs);
+            const pad = (n) => String(n).padStart(2, '0');
+            entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
+          } else {
+            entry.scheduledTime = getRandomIndividualTime(teamStart, idx, list.length);
+          }
+          
+          entry.sent = false;
+          entry.sentAt = null;
+        });
+        
+        console.log("assignIndividualMissions assignment done. list:", list);
+        
+        showToast("배정 완료", `${list.length}명의 조원에게 개인 미션 및 발송 시간이 무작위 배부되었습니다.`, "success");
+        SoundEngine.play('success');
+        triggerConfettiBurst();
+        saveConfig();
+        renderIndividualSlots();
+      } catch (err) {
+        console.error("Error inside assignIndividualMissions:", err);
+        showToast("배정 중 오류 발생", err.message, "error");
+        SoundEngine.play('failure');
+      }
+    }
+
+    
+    function renderIndividualSlots() {
+      const container = document.getElementById('individual-slots-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      const list = activeIndividualMissions[activeTeam] || [];
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; display:flex; align-items:center; justify-content:center; flex-direction:column; color: var(--text-muted); font-size: 0.8rem; height:100%;">
+            <i class="fa-solid fa-users" style="font-size: 1.5rem; margin-bottom: 6px; opacity: 0.5;"></i>
+            조원 명단을 쉼표로 구분하여 입력하세요.
+          </div>
+        `;
+        return;
+      }
+      
+      list.forEach((entry, idx) => {
+        const card = document.createElement('div');
+        
+        if (entry.id) {
+          card.className = "ind-card filled";
+          let timeStr = "미정";
+          if (entry.scheduledTime) {
+            const date = new Date(entry.scheduledTime);
+            const pad = (n) => String(n).padStart(2, '0');
+            timeStr = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+          }
+          
+          card.innerHTML = `
+            <div style="font-size:0.8rem; font-weight:800; color:#fff;">${entry.participant}</div>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--color-green); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">
+              ${entry.emoji} ${entry.title}
+            </div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:4px;">
+              ${entry.sent ? '✅ 발송완료' : `⏳ 대기 (${timeStr})`}
+            </div>
+          `;
+          card.addEventListener('click', () => openDetailModalForSlot(idx, 'individual'));
+        } else {
+          card.className = "ind-card empty";
+          card.innerHTML = `
+            <div style="font-size:0.8rem; font-weight:800; color:rgba(255,255,255,0.4);">${entry.participant}</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px; font-style:italic;">
+              ❓ 미션 대기중
+            </div>
+            <div style="font-size:0.65rem; color:rgba(255,255,255,0.25); margin-top:2px;">
+              클릭하여 지정
+            </div>
+          `;
+          if (!isDeployedProductionLocked) {
+            card.addEventListener('click', () => openIndSelectorModalForParticipant(entry.participant));
+          }
+        }
+        
+        container.appendChild(card);
+      });
+    }
+    
+    async function sendIndividualMissionInstantly(participantName) {
+      const webhookUrl = document.getElementById('webhook-url').value.trim() || localStorage.getItem('config_webhook_url') || '';
+      if (!webhookUrl) {
+        showToast("발송 실패", "웹훅 주소가 없습니다. GitHub Actions를 1회 실행(Run workflow)하여 시크릿 키를 schedule.json에 동기화해 주시거나, 직접 웹훅 주소를 대시보드에 입력해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      const repoPath = document.getElementById('github-repo').value.trim() || 'mhsssshin/missionwar_t';
+      const pat = document.getElementById('github-pat').value.trim();
+      
+      const entry = (activeIndividualMissions[activeTeam] || []).find(m => m.participant === participantName);
+      if (!entry || !entry.id) {
+        showToast("발송 실패", "배정된 미션을 찾을 수 없습니다.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      let webUrl = window.location.origin;
+      if (window.location.hostname.includes('.github.io') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const repoParts = repoPath.split('/');
+        if (repoParts.length === 2) {
+          webUrl = `https://${repoParts[0].toLowerCase()}.github.io/${repoParts[1]}`;
+        } else {
+          webUrl = "https://glistening-phoenix-ef3ff4.netlify.app";
+        }
+      }
+      
+      const geminiToken = localStorage.getItem('config_gemini_key') || atob('QUl6YVN5QkVlbmc2bmMxTFN3WjQ3NXZLbkVLaWwtNnVWeWpabjY4');
+      
+      const callbackUrl = `${webUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${activeTeam}&type=individual&participant=${encodeURIComponent(entry.participant)}&title=${encodeURIComponent(entry.title)}&content=${encodeURIComponent(entry.content)}&gemini=${encodeURIComponent(geminiToken)}&webhook=${encodeURIComponent(webhookUrl)}`;
+      
+      const payload = {
+        username: `[개인 지령] 시크릿 지휘소`,
+        avatar_url: "https://i.imgur.com/83p1jep.png",
+        embeds: [{
+          title: `👤 🚨 [개인 기습 지령 발령] 🚨`,
+          description: `**${activeTeam === 'team1' ? '1조' : '2조'}**의 **${entry.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\n\n📷 **[여기서 개인 미션 사진 인증 제출하기](${callbackUrl})**`,
+          color: entry.colorHex || 3394815,
+          fields: [
+            { name: "👤 대상 요원", value: `**${entry.participant} 요원**`, inline: true },
+            { name: "🎯 개인 미션", value: `**${entry.title}**`, inline: true },
+            { name: "⏳ 제한 시간", value: `⏳ **${entry.duration} 이내 인증**`, inline: true },
+            { name: "📋 미션 상세 내용", value: `>>> ${entry.content}`, inline: false },
+            { name: "💡 수행 팁", value: `*${entry.tip}*`, inline: false }
+          ],
+          footer: {
+            text: "워크숍 미션전쟁 • 개인 지령 제어 장치",
+            icon_url: "https://i.imgur.com/83p1jep.png"
+          },
+          timestamp: new Date().toISOString()
+        }]
+      };
+      
+      try {
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast("즉시 발송 성공", `${entry.participant} 요원의 개인 미션이 디스코드로 전송되었습니다!`, "success");
+          SoundEngine.play('success');
+          
+          entry.sent = true;
+          entry.sentAt = new Date().toISOString();
+          saveConfig();
+          renderIndividualSlots();
+        } else {
+          showToast("발송 실패", `디스코드 웹훅 전송 실패 (HTTP ${res.status})`, "error");
+          SoundEngine.play('failure');
+        }
+      } catch (e) {
+        showToast("발송 오류", e.message, "error");
+        SoundEngine.play('failure');
+      }
+    }
+
     function clearSlot(idx) {
       if (isDeployedProductionLocked) return;
       activeDeck[idx] = null;
@@ -2857,7 +3123,7 @@ run();
         closeDetailModal();
       }
     }
-  
+    
 </script>
 </body>
 </html>
