@@ -2306,10 +2306,10 @@
         }
       }
       
-      // Force set fixed webhook URL
-      const webhookUrl = "https://discord.com/api/webhooks/1528581421667717120/0nOHj5UucBqFl4gd5MGyMFy12EHoZotgFc4Auro_767x5NkBMqGK6FFD4YY4AdyU0p_2";
-      document.getElementById('webhook-url').value = webhookUrl;
-      localStorage.setItem('config_webhook_url', webhookUrl);
+      const savedWebhook = localStorage.getItem('config_webhook_url') || "";
+      if (savedWebhook) {
+        document.getElementById('webhook-url').value = savedWebhook;
+      }
       
       const savedPat = localStorage.getItem('config_github_pat');
       if (savedPat) {

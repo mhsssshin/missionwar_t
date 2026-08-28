@@ -11,11 +11,11 @@ if (!fs.existsSync(schedulePath)) {
 const schedule = JSON.parse(fs.readFileSync(schedulePath, 'utf8'));
 
 // ─── Discord Webhook URL Resolution ───
-// Priority: schedule.json > environment variable
-const webhookUrl = schedule.discordWebhookUrl || process.env.DISCORD_WEBHOOK_URL;
+// We ONLY use the environment variable process.env.DISCORD_WEBHOOK_URL to keep it 100% secret!
+const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
 if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
-  console.error("❌ Invalid or missing Discord Webhook URL!");
+  console.error("❌ Invalid or missing DISCORD_WEBHOOK_URL environment variable!");
   process.exit(1);
 }
 
@@ -34,12 +34,16 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Gemini API Key to pass to submit.html
+const geminiApiKey = process.env.GEMINI_API_KEY || "AIzaSyBEeng6nc1LswZ475vKnEKil-6uVyjZn68";
+
 // ─── Send Discord Webhook for Team Session Mission ───
 async function sendTeamMissionWebhook(mission, teamKey) {
   const teamName = teamKey === 'team1' ? '1조' : '2조';
   const oppositeTeam = teamKey === 'team1' ? '2조' : '1조';
 
-  const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&session=${mission.sessionIndex}`;
+  // We append webhook and gemini parameters dynamically at runtime!
+  const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&session=${mission.sessionIndex}&webhook=${encodeURIComponent(webhookUrl)}&gemini=${encodeURIComponent(geminiApiKey)}`;
 
   const payload = {
     username: `🎖️ [${teamName}] 시크릿 커맨더`,
@@ -79,6 +83,9 @@ async function sendTeamMissionWebhook(mission, teamKey) {
 async function sendIndividualMissionWebhook(indMission, teamKey) {
   const teamName = teamKey === 'team1' ? '1조' : '2조';
 
+  // We append webhook and gemini parameters dynamically at runtime!
+  const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&type=individual&participant=${encodeURIComponent(indMission.participant)}&title=${encodeURIComponent(indMission.title)}&content=${encodeURIComponent(indMission.content)}&webhook=${encodeURIComponent(webhookUrl)}&gemini=${encodeURIComponent(geminiApiKey)}`;
+
   const payload = {
     username: `📩 [${teamName}] 개인 지령관`,
     avatar_url: "https://cdn-icons-png.flaticon.com/512/2910/2910765.png",
@@ -87,7 +94,9 @@ async function sendIndividualMissionWebhook(indMission, teamKey) {
       description: [
         `**${indMission.participant}** 요원에게 극비 개인 미션이 배정되었습니다!`,
         ``,
-        `다른 조원 몰래 단독으로 수행하고 사진 인증하세요.`
+        `다른 조원 몰래 단독으로 수행하고 사진 인증하세요.`,
+        ``,
+        `📷 **[👉 여기를 클릭하여 개인 미션 사진 인증하기](${submitUrl})**`
       ].join('\n'),
       color: indMission.colorHex || 65535,
       fields: [
@@ -158,108 +167,127 @@ function isTimeToSend(scheduledTimeStr) {
   return diffMs >= 0 && diffMs <= 30 * 60 * 1000;
 }
 
-// ─── Main Execution ───
+// ─── Dispatcher logic based on GITHUB ACTIONS inputs ───
+const sendMode = process.env.SEND_MODE || 'scheduled';
+const targetTeam = process.env.TARGET_TEAM; // 'team1' or 'team2'
+const targetSession = process.env.TARGET_SESSION; // e.g. "1" to "5"
+const targetParticipant = process.env.TARGET_PARTICIPANT; // e.g. "권남훈"
+
 async function run() {
-  const teams = ['team1', 'team2'];
-  let totalSent = 0;
-  let totalSkipped = 0;
-  let totalPending = 0;
+  console.log(`🚀 Run mode: ${sendMode}`);
 
-  for (const teamKey of teams) {
-    const teamData = schedule[teamKey];
-    if (!teamData) {
-      console.log(`⚠️ No data for ${teamKey}, skipping.`);
-      continue;
+  if (sendMode === 'instant_session') {
+    if (!targetTeam || !targetSession) {
+      console.error("❌ Missing TARGET_TEAM or TARGET_SESSION for instant_session mode!");
+      process.exit(1);
     }
+    const teamData = schedule[targetTeam];
+    const mission = teamData.missions.find(m => String(m.sessionIndex) === String(targetSession));
+    if (!mission) {
+      console.error(`❌ Mission not found for team ${targetTeam}, session ${targetSession}`);
+      process.exit(1);
+    }
+    console.log(`🔥 Instant session mission trigger: ${mission.title} (${targetTeam})`);
+    const success = await sendTeamMissionWebhook(mission, targetTeam);
+    if (success) {
+      mission.sent = true;
+      mission.sentAt = now.toISOString();
+      scheduleChanged = true;
+    }
+  } else if (sendMode === 'instant_individual') {
+    if (!targetTeam || !targetParticipant) {
+      console.error("❌ Missing TARGET_TEAM or TARGET_PARTICIPANT for instant_individual mode!");
+      process.exit(1);
+    }
+    const teamData = schedule[targetTeam];
+    const indMission = teamData.individualMissions.find(m => m.participant === targetParticipant);
+    if (!indMission) {
+      console.error(`❌ Individual mission not found for participant ${targetParticipant} (${targetTeam})`);
+      process.exit(1);
+    }
+    console.log(`🔥 Instant individual mission trigger for ${targetParticipant} (${targetTeam})`);
+    const success = await sendIndividualMissionWebhook(indMission, targetTeam);
+    if (success) {
+      indMission.sent = true;
+      indMission.sentAt = now.toISOString();
+      scheduleChanged = true;
+    }
+  } else {
+    // Scheduled mode: run the original loop
+    const teams = ['team1', 'team2'];
+    let totalSent = 0;
+    let totalSkipped = 0;
+    let totalPending = 0;
 
-    const teamName = teamKey === 'team1' ? '1조' : '2조';
-    console.log(`\n${'═'.repeat(50)}`);
-    console.log(`  📋 Processing ${teamName} (${teamKey})`);
-    console.log(`${'═'.repeat(50)}`);
+    for (const teamKey of teams) {
+      const teamData = schedule[teamKey];
+      if (!teamData) continue;
 
-    // ── 1. Team Session Missions ──
-    if (teamData.missions && teamData.missions.length > 0) {
-      console.log(`\n  🎯 Team Session Missions (${teamData.missions.length} total):`);
+      const teamName = teamKey === 'team1' ? '1조' : '2조';
+      console.log(`\nProcessing ${teamName} (${teamKey})`);
 
-      for (const mission of teamData.missions) {
-        if (mission.sent === true) {
-          console.log(`    ⏭️ [Session #${mission.sessionIndex}] "${mission.title}" - Already sent at ${mission.sentAt}`);
-          totalSkipped++;
-          continue;
-        }
-
-        if (isTimeToSend(mission.scheduledTime)) {
-          const success = await sendTeamMissionWebhook(mission, teamKey);
-          if (success) {
-            mission.sent = true;
-            mission.sentAt = now.toISOString();
-            scheduleChanged = true;
-            totalSent++;
-          }
-          await delay(1500);
-        } else {
-          const scheduled = new Date(mission.scheduledTime);
-          const diffMin = Math.round((scheduled.getTime() - now.getTime()) / 60000);
-          if (diffMin > 0) {
-            console.log(`    ⏳ [Session #${mission.sessionIndex}] "${mission.title}" - Due in ${diffMin}min`);
-            totalPending++;
-          } else {
-            console.log(`    ⏩ [Session #${mission.sessionIndex}] "${mission.title}" - Stale (${Math.abs(diffMin)}min ago)`);
+      // ── 1. Team Session Missions ──
+      if (teamData.missions) {
+        for (const mission of teamData.missions) {
+          if (mission.sent === true) {
             totalSkipped++;
+            continue;
+          }
+          if (isTimeToSend(mission.scheduledTime)) {
+            const success = await sendTeamMissionWebhook(mission, teamKey);
+            if (success) {
+              mission.sent = true;
+              mission.sentAt = now.toISOString();
+              scheduleChanged = true;
+              totalSent++;
+            }
+            await delay(1500);
+          } else {
+            const scheduled = new Date(mission.scheduledTime);
+            if (scheduled.getTime() > now.getTime()) {
+              totalPending++;
+            } else {
+              totalSkipped++;
+            }
+          }
+        }
+      }
+
+      // ── 2. Individual Personal Missions ──
+      if (teamData.individualMissions) {
+        for (const indMission of teamData.individualMissions) {
+          if (indMission.sent === true) {
+            totalSkipped++;
+            continue;
+          }
+          if (isTimeToSend(indMission.scheduledTime)) {
+            const success = await sendIndividualMissionWebhook(indMission, teamKey);
+            if (success) {
+              indMission.sent = true;
+              indMission.sentAt = now.toISOString();
+              scheduleChanged = true;
+              totalSent++;
+            }
+            await delay(1500);
+          } else {
+            const scheduled = new Date(indMission.scheduledTime);
+            if (scheduled.getTime() > now.getTime()) {
+              totalPending++;
+            } else {
+              totalSkipped++;
+            }
           }
         }
       }
     }
-
-    // ── 2. Individual Personal Missions ──
-    if (teamData.individualMissions && teamData.individualMissions.length > 0) {
-      console.log(`\n  👤 Individual Missions (${teamData.individualMissions.length} total):`);
-
-      for (const indMission of teamData.individualMissions) {
-        if (indMission.sent === true) {
-          console.log(`    ⏭️ [${indMission.participant}] "${indMission.title}" - Already sent at ${indMission.sentAt}`);
-          totalSkipped++;
-          continue;
-        }
-
-        if (isTimeToSend(indMission.scheduledTime)) {
-          const success = await sendIndividualMissionWebhook(indMission, teamKey);
-          if (success) {
-            indMission.sent = true;
-            indMission.sentAt = now.toISOString();
-            scheduleChanged = true;
-            totalSent++;
-          }
-          await delay(1500);
-        } else {
-          const scheduled = new Date(indMission.scheduledTime);
-          const diffMin = Math.round((scheduled.getTime() - now.getTime()) / 60000);
-          if (diffMin > 0) {
-            console.log(`    ⏳ [${indMission.participant}] "${indMission.title}" - Due in ${diffMin}min`);
-            totalPending++;
-          } else {
-            console.log(`    ⏩ [${indMission.participant}] "${indMission.title}" - Stale (${Math.abs(diffMin)}min ago)`);
-            totalSkipped++;
-          }
-        }
-      }
-    }
+    console.log(`\n📊 Scheduled mode summary: Sent: ${totalSent}, Skipped: ${totalSkipped}, Pending: ${totalPending}`);
   }
-
-  // ── Summary ──
-  console.log(`\n${'═'.repeat(50)}`);
-  console.log(`  📊 EXECUTION SUMMARY`);
-  console.log(`${'═'.repeat(50)}`);
-  console.log(`  ✅ Sent:    ${totalSent}`);
-  console.log(`  ⏭️ Skipped: ${totalSkipped}`);
-  console.log(`  ⏳ Pending: ${totalPending}`);
-  console.log(`  📝 Schedule updated: ${scheduleChanged ? 'YES' : 'NO'}`);
 
   if (scheduleChanged) {
     fs.writeFileSync(schedulePath, JSON.stringify(schedule, null, 2), 'utf8');
-    console.log(`\n  💾 schedule.json saved with ${totalSent} mission(s) marked as sent.`);
+    console.log(`\n💾 schedule.json updated successfully.`);
   } else {
-    console.log(`\n  ℹ️ No changes to schedule.json.`);
+    console.log(`\nℹ️ No changes to schedule.json.`);
   }
 }
 

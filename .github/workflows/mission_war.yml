@@ -5,7 +5,32 @@ on:
     # Run every 5 minutes to check for missions to send
     - cron: '*/5 * * * *'
   workflow_dispatch:
-    # Allow manual trigger for testing
+    inputs:
+      send_mode:
+        description: 'Send mode'
+        required: false
+        default: 'scheduled'
+        type: choice
+        options:
+          - scheduled
+          - instant_session
+          - instant_individual
+      team:
+        description: 'Team (for instant send)'
+        required: false
+        default: 'team1'
+        type: choice
+        options:
+          - team1
+          - team2
+      mission_index:
+        description: 'Session index 1-5 (for instant_session)'
+        required: false
+        type: string
+      participant_name:
+        description: 'Participant name (for instant_individual)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -33,6 +58,10 @@ jobs:
       - name: Run mission scheduler
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SEND_MODE: ${{ github.event.inputs.send_mode || 'scheduled' }}
+          TARGET_TEAM: ${{ github.event.inputs.team || '' }}
+          TARGET_SESSION: ${{ github.event.inputs.mission_index || '' }}
+          TARGET_PARTICIPANT: ${{ github.event.inputs.participant_name || '' }}
           TZ: Asia/Seoul
         run: node scripts/check_and_send.js
 
@@ -45,7 +74,6 @@ jobs:
             git add schedule.json
             git commit -m "🤖 auto: mark sent missions [skip ci]"
             
-            # Retry push up to 3 times in case of concurrent updates
             for i in 1 2 3; do
               if git push; then
                 echo "✅ Push successful on attempt $i"
