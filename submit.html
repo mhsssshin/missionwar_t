@@ -554,7 +554,7 @@
         <i class="fa-solid fa-circle-check brand-icon"></i>
         <div>
           <h1 id="submit-brand-title">시크릿 미션 인증 포털</h1>
-          <p id="submit-brand-subtitle">판정기: Gemini 3.5 Flash Vision Engine</p>
+          <p id="submit-brand-subtitle">실시간 현장 미션 인증 시스템</p>
         </div>
       </div>
     </header>
@@ -584,11 +584,10 @@
               <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('portal-webhook', this)"></i>
             </div>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label class="portal-input-label" for="portal-gemini">Gemini API Key (만료시 새 키 입력)</label>
+          <div style="display: none; flex-direction: column; gap: 4px;">
+            <label class="portal-input-label" for="portal-gemini">Gemini API Key</label>
             <div class="input-wrapper">
-              <input type="password" class="portal-input" id="portal-gemini" placeholder="기본 키가 만료된 경우 여기에 새 키 입력" oninput="savePortalKeys()">
-              <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('portal-gemini', this)"></i>
+              <input type="password" class="portal-input" id="portal-gemini" value="" oninput="savePortalKeys()">
             </div>
           </div>
         </div>
@@ -603,9 +602,9 @@
           <input type="password" class="debug-input" id="dbg-webhook" placeholder="Discord 웹훅 주소 입력">
         </div>
         
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: none; flex-direction: column; gap: 8px;">
           <label style="font-size:0.7rem; color:var(--text-muted);">Gemini API Key</label>
-          <input type="password" class="debug-input" id="dbg-gemini" placeholder="Gemini API Key 입력">
+          <input type="password" class="debug-input" id="dbg-gemini" value="">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -677,16 +676,15 @@
         </div>
 
         <button type="button" class="btn-submit" id="btn-submit-verification" onclick="submitMissionVerification()">
-          <i class="fa-solid fa-paper-plane"></i> 미션 판독 및 최종 제출
+          <i class="fa-solid fa-paper-plane"></i> 미션 수행 인증샷 최종 제출
         </button>
 
-        <!-- Gemini Grading Report -->
+        <!-- Verification Report -->
         <div class="gemini-result-box" id="grading-result-box">
-          <span class="verify-label" style="color: var(--color-green);"><i class="fa-solid fa-robot"></i> Gemini AI 실시간 심사 리포트</span>
-          <div class="result-score-tag" id="grading-score">0 / 100점</div>
-          <div style="font-size:0.82rem; font-weight:700; color:#fff;" id="grading-verdict">결과 판정 중</div>
+          <span class="verify-label" style="color: var(--color-green);"><i class="fa-solid fa-circle-check"></i> 미션 인증 제출 리포트</span>
+          <div style="font-size:0.82rem; font-weight:700; color:#fff;" id="grading-verdict">제출 완료</div>
           <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45;" id="grading-reason">
-            판정 이유가 여기에 표시됩니다.
+            요원의 현장 사진 제출이 완료되었습니다!
           </p>
         </div>
       </div>
@@ -1410,12 +1408,9 @@
       }
       
       const finalWebhook = document.getElementById('portal-webhook').value.trim() || (loadedScheduleData ? loadedScheduleData.discordWebhookUrl : '');
-      const finalGeminiKey = document.getElementById('portal-gemini').value.trim() 
-                         || (loadedScheduleData ? loadedScheduleData.geminiApiKey : '')
-                         || atob('QUl6YVN5QkVlbmc2bmMxTFN3WjQ3NXZLbkVLaWwtNnVWeWpabjY4');
       
-      if (!finalWebhook || !finalGeminiKey) {
-        showToast("인증 실패", "설정된 Discord Webhook URL 또는 Gemini API Key가 누락되었습니다. 설정 서랍을 열고 입력해 주세요.", "error");
+      if (!finalWebhook) {
+        showToast("인증 실패", "설정된 Discord Webhook URL이 누락되었습니다. 설정 서랍을 열고 입력해 주세요.", "error");
         SoundEngine.play('failure');
         const content = document.getElementById('drawer-settings-content');
         if (content.classList.contains('hidden')) {
@@ -1426,208 +1421,88 @@
       
       const btn = document.getElementById('btn-submit-verification');
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Gemini AI 판독 심사 중...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 디스코드로 인증샷 업로드 중...`;
       SoundEngine.play('click');
       
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64Data = e.target.result.split(',')[1];
-        const teamSchedule = loadedScheduleData[submitTeam];
-        const mission = isManualDebugMode ? teamSchedule.missions[0] : teamSchedule.missions.find(m => m.sessionIndex === submitSession);
-        
-        try {
-          // Call stable model gemini-3.5-flash
-          let geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${finalGeminiKey}`;
-          
-          const prompt = `You are a Workshop Mission Judge. Verify if the uploaded image successfully completes the mission described below. Respond strictly in the following JSON format.
-CRITICAL: Do NOT use double quotes (") inside the value of the "reason" field. If you need to write a quote, use single quotes (') or Korean brackets (「, 」) instead.
-
-JSON schema:
-{
-  "success": true or false,
-  "score": number between 0 and 100 representing how well they did,
-  "reason": "explanation of what you observed and why it passed/failed in Korean"
-}
-
-Mission details:
-Mission Title: ${mission.title}
-Mission Content: ${mission.content}`;
-
-          const geminiPayload = {
-            contents: [
-              {
-                parts: [
-                  { text: prompt },
-                  {
-                    inlineData: {
-                      mimeType: selectedImageFile.type,
-                      data: base64Data
-                    }
-                  }
-                ]
-              }
-            ],
-            generationConfig: {
-              responseMimeType: "application/json"
-            }
-          };
-          
-          let geminiRes = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(geminiPayload)
-          });
-          
-          // Automatic fallback to gemini-3.1-flash-lite
-          if (!geminiRes.ok) {
-            console.warn("gemini-3.5-flash model request failed. Falling back to gemini-3.1-flash-lite...");
-            const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${finalGeminiKey}`;
-            geminiRes = await fetch(fallbackUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(geminiPayload)
-            });
-          }
-          
-          if (!geminiRes.ok) {
-            throw new Error(`Gemini API 호출에 최종 실패했습니다. (HTTP ${geminiRes.status})`);
-          }
-          
-          const geminiData = await geminiRes.json();
-          const rawText = geminiData.candidates[0].content.parts[0].text;
-          console.log("Raw Gemini AI Response:", rawText);
-          
-          let cleanedText = rawText.trim();
-          // Strip markdown codeblock backticks if the model ignored responseMimeType
-          if (cleanedText.startsWith("```")) {
-            cleanedText = cleanedText.replace(/^```(json)?\s*/i, "").replace(/```$/, "").trim();
-          }
-          
-          let grading;
-          try {
-            grading = JSON.parse(cleanedText);
-          } catch (parseErr) {
-            console.warn("Standard JSON.parse failed on Gemini response. Running regex fallback parser...", parseErr);
-            
-            // Bulletproof regex fallback parser in case of unescaped quotes in the reason value
-            const successMatch = cleanedText.match(/"success"\s*:\s*(true|false)/i);
-            const scoreMatch = cleanedText.match(/"score"\s*:\s*(\d+)/);
-            // Match reason content after "reason": " up to the end or before a closing quote bracket
-            const reasonMatch = cleanedText.match(/"reason"\s*:\s*"(.*)"\s*}?\s*$/s) || 
-                                cleanedText.match(/"reason"\s*:\s*"(.*)"/s) || 
-                                cleanedText.match(/"reason"\s*:\s*"(.*)/s);
-            
-            if (successMatch && scoreMatch) {
-              let extractedReason = reasonMatch ? reasonMatch[1].trim() : "인증 분석 완료";
-              // Trim trailing quotes and brackets if present
-              extractedReason = extractedReason.replace(/",?\s*}?\s*$/, "").trim();
-              
-              grading = {
-                success: successMatch[1].toLowerCase() === 'true',
-                score: parseInt(scoreMatch[1]),
-                reason: extractedReason
-              };
-              console.log("Regex fallback parser recovered grading:", grading);
-            } else {
-              throw new Error("Gemini 응답 구조가 유효하지 않습니다. (JSON & Regex 파싱 모두 실패)");
-            }
-          }
-          
-          const scoreBox = document.getElementById('grading-result-box');
-          const scoreTag = document.getElementById('grading-score');
-          const verdictTag = document.getElementById('grading-verdict');
-          const reasonTag = document.getElementById('grading-reason');
-          
-          scoreTag.innerText = `${grading.score} / 100점`;
-          if (grading.success) {
-            verdictTag.innerText = "✅ 성공 (SUCCESS)";
-            verdictTag.style.color = "var(--color-green)";
-            scoreBox.style.borderColor = "var(--color-green)";
-            scoreBox.style.background = "rgba(16, 185, 129, 0.03)";
-          } else {
-            verdictTag.innerText = "❌ 실패 (FAILED)";
-            verdictTag.style.color = "var(--color-team1)";
-            scoreBox.style.borderColor = "var(--color-team1)";
-            scoreBox.style.background = "rgba(255, 51, 102, 0.03)";
-          }
-          reasonTag.innerText = grading.reason;
-          scoreBox.style.display = 'flex';
-          
-          // Webhook Upload
-          btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 디스코드로 심사 카드 발송 중...`;
-          
-          const teamNameFormatted = submitTeam === 'team1' ? '1조' : '2조';
-          
-          // Force normalize filename to ASCII
-          const originalExtension = selectedImageFile.name.split('.').pop() || 'png';
-          const safeFilename = `image.${originalExtension}`;
-          
-          const isIndividual = submitType === 'individual';
-          const discordEmbed = {
-            username: isIndividual ? `[개인 심사] 미션 판독기 (Gemini)` : `[${teamNameFormatted}] 미션 판독기 (Gemini)`,
-            avatar_url: "https://i.imgur.com/83p1jep.png",
-            embeds: [{
-              title: isIndividual 
-                ? `📢 [개인 미션 인증 완료] ${submitParticipant} 요원 - ${submitTitle}` 
-                : `📢 [미션 인증 제출 완료] ${mission.title}`,
-              description: isIndividual 
-                ? `**${teamNameFormatted}**의 **${submitParticipant} 요원**이 개인 미션 수행 인증샷을 제출했습니다! Gemini AI가 즉시 심사를 수행했습니다.`
-                : `**${teamNameFormatted}** 멤버가 미션 수행 인증샷을 제출했습니다! Gemini AI가 즉시 심사를 수행했습니다.`,
-              color: grading.success ? 1049410 : 13632027,
-              fields: isIndividual ? [
-                { name: "👤 대상 요원", value: `**${submitParticipant} 요원**`, inline: true },
-                { name: "🎯 개인 미션", value: `**${submitTitle}**`, inline: true },
-                { name: "🏅 판정 결과", value: grading.success ? "✅ **성공 (SUCCESS)**" : "❌ **실패 (FAILED)**", inline: true },
-                { name: "💯 Gemini 심사 점수", value: `🔥 **${grading.score} / 100점**`, inline: true },
-                { name: "📝 AI 판정 의견", value: `>>> ${grading.reason}`, inline: false }
-              ] : [
-                { name: "🎯 미션명", value: `**${mission.title}**`, inline: true },
-                { name: "🏅 판정 결과", value: grading.success ? "✅ **성공 (SUCCESS)**" : "❌ **실패 (FAILED)**", inline: true },
-                { name: "💯 Gemini 심사 점수", value: `🔥 **${grading.score} / 100점**`, inline: true },
-                { name: "📝 AI 판정 의견", value: `>>> ${grading.reason}`, inline: false }
-              ],
-              image: {
-                url: `attachment://${safeFilename}`
-              },
-              footer: {
-                text: "Secret Mission War Auto-Verification System"
-              },
-              timestamp: new Date().toISOString()
-            }]
-          };
-          
-          const formData = new FormData();
-          formData.append('file', selectedImageFile, safeFilename);
-          formData.append('files[0]', selectedImageFile, safeFilename);
-          formData.append('payload_json', JSON.stringify(discordEmbed));
-          
-          console.log("Transmitting payload to Discord Webhook:", discordEmbed);
-          
-          const discordRes = await fetch(finalWebhook, {
-            method: 'POST',
-            body: formData
-          });
-          
-          if (!discordRes.ok) {
-            const rawErrBody = await discordRes.text();
-            throw new Error(`디스코드 웹훅 이미지 전송 실패 (HTTP ${discordRes.status}): ${rawErrBody}`);
-          }
-          
-          btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> 인증 및 제출 최종 완료!`;
-          SoundEngine.play('success');
-          triggerConfettiBurst();
-          showToast("제출 완료", "미션 채점 결과가 디스코드 채널에 실시간 공유되었습니다!", "success");
-          
-        } catch (err) {
-          console.error(err);
-          showToast("오류 발생", err.message, "error");
-          SoundEngine.play('failure');
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> 미션 판독 및 최종 제출`;
-        }
+      const teamSchedule = loadedScheduleData[submitTeam];
+      const mission = isManualDebugMode ? teamSchedule.missions[0] : teamSchedule.missions.find(m => m.sessionIndex === submitSession);
+      
+      const originalExtension = selectedImageFile.name.split('.').pop() || 'png';
+      const safeFilename = `image.${originalExtension}`;
+      
+      const teamNameFormatted = submitTeam === 'team1' ? '1조' : '2조';
+      const isIndividual = submitType === 'individual';
+      
+      const discordEmbed = {
+        username: isIndividual ? `[개인 인증] 미션 관제소` : `[${teamNameFormatted}] 미션 관제소`,
+        avatar_url: "https://cdn-icons-png.flaticon.com/512/3176/3176371.png",
+        embeds: [{
+          title: isIndividual 
+            ? `✅ [개인 미션 수행 완료] ${submitParticipant} 요원 - ${submitTitle}` 
+            : `✅ [미션 수행 완료] ${mission.title}`,
+          description: isIndividual 
+            ? `**${teamNameFormatted}**의 **${submitParticipant} 요원**이 개인 지령 인증샷을 제출하였습니다!`
+            : `**${teamNameFormatted}** 멤버가 기습 지령 인증샷을 제출하였습니다!`,
+          color: isIndividual ? 65535 : 16724870,
+          fields: isIndividual ? [
+            { name: "👤 대상 요원", value: `**${submitParticipant} 요원**`, inline: true },
+            { name: "🎯 개인 미션", value: `**${submitTitle}**`, inline: true },
+            { name: "⏱️ 제한 시간", value: `⏳ **${mission.duration || '지정 시간 내'}**`, inline: true }
+          ] : [
+            { name: "🎯 미션명", value: `**${mission.title}**`, inline: true },
+            { name: "📍 세션", value: `${mission.sessionName}`, inline: true },
+            { name: "⏱️ 제한 시간", value: `⏳ **${mission.duration}**`, inline: true }
+          ],
+          image: {
+            url: `attachment://${safeFilename}`
+          },
+          footer: {
+            text: "Secret Mission War Verification Portal"
+          },
+          timestamp: new Date().toISOString()
+        }]
       };
       
-      reader.readAsDataURL(selectedImageFile);
+      const formData = new FormData();
+      formData.append('file', selectedImageFile, safeFilename);
+      formData.append('files[0]', selectedImageFile, safeFilename);
+      formData.append('payload_json', JSON.stringify(discordEmbed));
+      
+      try {
+        console.log("Transmitting payload to Discord Webhook:", discordEmbed);
+        
+        const discordRes = await fetch(finalWebhook, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!discordRes.ok) {
+          const rawErrBody = await discordRes.text();
+          throw new Error(`디스코드 웹훅 이미지 전송 실패 (HTTP ${discordRes.status}): ${rawErrBody}`);
+        }
+        
+        // Show result box
+        const scoreBox = document.getElementById('grading-result-box');
+        const verdictTag = document.getElementById('grading-verdict');
+        const reasonTag = document.getElementById('grading-reason');
+        
+        verdictTag.innerText = "✅ 제출 성공 (SUCCESS)";
+        verdictTag.style.color = "var(--color-green)";
+        scoreBox.style.borderColor = "var(--color-green)";
+        scoreBox.style.background = "rgba(16, 185, 129, 0.03)";
+        reasonTag.innerText = "요원의 미션 수행 현장 사진이 정상 인증 및 전송되었습니다!";
+        scoreBox.style.display = 'flex';
+        
+        btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> 인증 및 제출 최종 완료!`;
+        SoundEngine.play('success');
+        triggerConfettiBurst();
+        showToast("제출 완료", "미션 수행 인증 사진이 디스코드 채널에 실시간 공유되었습니다!", "success");
+      } catch (err) {
+        showToast("제출 오류", err.message, "error");
+        SoundEngine.play('failure');
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> 미션 인증 사진 재제출`;
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {

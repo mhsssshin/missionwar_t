@@ -34,16 +34,14 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Gemini API Key to pass to submit.html
-const geminiApiKey = process.env.GEMINI_API_KEY || "AIzaSyBEeng6nc1LswZ475vKnEKil-6uVyjZn68";
+
 
 // ─── Send Discord Webhook for Team Session Mission ───
 async function sendTeamMissionWebhook(mission, teamKey) {
   const teamName = teamKey === 'team1' ? '1조' : '2조';
   const oppositeTeam = teamKey === 'team1' ? '2조' : '1조';
 
-  // We append webhook and gemini parameters dynamically at runtime!
-  const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&session=${mission.sessionIndex}&webhook=${encodeURIComponent(webhookUrl)}&gemini=${encodeURIComponent(geminiApiKey)}`;
+  const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&session=${mission.sessionIndex}&webhook=${encodeURIComponent(webhookUrl)}`;
 
   const payload = {
     username: `🎖️ [${teamName}] 시크릿 커맨더`,
@@ -83,8 +81,7 @@ async function sendTeamMissionWebhook(mission, teamKey) {
 async function sendIndividualMissionWebhook(indMission, teamKey) {
   const teamName = teamKey === 'team1' ? '1조' : '2조';
 
-  // We append webhook and gemini parameters dynamically at runtime!
-  const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&type=individual&participant=${encodeURIComponent(indMission.participant)}&title=${encodeURIComponent(indMission.title)}&content=${encodeURIComponent(indMission.content)}&webhook=${encodeURIComponent(webhookUrl)}&gemini=${encodeURIComponent(geminiApiKey)}`;
+  const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&type=individual&participant=${encodeURIComponent(indMission.participant)}&title=${encodeURIComponent(indMission.title)}&content=${encodeURIComponent(indMission.content)}&webhook=${encodeURIComponent(webhookUrl)}`;
 
   const payload = {
     username: `📩 [${teamName}] 개인 지령관`,
