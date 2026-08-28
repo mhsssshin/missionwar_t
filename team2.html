@@ -1515,286 +1515,146 @@
     let activeSchedules = Array(5).fill(null);
     let activeIndividualMissions = { team1: [], team2: [] };
 
+    
     function loadConfig() {
-      // 1. Determine active team and load its deck/schedules into memory first to prevent race condition wipes
-      const savedTeam = 'team2';
-      selectActiveTeam(savedTeam, false);
-
-      // 2. Load inputs
-      document.getElementById('webhook-url').value = localStorage.getItem('config_webhook_url') || '';
-      document.getElementById('github-pat').value = localStorage.getItem('config_github_pat') || '';
-      document.getElementById('github-repo').value = localStorage.getItem('config_github_repo') || 'mhsssshin/missionwar_t';
-      
-      // 3. Load test mode toggle checkbox
-      const savedTestMode = localStorage.getItem('config_test_mode_active');
-      if (savedTestMode === 'true') {
-        const toggleCheckbox = document.getElementById('test-mode-toggle');
-        toggleCheckbox.checked = true;
-        toggleTestMode(toggleCheckbox, false);
-      }
-      
-      fetchRemoteLockStatus(true);
-    }
-    
-    function saveConfig() {
-      if (isDeployedProductionLocked) return;
-      
-      localStorage.setItem('config_webhook_url', document.getElementById('webhook-url').value.trim());
-      localStorage.setItem('config_github_pat', document.getElementById('github-pat').value.trim());
-      localStorage.setItem('config_github_repo', document.getElementById('github-repo').value.trim());
-      localStorage.setItem('config_test_mode_active', testModeActive);
-      
-      localStorage.setItem('active_team_role', activeTeam);
-      if (!testModeActive) {
-        localStorage.setItem(`team_start_date_${activeTeam}`, document.getElementById('team-start-date').value);
-      }
-      
-      localStorage.setItem(`deck_${activeTeam}`, JSON.stringify(activeDeck.map(m => m ? {id: m.id} : null)));
-      localStorage.setItem(`schedules_${activeTeam}`, JSON.stringify(activeSchedules));
-      localStorage.setItem(`individual_missions_${activeTeam}`, JSON.stringify(activeIndividualMissions[activeTeam] || []));
-      
-      updatePreviewJSON();
-    }
-
-    async function fetchRemoteLockStatus(syncConfig = false) {
-      try {
-        const pat = document.getElementById('github-pat').value.trim();
-        const repoPath = document.getElementById('github-repo').value.trim();
-        
-        if (!repoPath || repoPath.split('/').length !== 2) {
-        setLockUIState(false);
-        return;
-      }
-      
-      const [owner, repo] = repoPath.split('/');
-      let remoteJson = null;
-      let isRemoteLocked = false;
-      
-      // 1. Try authenticated API fetch if PAT is provided
-      if (pat) {
-        const url = `https://api.github.com/repos/${owner}/${repo}/contents/schedule.json`;
-        try {
-          const res = await fetch(url, {
-            headers: {
-              'Authorization': `token ${pat}`,
-              'Accept': 'application/vnd.github.v3+json'
-            }
-          });
-          if (res.ok) {
-            const fileData = await res.json();
-            const contentDecoded = decodeURIComponent(escape(atob(fileData.content)));
-            remoteJson = JSON.parse(contentDecoded);
-            isRemoteLocked = true;
-          }
-        } catch (err) {
-          console.warn("Authenticated fetch failed:", err);
-        }
-      }
-      
-      // 2. Fallback to unauthenticated public raw fetch if PAT is empty or fetch failed
-      if (!remoteJson) {
-        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/schedule.json`;
-        try {
-          const res = await fetch(rawUrl);
-          if (res.ok) {
-            remoteJson = await res.json();
-          }
-        } catch (err) {
-          console.warn("Unauthenticated raw fetch failed:", err);
-        }
-      }
-      
-      if (remoteJson) {
-        if (syncConfig) {
-          // Sync basic configurations from remote back to local (GitHub as the Source of Truth DB)
-          if (remoteJson.discordWebhookUrl) {
-            document.getElementById('webhook-url').value = remoteJson.discordWebhookUrl;
-            localStorage.setItem('config_webhook_url', remoteJson.discordWebhookUrl);
-          }
-
-
-          if (remoteJson.testModeActive !== undefined) {
-            const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
-            testModeActive = isTest;
-            document.getElementById('test-mode-toggle').checked = isTest;
-            localStorage.setItem('config_test_mode_active', isTest);
-            
-            const modeText = document.getElementById('mode-text');
-            const dateInput = document.getElementById('team-start-date');
-            const dateBox = document.getElementById('team-date-group-box');
-            const testWarning = document.getElementById('modal-test-warning');
-            if (isTest) {
-              dateInput.disabled = true;
-              dateBox.style.opacity = '0.5';
-              modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
-              modeText.style.color = "var(--color-team1)";
-              testWarning.style.display = 'flex';
-            } else {
-              dateInput.disabled = false;
-              dateBox.style.opacity = '1';
-              modeText.innerText = "☀️ 표준 워크숍 일정 모드";
-              modeText.style.color = "var(--color-green)";
-              testWarning.style.display = 'none';
-            }
-          }
-          
-          // Sync decks and schedules from remote to restore state on other browsers/refresh
-          ['team1', 'team2'].forEach(teamKey => {
-            const teamData = remoteJson[teamKey];
-            if (teamData) {
-              if (teamData.missions && teamData.missions.length > 0) {
-                const restoredDeck = Array(5).fill(null);
-                const restoredSchedules = Array(5).fill(null);
-                
-                teamData.missions.forEach((m) => {
-                  if (m) {
-                    const dbMission = missionsDatabase.find(db => db.title === m.title);
-                    if (dbMission) {
-                      restoredDeck[m.sessionIndex - 1] = dbMission;
-                      restoredSchedules[m.sessionIndex - 1] = m.scheduledTime;
-                    }
-                  }
-                });
-                
-                localStorage.setItem(`deck_${teamKey}`, JSON.stringify(restoredDeck.map(m => m ? {id: m.id} : null)));
-                localStorage.setItem(`schedules_${teamKey}`, JSON.stringify(restoredSchedules));
-                if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
-                  localStorage.setItem(`team_start_date_${teamKey}`, teamData.startDate);
-                }
-                
-                if (teamKey === activeTeam) {
-                  activeDeck = restoredDeck;
-                  activeSchedules = restoredSchedules;
-                  if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
-                    document.getElementById('team-start-date').value = teamData.startDate;
-                  }
-                  renderSlotsList();
-                  updateDeckSizeBadge();
-                  updatePreviewJSON();
-                }
-              }
-              
-              if (teamData.individualMissions) {
-                activeIndividualMissions[teamKey] = teamData.individualMissions;
-                localStorage.setItem(`individual_missions_${teamKey}`, JSON.stringify(teamData.individualMissions));
-                
-                if (teamKey === activeTeam) {
-                  const participantsInput = document.getElementById('team-participants');
-                  if (participantsInput) {
-                    participantsInput.value = teamData.individualMissions.map(m => m.participant).join(', ');
-                  }
-                  renderIndividualSlots();
-                }
-              }
-            }
-          });
-        }
-        
-        const teamSchedule = remoteJson[activeTeam];
-          if (teamSchedule && teamSchedule.startDate && teamSchedule.missions && teamSchedule.missions.length > 0) {
-            const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
-            if (!isTest && isRemoteLocked) {
-              setLockUIState(true);
-              return;
-            }
-          }
-        }
-      } catch (err) {
-        console.warn("Could not determine remote lock status:", err);
-      }
-      setLockUIState(false);
-    }
-    
-    function setLockUIState(locked) {
-      if (testModeActive) {
-        locked = false; // Always unlocked in test mode
-      }
-      isDeployedProductionLocked = locked;
-      
+      const modeText = document.getElementById('mode-text');
       const dateInput = document.getElementById('team-start-date');
-      const testToggle = document.getElementById('test-mode-toggle');
-      const btnTimes = document.getElementById('btn-times-generate');
-      const btnDeploy = document.getElementById('btn-github-deploy');
-      const banner = document.getElementById('production-lock-banner');
+      const dateBox = document.getElementById('team-date-group-box');
+      const testWarning = document.getElementById('modal-test-warning');
       
-      const participantsInput = document.getElementById('team-participants');
-      const btnAssignInd = document.getElementById('btn-assign-individual');
-      
-      if (locked) {
-        banner.style.display = 'flex';
-        dateInput.disabled = true;
-        testToggle.disabled = false; // Keep clickable to allow switching back to Test Mode
-        btnTimes.disabled = true;
-        btnDeploy.disabled = true;
-        if (participantsInput) participantsInput.disabled = true;
-        if (btnAssignInd) btnAssignInd.disabled = true;
-        showToast("스케줄 편집 차단", "프로덕션 일정이 이미 깃허브에 게시되어 변경이 차단되었습니다.", "error");
-      } else {
-        banner.style.display = 'none';
-        dateInput.disabled = testModeActive;
-        testToggle.disabled = false;
-        btnTimes.disabled = false;
-        btnDeploy.disabled = false;
-        if (participantsInput) participantsInput.disabled = false;
-        if (btnAssignInd) btnAssignInd.disabled = false;
+      const savedTestMode = localStorage.getItem('config_test_mode_active');
+      if (savedTestMode !== null) {
+        testModeActive = savedTestMode === 'true';
+        document.getElementById('test-mode-toggle').checked = testModeActive;
+        
+        if (testModeActive) {
+          dateInput.disabled = true;
+          dateBox.style.opacity = '0.5';
+          modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
+          modeText.style.color = "var(--color-team1)";
+          testWarning.style.display = 'flex';
+        } else {
+          dateInput.disabled = false;
+          dateBox.style.opacity = '1';
+          modeText.innerText = "☀️ 표준 워크숍 일정 모드";
+          modeText.style.color = "var(--color-green)";
+          testWarning.style.display = 'none';
+        }
       }
       
-      renderSlotsList();
-      renderIndividualSlots();
-    }
-    
-    function selectActiveTeam(teamKey, playSound = true) {
-      activeTeam = teamKey;
+      const savedWebhook = localStorage.getItem('config_webhook_url');
+      if (savedWebhook) {
+        document.getElementById('webhook-url').value = savedWebhook;
+      }
+      const savedPat = localStorage.getItem('config_github_pat');
+      if (savedPat) {
+        document.getElementById('github-pat').value = savedPat;
+      }
+      const savedRepo = localStorage.getItem('config_github_repo');
+      if (savedRepo) {
+        document.getElementById('github-repo').value = savedRepo;
+      }
       
-      const toggle = document.getElementById('team-selector-toggle');
       const btn1 = document.getElementById('btn-t1');
       const btn2 = document.getElementById('btn-t2');
       const header = document.getElementById('deck-team-header');
       const indHeader = document.getElementById('individual-team-header');
       
-      if (teamKey === 'team1') {
-        toggle.classList.remove('team2-active');
-        btn1.classList.add('active');
-        btn2.classList.remove('active');
+      if (activeTeam === 'team1') {
         header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (수신: 2조)`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team1);"></i> 1조 조원별 개인 지령 구성`;
       } else {
-        toggle.classList.add('team2-active');
-        btn2.classList.add('active');
-        btn1.classList.remove('active');
         header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성 (수신: 1조)`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team2);"></i> 2조 조원별 개인 지령 구성`;
       }
       
-      if (playSound) SoundEngine.play('click');
-      
-      if (!testModeActive) {
-        document.getElementById('team-start-date').value = localStorage.getItem(`team_start_date_${activeTeam}`) || '2026-09-07';
-      }
-      
       try {
+        const defaultDate = activeTeam === 'team1' ? '2026-09-02' : '2026-09-07';
+        if (!localStorage.getItem(`team_start_date_${activeTeam}`)) {
+          localStorage.setItem(`team_start_date_${activeTeam}`, defaultDate);
+        }
+        document.getElementById('team-start-date').value = localStorage.getItem(`team_start_date_${activeTeam}`);
+        
         const savedDeck = localStorage.getItem(`deck_${activeTeam}`);
-        if (savedDeck) {
+        const savedSchedules = localStorage.getItem(`schedules_${activeTeam}`);
+        const savedInd = localStorage.getItem(`individual_missions_${activeTeam}`);
+        
+        if (savedDeck && savedSchedules && savedInd && JSON.parse(savedDeck).some(m => m !== null)) {
           const parsed = JSON.parse(savedDeck);
           activeDeck = parsed.map(m => m ? missionsDatabase.find(db => db.id === m.id) : null);
-        } else {
-          activeDeck = Array(5).fill(null);
-        }
-        
-        const savedSchedules = localStorage.getItem(`schedules_${activeTeam}`);
-        if (savedSchedules) {
           activeSchedules = JSON.parse(savedSchedules);
-        } else {
-          activeSchedules = Array(5).fill(null);
-        }
-        
-        const savedInd = localStorage.getItem(`individual_missions_${activeTeam}`);
-        if (savedInd) {
           activeIndividualMissions[activeTeam] = JSON.parse(savedInd);
         } else {
-          activeIndividualMissions[activeTeam] = [];
+          console.log("Pre-populating default dashboard state...");
+          
+          activeDeck = Array(5).fill(null);
+          for (let idx = 0; idx < 5; idx++) {
+            const possible = missionsDatabase.filter(m => m.sessionIndex === (idx + 1));
+            if (possible.length > 0) {
+              const randM = possible[Math.floor(Math.random() * possible.length)];
+              activeDeck[idx] = randM;
+            }
+          }
+          
+          activeSchedules = Array(5).fill(null);
+          const baseDateStr = document.getElementById('team-start-date').value;
+          if (baseDateStr) {
+            sessionsSpec.forEach((spec, idx) => {
+              const baseDate = new Date(baseDateStr + 'T00:00:00');
+              baseDate.setDate(baseDate.getDate() + (spec.day - 1));
+              
+              const durationHrs = spec.hourMax - spec.hourMin;
+              const randOffsetHrs = spec.hourMin + (Math.random() * durationHrs);
+              const randHrs = Math.floor(randOffsetHrs);
+              const randMins = Math.floor((randOffsetHrs - randHrs) * 60);
+              
+              baseDate.setHours(randHrs, randMins, 0, 0);
+              
+              const pad = (n) => String(n).padStart(2, '0');
+              const offsetStr = "+09:00";
+              const timeStr = `${baseDate.getFullYear()}-${pad(baseDate.getMonth() + 1)}-${pad(baseDate.getDate())}T${pad(baseDate.getHours())}:${pad(baseDate.getMinutes())}:00${offsetStr}`;
+              activeSchedules[idx] = timeStr;
+            });
+          }
+          
+          const participantsInput = document.getElementById('team-participants');
+          const pListStr = participantsInput ? participantsInput.value : '박용철, 김진혁, 박재욱, 임동현, 김민서, 김해리, 권영재, 김민수, 박주암, 조준형, 정우창, 염진영';
+          const participants = pListStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          
+          const indMissions = [];
+          const usedIndIds = new Set();
+          
+          participants.forEach((name, idx) => {
+            const available = individualMissionsDatabase.filter(m => !usedIndIds.has(m.id));
+            const pool = available.length > 0 ? available : individualMissionsDatabase;
+            const dbMission = pool[Math.floor(Math.random() * pool.length)];
+            usedIndIds.add(dbMission.id);
+            
+            const scheduledTime = getRandomIndividualTime(baseDateStr, idx, participants.length);
+            
+            indMissions.push({
+              participant: name,
+              id: dbMission.id,
+              title: dbMission.title,
+              content: dbMission.content,
+              emoji: dbMission.emoji,
+              duration: dbMission.duration,
+              tip: dbMission.tip || "미션 지령대로 행동해 주세요.",
+              colorHex: dbMission.colorHex || 3394815,
+              scheduledTime: scheduledTime,
+              sent: false,
+              sentAt: null
+            });
+          });
+          
+          activeIndividualMissions[activeTeam] = indMissions;
+          
+          localStorage.setItem(`deck_${activeTeam}`, JSON.stringify(activeDeck.map(m => m ? {id: m.id} : null)));
+          localStorage.setItem(`schedules_${activeTeam}`, JSON.stringify(activeSchedules));
+          localStorage.setItem(`individual_missions_${activeTeam}`, JSON.stringify(activeIndividualMissions[activeTeam]));
         }
       } catch (e) {
+        console.error("Error pre-populating config:", e);
         activeDeck = Array(5).fill(null);
         activeSchedules = Array(5).fill(null);
         activeIndividualMissions[activeTeam] = [];
@@ -1802,13 +1662,8 @@
       
       const participantsInput = document.getElementById('team-participants');
       if (participantsInput) {
-        
-      const localSavedParticipants = (activeIndividualMissions[activeTeam] || []).map(m => m.participant).join(', ');
-      participantsInput.value = localSavedParticipants || '박용철, 김진혁, 박재욱, 임동현, 김민서, 김해리, 권영재, 김민수, 박주암, 조준형, 정우창, 염진영';
-      if (!localSavedParticipants) {
-        rebuildIndividualMissionsList();
-      }
-      
+        const localSavedParticipants = (activeIndividualMissions[activeTeam] || []).map(m => m.participant).join(', ');
+        participantsInput.value = localSavedParticipants || '박용철, 김진혁, 박재욱, 임동현, 김민서, 김해리, 권영재, 김민수, 박주암, 조준형, 정우창, 염진영';
       }
       
       activeSlotIndex = null;
@@ -1842,7 +1697,7 @@
         modeText.innerText = "☀️ 표준 워크숍 일정 모드";
         modeText.style.color = "var(--color-green)";
         testWarning.style.display = 'none';
-        dateInput.value = localStorage.getItem(`team_start_date_${activeTeam}`) || '2026-09-07';
+        dateInput.value = localStorage.getItem(`team_start_date_${activeTeam}`) || '';
         
         // Switch to standard mode: Re-evaluate lock status
         fetchRemoteLockStatus();
@@ -2101,7 +1956,7 @@
           if (entry.scheduledTime) {
             const date = new Date(entry.scheduledTime);
             const pad = (n) => String(n).padStart(2, '0');
-            timeStr = `${pad(date.getHours())}:\${pad(date.getMinutes())}`;
+            timeStr = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
           }
           
           card.innerHTML = `
