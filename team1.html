@@ -837,11 +837,11 @@
       font-size: 1.3rem !important;
     }
     
-    /* 3-Column main layout */
+    /* 2-Column main layout */
     .main-workspace {
       display: grid;
-      grid-template-columns: 310px 1.15fr 1.35fr;
-      gap: 10px;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 12px;
       flex-grow: 1;
       height: calc(100vh - 100px);
       min-height: 0;
@@ -981,94 +981,42 @@
   <canvas id="bg-canvas"></canvas>
   <canvas id="confetti-canvas"></canvas>
   
+  <!-- Hidden elements to preserve DOM bindings in JS -->
+  <input type="date" id="team-start-date" style="display:none;">
+  <textarea id="team-participants" style="display:none;">권남훈, 조성대, 권지민, 임승하, 신명호, 오상철, 이영준, 김상민, 이재헌, 박소연</textarea>
+  
   <div class="app-container">
     <header class="glass-panel" style="border-color: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'}; box-shadow: ${isTeam1 ? 'var(--glow-team1)' : 'var(--glow-team2)'};">
       <div class="brand">
         <i class="fa-solid fa-satellite-dish brand-icon" style="color: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'};"></i>
         <div>
-          <h1 class="title-neon" style="background: ${isTeam1 ? 'linear-gradient(90deg, #ff3366, #ff6699)' : 'linear-gradient(90deg, #33ccff, #66d9ff)'}; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          <h1 class="title-neon" style="background: ${isTeam1 ? 'linear-gradient(90deg, #ff2a5f, #ff6699)' : 'linear-gradient(90deg, #00f0ff, #66d9ff)'}; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
             Secret Mission War [${isTeam1 ? '1조 지휘소' : '2조 지휘소'}]
           </h1>
-          <p>서버리스 오토 스케줄 통제본부</p>
+          <p>서버리스 오토 스케줄 통제본부 (일정: ${isTeam1 ? '2026-09-02 ~ 09-04' : '2026-09-07 ~ 09-09'})</p>
         </div>
       </div>
-      <div style="display: flex; gap: 15px; align-items: center;">
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="lock-banner" id="production-lock-banner" style="display: none; padding: 4px 8px; font-size: 0.7rem; gap: 6px; margin-bottom: 0; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; color: #ef4444;">
+          <i class="fa-solid fa-lock"></i> 🔒 스케줄 확정됨
+        </div>
+        <button type="button" class="slot-btn" onclick="openAdminSettings()" style="background: rgba(255, 255, 255, 0.06); color: #fff; border: 1px solid var(--panel-border); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;">
+          <i class="fa-solid fa-screwdriver-wrench"></i> 통제부 설정
+        </button>
+        <button type="button" class="btn btn-generator" id="btn-times-generate" onclick="generateRandomTimesForActiveTeam()" style="background: rgba(255, 255, 255, 0.06); color: #fff; border: 1px solid var(--panel-border); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; height: auto;">
+          <i class="fa-solid fa-shuffle"></i> 시간표 재배정
+        </button>
+        <button type="button" class="btn btn-deploy" id="btn-github-deploy" onclick="deployToGitHub()" style="background: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'}; color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; box-shadow: ${isTeam1 ? 'var(--glow-team1)' : 'var(--glow-team2)'}; height: auto;">
+          <i class="fa-solid fa-cloud-arrow-up"></i> GitHub 게시
+        </button>
         <a href="index.html" class="slot-btn" style="background: rgba(255, 255, 255, 0.08); color: #fff; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--panel-border);">
           <i class="fa-solid fa-house"></i> 홈으로
         </a>
-        <span class="slot-category-badge" style="font-family: monospace; font-size: 0.8rem;" id="live-time">00:00:00 KST</span>
       </div>
     </header>
     
     <div class="main-workspace">
-      <!-- COLUMN 1: CONFIG -->
-      <div class="panel-col">
-        <div class="glass-panel" style="border-color: rgba(255,255,255,0.06);">
-          <div class="panel-header" style="border-bottom: none; padding-bottom: 6px; margin-bottom: 4px;">
-            <h3><i class="fa-solid fa-gears"></i> 지휘부 구성 설정</h3>
-          </div>
-          <div class="panel-scroll-content">
-            <div class="lock-banner" id="production-lock-banner" style="display: none; padding: 6px; font-size: 0.7rem; gap: 6px; margin-bottom: 4px;">
-              <i class="fa-solid fa-lock"></i>
-              <span>🔒 일정 확정됨 (읽기 전용)</span>
-            </div>
-            
-            <div class="config-grid">
-              <div class="input-group">
-                <label><i class="fa-solid fa-flask"></i> 예약 모드 설정</label>
-                <div class="test-switch-container" style="height:32px; padding: 0 8px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid var(--panel-border);">
-                  <span style="color: var(--color-green); font-size:0.75rem;" id="mode-text">☀️ 표준 워크숍 일정 모드</span>
-                  <label class="test-switch" style="transform: scale(0.85); transform-origin: right;">
-                    <input type="checkbox" id="test-mode-toggle" onchange="toggleTestMode(this)">
-                    <span class="slider-toggle"></span>
-                  </label>
-                </div>
-              </div>
-              <div class="input-group" id="team-date-group-box">
-                <label for="team-start-date"><i class="fa-solid fa-calendar-day"></i> 워크숍 시작일</label>
-                <div class="input-wrapper">
-                  <input type="date" id="team-start-date" onchange="saveConfig()">
-                </div>
-              </div>
-              <div class="input-group">
-                <label for="webhook-url"><i class="fa-brands fa-discord"></i> Discord Webhook URL</label>
-                <div class="input-wrapper">
-                  <input type="password" id="webhook-url" placeholder="https://discord.com/api/webhooks/..." oninput="saveConfig()">
-                  <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('webhook-url', this)"></i>
-                </div>
-              </div>
-              <div class="input-group">
-                <label for="github-pat"><i class="fa-brands fa-github"></i> GitHub PAT (Token)</label>
-                <div class="input-wrapper">
-                  <input type="password" id="github-pat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" oninput="saveConfig(); fetchRemoteLockStatus();">
-                  <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('github-pat', this)"></i>
-                </div>
-              </div>
-              <div class="input-group">
-                <label for="github-repo"><i class="fa-solid fa-folder-tree"></i> GitHub Repository Path</label>
-                <div class="input-wrapper">
-                  <input type="text" id="github-repo" placeholder="owner/repo-name" oninput="saveConfig(); fetchRemoteLockStatus();">
-                </div>
-              </div>
-              <div class="input-group">
-                <label for="team-participants"><i class="fa-solid fa-users"></i> 본 조 참여자 명단 (쉼표 구분)</label>
-                <textarea id="team-participants" style="width:100%; height: 50px; background:rgba(0,0,0,0.3); border:1px solid var(--panel-border); border-radius:6px; color:#fff; font-family:inherit; font-size:0.75rem; padding: 6px 10px; resize:none;" oninput="rebuildIndividualMissionsList();">권남훈, 조성대, 권지민, 임승하, 신명호, 오상철, 이영준, 김상민, 이재헌, 박소연</textarea>
-              </div>
-            </div>
-            
-            <div style="margin-top:auto; display:flex; flex-direction:column; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
-              <button type="button" class="btn btn-generator" id="btn-times-generate" onclick="generateRandomTimesForActiveTeam()" style="height: 38px; font-size:0.8rem;">
-                <i class="fa-solid fa-shuffle"></i> 🎲 시간표 랜덤 생성
-              </button>
-              <button type="button" class="btn btn-deploy" id="btn-github-deploy" onclick="deployToGitHub()" style="height: 38px; font-size:0.8rem;">
-                <i class="fa-solid fa-cloud-arrow-up"></i> ☁️ GitHub 스케줄 게시
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- COLUMN 2: TIMELINE (5 Slots) -->
+      <!-- COLUMN 1: TIMELINE (5 Slots) -->
       <div class="panel-col">
         <div class="glass-panel" style="border-color: rgba(255,255,255,0.06);">
           <div class="panel-header" style="margin-bottom: 10px;">
@@ -1081,7 +1029,7 @@
         </div>
       </div>
       
-      <!-- COLUMN 3: INDIVIDUAL MISSIONS -->
+      <!-- COLUMN 2: INDIVIDUAL MISSIONS -->
       <div class="panel-col">
         <div class="glass-panel" style="border-color: rgba(255,255,255,0.06);">
           <div class="panel-header" style="margin-bottom: 10px;">
@@ -1100,6 +1048,54 @@
     <footer>
       <p>&copy; 2026 Project Secret Card Commander. Serverless GitHub Actions Integration.</p>
     </footer>
+  </div>
+
+  <!-- Holographic Admin Settings Modal -->
+  <div class="holo-modal" id="admin-settings-modal" style="display: none;" onclick="closeAdminOnOuter(event)">
+    <div class="holo-modal-content" style="max-width: 480px;">
+      <div class="holo-modal-header">
+        <h2><i class="fa-solid fa-screwdriver-wrench"></i> 통제부 서버 관리 설정</h2>
+        <button type="button" class="holo-modal-close" onclick="closeAdminSettings()">&times;</button>
+      </div>
+      <div class="modal-detail-body" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="input-group">
+          <label><i class="fa-solid fa-flask"></i> 예약 모드 설정</label>
+          <div class="test-switch-container" style="height:36px; padding: 0 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid var(--panel-border); display:flex; justify-content:space-between; align-items:center;">
+            <span style="color: var(--color-green); font-size:0.75rem; font-weight:700;" id="mode-text">☀️ 표준 워크숍 일정 모드</span>
+            <label class="test-switch" style="transform: scale(0.9);">
+              <input type="checkbox" id="test-mode-toggle" onchange="toggleTestMode(this)">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="webhook-url"><i class="fa-brands fa-discord"></i> Discord Webhook URL (고정됨)</label>
+          <div class="input-wrapper" style="opacity: 0.65;">
+            <input type="password" id="webhook-url" readonly value="https://discord.com/api/webhooks/1528581421667717120/0nOHj5UucBqFl4gd5MGyMFy12EHoZotgFc4Auro_767x5NkBMqGK6FFD4YY4AdyU0p_2" style="cursor: not-allowed; width: 100%; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 6px; color: #fff; padding: 6px 10px; font-family: inherit; font-size: 0.75rem;">
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="github-pat"><i class="fa-brands fa-github"></i> GitHub PAT (Token)</label>
+          <div class="input-wrapper" style="position: relative;">
+            <input type="password" id="github-pat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" oninput="saveConfig(); fetchRemoteLockStatus();" style="width: 100%; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 6px; color: #fff; padding: 6px 30px 6px 10px; font-family: inherit; font-size: 0.75rem;">
+            <i class="fa-solid fa-eye-slash toggle-pw" onclick="togglePw('github-pat', this)" style="position: absolute; right: 10px; top: 10px; cursor: pointer; color: rgba(255,255,255,0.4); font-size: 0.8rem;"></i>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="github-repo"><i class="fa-solid fa-folder-tree"></i> GitHub Repository Path</label>
+          <div class="input-wrapper">
+            <input type="text" id="github-repo" placeholder="owner/repo-name" oninput="saveConfig(); fetchRemoteLockStatus();" style="width: 100%; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 6px; color: #fff; padding: 6px 10px; font-family: inherit; font-size: 0.75rem;">
+          </div>
+        </div>
+
+        <div style="font-size:0.7rem; color:var(--text-muted); border-top:1px solid rgba(255,255,255,0.06); padding-top:10px; margin-top:5px; line-height:1.4;">
+          ⚠️ <strong>안내</strong>: 본 설정창은 배포 관련 관리자 자격증명(PAT)을 임시 입력하기 위한 통제용 설정창입니다.
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Holographic Deployment Overlay -->
@@ -1528,24 +1524,29 @@
         document.getElementById('test-mode-toggle').checked = testModeActive;
         
         if (testModeActive) {
-          dateInput.disabled = true;
-          dateBox.style.opacity = '0.5';
-          modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
-          modeText.style.color = "var(--color-team1)";
-          testWarning.style.display = 'flex';
+          if (dateInput) dateInput.disabled = true;
+          if (dateBox) dateBox.style.opacity = '0.5';
+          if (modeText) {
+            modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
+            modeText.style.color = "var(--color-team1)";
+          }
+          if (testWarning) testWarning.style.display = 'flex';
         } else {
-          dateInput.disabled = false;
-          dateBox.style.opacity = '1';
-          modeText.innerText = "☀️ 표준 워크숍 일정 모드";
-          modeText.style.color = "var(--color-green)";
-          testWarning.style.display = 'none';
+          if (dateInput) dateInput.disabled = false;
+          if (dateBox) dateBox.style.opacity = '1';
+          if (modeText) {
+            modeText.innerText = "☀️ 표준 워크숍 일정 모드";
+            modeText.style.color = "var(--color-green)";
+          }
+          if (testWarning) testWarning.style.display = 'none';
         }
       }
       
-      const savedWebhook = localStorage.getItem('config_webhook_url');
-      if (savedWebhook) {
-        document.getElementById('webhook-url').value = savedWebhook;
-      }
+      // Force set fixed webhook URL
+      const webhookUrl = "https://discord.com/api/webhooks/1528581421667717120/0nOHj5UucBqFl4gd5MGyMFy12EHoZotgFc4Auro_767x5NkBMqGK6FFD4YY4AdyU0p_2";
+      document.getElementById('webhook-url').value = webhookUrl;
+      localStorage.setItem('config_webhook_url', webhookUrl);
+      
       const savedPat = localStorage.getItem('config_github_pat');
       if (savedPat) {
         document.getElementById('github-pat').value = savedPat;
@@ -1555,16 +1556,14 @@
         document.getElementById('github-repo').value = savedRepo;
       }
       
-      const btn1 = document.getElementById('btn-t1');
-      const btn2 = document.getElementById('btn-t2');
       const header = document.getElementById('deck-team-header');
       const indHeader = document.getElementById('individual-team-header');
       
       if (activeTeam === 'team1') {
-        header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (수신: 2조)`;
+        if (header) header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team1);"></i> 1조 조원별 개인 지령 구성`;
       } else {
-        header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성 (수신: 1조)`;
+        if (header) header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team2);"></i> 2조 조원별 개인 지령 구성`;
       }
       
@@ -1664,6 +1663,283 @@
       if (participantsInput) {
         const localSavedParticipants = (activeIndividualMissions[activeTeam] || []).map(m => m.participant).join(', ');
         participantsInput.value = localSavedParticipants || '권남훈, 조성대, 권지민, 임승하, 신명호, 오상철, 이영준, 김상민, 이재헌, 박소연';
+      }
+      
+      activeSlotIndex = null;
+      fetchRemoteLockStatus(true);
+      renderSlotsList();
+      renderIndividualSlots();
+      updateDeckSizeBadge();
+      updatePreviewJSON();
+    }
+    
+    function saveConfig() {
+      if (isDeployedProductionLocked) return;
+      
+      localStorage.setItem('config_webhook_url', document.getElementById('webhook-url').value.trim());
+      localStorage.setItem('config_github_pat', document.getElementById('github-pat').value.trim());
+      localStorage.setItem('config_github_repo', document.getElementById('github-repo').value.trim());
+      localStorage.setItem('config_test_mode_active', testModeActive);
+      
+      localStorage.setItem('active_team_role', activeTeam);
+      if (!testModeActive) {
+        localStorage.setItem(`team_start_date_${activeTeam}`, document.getElementById('team-start-date').value);
+      }
+      
+      localStorage.setItem(`deck_${activeTeam}`, JSON.stringify(activeDeck.map(m => m ? {id: m.id} : null)));
+      localStorage.setItem(`schedules_${activeTeam}`, JSON.stringify(activeSchedules));
+      localStorage.setItem(`individual_missions_${activeTeam}`, JSON.stringify(activeIndividualMissions[activeTeam] || []));
+      
+      updatePreviewJSON();
+    }
+
+    async function fetchRemoteLockStatus(syncConfig = false) {
+      try {
+        const pat = document.getElementById('github-pat').value.trim();
+        const repoPath = document.getElementById('github-repo').value.trim();
+        
+        if (!repoPath || repoPath.split('/').length !== 2) {
+        setLockUIState(false);
+        return;
+      }
+      
+      const [owner, repo] = repoPath.split('/');
+      let remoteJson = null;
+      let isRemoteLocked = false;
+      
+      // 1. Try authenticated API fetch if PAT is provided
+      if (pat) {
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/schedule.json`;
+        try {
+          const res = await fetch(url, {
+            headers: {
+              'Authorization': `token ${pat}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+          if (res.ok) {
+            const fileData = await res.json();
+            const contentDecoded = decodeURIComponent(escape(atob(fileData.content)));
+            remoteJson = JSON.parse(contentDecoded);
+            isRemoteLocked = true;
+          }
+        } catch (err) {
+          console.warn("Authenticated fetch failed:", err);
+        }
+      }
+      
+      // 2. Fallback to unauthenticated public raw fetch if PAT is empty or fetch failed
+      if (!remoteJson) {
+        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/schedule.json`;
+        try {
+          const res = await fetch(rawUrl);
+          if (res.ok) {
+            remoteJson = await res.json();
+          }
+        } catch (err) {
+          console.warn("Unauthenticated raw fetch failed:", err);
+        }
+      }
+      
+      if (remoteJson) {
+        if (syncConfig) {
+          // Sync basic configurations from remote back to local (GitHub as the Source of Truth DB)
+          if (remoteJson.discordWebhookUrl) {
+            document.getElementById('webhook-url').value = remoteJson.discordWebhookUrl;
+            localStorage.setItem('config_webhook_url', remoteJson.discordWebhookUrl);
+          }
+
+
+          if (remoteJson.testModeActive !== undefined) {
+            const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
+            testModeActive = isTest;
+            document.getElementById('test-mode-toggle').checked = isTest;
+            localStorage.setItem('config_test_mode_active', isTest);
+            
+            const modeText = document.getElementById('mode-text');
+            const dateInput = document.getElementById('team-start-date');
+            const dateBox = document.getElementById('team-date-group-box');
+            const testWarning = document.getElementById('modal-test-warning');
+            if (isTest) {
+              dateInput.disabled = true;
+              dateBox.style.opacity = '0.5';
+              modeText.innerText = "🧪 초고속 테스트 모드 (2분 간격)";
+              modeText.style.color = "var(--color-team1)";
+              testWarning.style.display = 'flex';
+            } else {
+              dateInput.disabled = false;
+              dateBox.style.opacity = '1';
+              modeText.innerText = "☀️ 표준 워크숍 일정 모드";
+              modeText.style.color = "var(--color-green)";
+              testWarning.style.display = 'none';
+            }
+          }
+          
+          // Sync decks and schedules from remote to restore state on other browsers/refresh
+          ['team1', 'team2'].forEach(teamKey => {
+            const teamData = remoteJson[teamKey];
+            if (teamData) {
+              if (teamData.missions && teamData.missions.length > 0) {
+                const restoredDeck = Array(5).fill(null);
+                const restoredSchedules = Array(5).fill(null);
+                
+                teamData.missions.forEach((m) => {
+                  if (m) {
+                    const dbMission = missionsDatabase.find(db => db.title === m.title);
+                    if (dbMission) {
+                      restoredDeck[m.sessionIndex - 1] = dbMission;
+                      restoredSchedules[m.sessionIndex - 1] = m.scheduledTime;
+                    }
+                  }
+                });
+                
+                localStorage.setItem(`deck_${teamKey}`, JSON.stringify(restoredDeck.map(m => m ? {id: m.id} : null)));
+                localStorage.setItem(`schedules_${teamKey}`, JSON.stringify(restoredSchedules));
+                if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
+                  localStorage.setItem(`team_start_date_${teamKey}`, teamData.startDate);
+                }
+                
+                if (teamKey === activeTeam) {
+                  activeDeck = restoredDeck;
+                  activeSchedules = restoredSchedules;
+                  if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
+                    document.getElementById('team-start-date').value = teamData.startDate;
+                  }
+                  renderSlotsList();
+                  updateDeckSizeBadge();
+                  updatePreviewJSON();
+                }
+              }
+              
+              if (teamData.individualMissions) {
+                activeIndividualMissions[teamKey] = teamData.individualMissions;
+                localStorage.setItem(`individual_missions_${teamKey}`, JSON.stringify(teamData.individualMissions));
+                
+                if (teamKey === activeTeam) {
+                  const participantsInput = document.getElementById('team-participants');
+                  if (participantsInput) {
+                    participantsInput.value = teamData.individualMissions.map(m => m.participant).join(', ');
+                  }
+                  renderIndividualSlots();
+                }
+              }
+            }
+          });
+        }
+        
+        const teamSchedule = remoteJson[activeTeam];
+          if (teamSchedule && teamSchedule.startDate && teamSchedule.missions && teamSchedule.missions.length > 0) {
+            const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
+            if (!isTest && isRemoteLocked) {
+              setLockUIState(true);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Could not determine remote lock status:", err);
+      }
+      setLockUIState(false);
+    }
+    
+    function setLockUIState(locked) {
+      if (testModeActive) {
+        locked = false; // Always unlocked in test mode
+      }
+      isDeployedProductionLocked = locked;
+      
+      const dateInput = document.getElementById('team-start-date');
+      const testToggle = document.getElementById('test-mode-toggle');
+      const btnTimes = document.getElementById('btn-times-generate');
+      const btnDeploy = document.getElementById('btn-github-deploy');
+      const banner = document.getElementById('production-lock-banner');
+      
+      const participantsInput = document.getElementById('team-participants');
+      const btnAssignInd = document.getElementById('btn-assign-individual');
+      
+      if (locked) {
+        banner.style.display = 'flex';
+        dateInput.disabled = true;
+        testToggle.disabled = false; // Keep clickable to allow switching back to Test Mode
+        btnTimes.disabled = true;
+        btnDeploy.disabled = true;
+        if (participantsInput) participantsInput.disabled = true;
+        if (btnAssignInd) btnAssignInd.disabled = true;
+        showToast("스케줄 편집 차단", "프로덕션 일정이 이미 깃허브에 게시되어 변경이 차단되었습니다.", "error");
+      } else {
+        banner.style.display = 'none';
+        dateInput.disabled = testModeActive;
+        testToggle.disabled = false;
+        btnTimes.disabled = false;
+        btnDeploy.disabled = false;
+        if (participantsInput) participantsInput.disabled = false;
+        if (btnAssignInd) btnAssignInd.disabled = false;
+      }
+      
+      renderSlotsList();
+      renderIndividualSlots();
+    }
+    
+    function selectActiveTeam(teamKey, playSound = true) {
+      activeTeam = teamKey;
+      
+      const toggle = document.getElementById('team-selector-toggle');
+      const btn1 = document.getElementById('btn-t1');
+      const btn2 = document.getElementById('btn-t2');
+      const header = document.getElementById('deck-team-header');
+      const indHeader = document.getElementById('individual-team-header');
+      
+      if (teamKey === 'team1') {
+        toggle.classList.remove('team2-active');
+        btn1.classList.add('active');
+        btn2.classList.remove('active');
+        header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (수신: 2조)`;
+        if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team1);"></i> 1조 조원별 개인 지령 구성`;
+      } else {
+        toggle.classList.add('team2-active');
+        btn2.classList.add('active');
+        btn1.classList.remove('active');
+        header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성 (수신: 1조)`;
+        if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team2);"></i> 2조 조원별 개인 지령 구성`;
+      }
+      
+      if (playSound) SoundEngine.play('click');
+      
+      if (!testModeActive) {
+        document.getElementById('team-start-date').value = localStorage.getItem(`team_start_date_${activeTeam}`) || '';
+      }
+      
+      try {
+        const savedDeck = localStorage.getItem(`deck_${activeTeam}`);
+        if (savedDeck) {
+          const parsed = JSON.parse(savedDeck);
+          activeDeck = parsed.map(m => m ? missionsDatabase.find(db => db.id === m.id) : null);
+        } else {
+          activeDeck = Array(5).fill(null);
+        }
+        
+        const savedSchedules = localStorage.getItem(`schedules_${activeTeam}`);
+        if (savedSchedules) {
+          activeSchedules = JSON.parse(savedSchedules);
+        } else {
+          activeSchedules = Array(5).fill(null);
+        }
+        
+        const savedInd = localStorage.getItem(`individual_missions_${activeTeam}`);
+        if (savedInd) {
+          activeIndividualMissions[activeTeam] = JSON.parse(savedInd);
+        } else {
+          activeIndividualMissions[activeTeam] = [];
+        }
+      } catch (e) {
+        activeDeck = Array(5).fill(null);
+        activeSchedules = Array(5).fill(null);
+        activeIndividualMissions[activeTeam] = [];
+      }
+      
+      const participantsInput = document.getElementById('team-participants');
+      if (participantsInput) {
+        participantsInput.value = (activeIndividualMissions[activeTeam] || []).map(m => m.participant).join(', ');
       }
       
       activeSlotIndex = null;
@@ -1941,7 +2217,7 @@
         container.innerHTML = `
           <div style="grid-column: 1 / -1; display:flex; align-items:center; justify-content:center; flex-direction:column; color: var(--text-muted); font-size: 0.8rem; height:100%;">
             <i class="fa-solid fa-users" style="font-size: 1.5rem; margin-bottom: 6px; opacity: 0.5;"></i>
-            조원 명단을 쉼표로 구분하여 입력하세요.
+            조원 명단이 지정되지 않았습니다.
           </div>
         `;
         return;
@@ -2718,6 +2994,27 @@ run();
       loadConfig();
     });
   
+    // Admin Settings Modal Logic
+    function openAdminSettings() {
+      const modal = document.getElementById('admin-settings-modal');
+      modal.style.display = 'flex';
+      setTimeout(() => { modal.classList.add('show'); }, 30);
+      SoundEngine.play('click');
+    }
+    
+    function closeAdminSettings() {
+      const modal = document.getElementById('admin-settings-modal');
+      modal.classList.remove('show');
+      setTimeout(() => { modal.style.display = 'none'; }, 300);
+      SoundEngine.play('click');
+    }
+    
+    function closeAdminOnOuter(event) {
+      if (event.target.id === 'admin-settings-modal') {
+        closeAdminSettings();
+      }
+    }
+
     // Manual Individual Mission Selector Code
     let activeIndParticipant = null;
     
@@ -2806,7 +3103,7 @@ run();
           const testOffsetMs = (1 + idx) * 60 * 1000;
           const targetTestDate = new Date(nowMs + testOffsetMs);
           const pad = (n) => String(n).padStart(2, '0');
-          entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
+          entry.scheduledTime = `${targetTestDate.getFullYear()}-\${pad(targetTestDate.getMonth() + 1)}-\${pad(targetTestDate.getDate())}T\${pad(targetTestDate.getHours())}:\${pad(targetTestDate.getMinutes())}:\${pad(targetTestDate.getSeconds())}+09:00`;
         } else if (teamStart) {
           entry.scheduledTime = getRandomIndividualTime(teamStart, idx, list.length);
         }
