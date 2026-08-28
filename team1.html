@@ -1046,7 +1046,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v2.8.0 (ClassList Null Fixes)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v2.9.0 (API URL Fixes)</span></p>
       </footer>
   </div>
 
@@ -3942,7 +3942,7 @@ run();
       showToast("발송 요청 중", "GitHub Action 즉시 발송 워크플로우를 호출하고 있습니다...", "info");
       
       const [owner, repo] = repoPath.split('/');
-      const url = `https://api.github.com/repos/ + owner + '/' + repo + '/actions/workflows/mission_war.yml/dispatches`;
+      const url = 'https://api.github.com/repos/' + owner + '/' + repo + '/actions/workflows/mission_war.yml/dispatches';
       
       let inputs = {
         send_mode: type === 'team' ? 'instant_session' : 'instant_individual',
