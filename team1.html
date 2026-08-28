@@ -2608,7 +2608,13 @@
         const teamSchedule = remoteJson[activeTeam];
           if (teamSchedule && teamSchedule.startDate && teamSchedule.missions && teamSchedule.missions.length > 0) {
             const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
-            if (!isTest && isRemoteLocked) {
+            const defaultDateStr = activeTeam === 'team1' ? '2026-09-02' : '2026-09-07';
+            const startDateStr = teamSchedule.startDate || defaultDateStr;
+            const startDate = new Date(startDateStr + 'T00:00:00+09:00');
+            const now = new Date();
+            const isTimeLocked = now.getTime() >= startDate.getTime();
+            
+            if (!isTest && isTimeLocked) {
               setLockUIState(true);
               return;
             }
