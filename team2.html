@@ -986,14 +986,14 @@
   <textarea id="team-participants" style="display:none;">박용철, 김진혁, 박재욱, 임동현, 김민서, 김해리, 권영재, 김민수, 박주암, 조준형, 정우창, 염진영</textarea>
   
   <div class="app-container">
-    <header class="glass-panel" style="border-color: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'}; box-shadow: ${isTeam1 ? 'var(--glow-team1)' : 'var(--glow-team2)'};">
+    <header class="glass-panel" style="border-color: var(--color-team2); box-shadow: var(--glow-team2);">
       <div class="brand">
-        <i class="fa-solid fa-satellite-dish brand-icon" style="color: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'};"></i>
+        <i class="fa-solid fa-satellite-dish brand-icon" style="color: var(--color-team2);"></i>
         <div>
-          <h1 class="title-neon" style="background: ${isTeam1 ? 'linear-gradient(90deg, #ff2a5f, #ff6699)' : 'linear-gradient(90deg, #00f0ff, #66d9ff)'}; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            Secret Mission War [${isTeam1 ? '1조 지휘소' : '2조 지휘소'}]
+          <h1 class="title-neon" style="background: linear-gradient(90deg, #00f0ff, #66d9ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Secret Mission War [2조 지휘소]
           </h1>
-          <p>서버리스 오토 스케줄 통제본부 (일정: ${isTeam1 ? '2026-09-02 ~ 09-04' : '2026-09-07 ~ 09-09'})</p>
+          <p>서버리스 오토 스케줄 통제본부 (일정: 2026-09-07 ~ 09-09)</p>
         </div>
       </div>
       <div style="display: flex; gap: 10px; align-items: center;">
@@ -1006,7 +1006,7 @@
         <button type="button" class="btn btn-generator" id="btn-times-generate" onclick="generateRandomTimesForActiveTeam()" style="background: rgba(255, 255, 255, 0.06); color: #fff; border: 1px solid var(--panel-border); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; height: auto;">
           <i class="fa-solid fa-shuffle"></i> 시간표 재배정
         </button>
-        <button type="button" class="btn btn-deploy" id="btn-github-deploy" onclick="deployToGitHub()" style="background: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'}; color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; box-shadow: ${isTeam1 ? 'var(--glow-team1)' : 'var(--glow-team2)'}; height: auto;">
+        <button type="button" class="btn btn-deploy" id="btn-github-deploy" onclick="deployToGitHub()" style="background: var(--color-team2); color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; box-shadow: var(--glow-team2); height: auto;">
           <i class="fa-solid fa-cloud-arrow-up"></i> GitHub 게시
         </button>
         <a href="index.html" class="slot-btn" style="background: rgba(255, 255, 255, 0.08); color: #fff; text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--panel-border);">
@@ -1020,7 +1020,7 @@
       <div class="panel-col">
         <div class="glass-panel" style="border-color: rgba(255,255,255,0.06);">
           <div class="panel-header" style="margin-bottom: 10px;">
-            <h3><i class="fa-solid fa-rocket" style="color: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'};"></i> 조별 합동 미션 타임라인</h3>
+            <h3><i class="fa-solid fa-rocket" style="color: var(--color-team2);"></i> 조별 합동 미션 타임라인</h3>
             <span class="slot-category-badge" id="deck-status-badge" style="background: rgba(139, 92, 246, 0.1); color: var(--color-primary); font-size:0.7rem;">0 / 5 선택됨</span>
           </div>
           <div class="timeline-slots-container" id="session-slots-container">
@@ -1033,7 +1033,7 @@
       <div class="panel-col">
         <div class="glass-panel" style="border-color: rgba(255,255,255,0.06);">
           <div class="panel-header" style="margin-bottom: 10px;">
-            <h3><i class="fa-solid fa-users-gear" style="color: ${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'};"></i> 조원별 개인 기습 지령</h3>
+            <h3><i class="fa-solid fa-users-gear" style="color: var(--color-team2);"></i> 조원별 개인 기습 지령</h3>
             <button type="button" class="slot-btn" style="background:var(--color-primary); color:#fff; border:none; padding:4px 8px; font-size:0.7rem; border-radius:4px;" onclick="assignIndividualMissions()" id="btn-assign-individual">
               <i class="fa-solid fa-shuffle"></i> 🎲 전체 랜덤 배정
             </button>
@@ -3156,7 +3156,7 @@ run();
         const timeText = activeSchedules[idx] ? new Date(activeSchedules[idx]).toLocaleString('ko-KR') : '시간 미정';
         
         body.innerHTML = `
-          <div style="font-size:1.1rem; font-weight:800; margin-bottom:10px; color:${isTeam1 ? 'var(--color-team1)' : 'var(--color-team2)'};">
+          <div style="font-size:1.1rem; font-weight:800; margin-bottom:10px; color:${activeTeam === 'team1' ? 'var(--color-team1)' : 'var(--color-team2)'};">
             ${mission.emoji} ${mission.title}
           </div>
           <div style="margin-bottom: 12px; font-weight: 500; font-size:0.75rem; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:4px; border:1px solid var(--panel-border);">
