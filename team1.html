@@ -1046,7 +1046,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v2.4.0 (Actions Instant Send)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v2.5.0 (Actions Instant Send)</span></p>
       </footer>
   </div>
 
@@ -1058,17 +1058,6 @@
         <button class="modal-close" onclick="closeAdminSettings()">&times;</button>
       </div>
       <div class="modal-detail-body" style="padding: 20px; display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto;">
-        <div class="input-group">
-          <label><i class="fa-solid fa-flask"></i> 예약 모드 설정</label>
-          <div class="test-switch-container" style="height:36px; padding: 0 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid var(--panel-border); display:flex; justify-content:space-between; align-items:center;">
-            <span style="color: var(--color-green); font-size:0.75rem; font-weight:700;" id="mode-text">☀️ 표준 워크숍 일정 모드</span>
-            <label class="test-switch" style="transform: scale(0.9);">
-              <input type="checkbox" id="test-mode-toggle" onchange="toggleTestMode(this)">
-              <span class="slider-toggle"></span>
-            </label>
-          </div>
-        </div>
-        
         <div class="input-group" style="display: none;">
           <label for="webhook-url"><i class="fa-brands fa-discord"></i> Discord Webhook URL</label>
           <div class="input-wrapper">
@@ -1087,7 +1076,7 @@
         <div class="input-group">
           <label for="github-repo"><i class="fa-solid fa-folder-tree"></i> GitHub Repository Path</label>
           <div class="input-wrapper">
-            <input type="text" id="github-repo" placeholder="owner/repo-name" value="mhsssshin/missionwar_t" oninput="saveConfig(); fetchRemoteLockStatus();" style="width: 100%; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 6px; color: #fff; padding: 6px 10px; font-family: inherit; font-size: 0.75rem;">
+            <input type="text" id="github-repo" placeholder="owner/repo-name" oninput="saveConfig(); fetchRemoteLockStatus();" style="width: 100%; height: 32px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 6px; color: #fff; padding: 6px 10px; font-family: inherit; font-size: 0.75rem;">
           </div>
         </div>
 
@@ -2454,13 +2443,7 @@ function loadConfig() {
         const teamSchedule = remoteJson[activeTeam];
           if (teamSchedule && teamSchedule.startDate && teamSchedule.missions && teamSchedule.missions.length > 0) {
             const isTest = remoteJson.testModeActive === true || remoteJson.testModeActive === 'true';
-            const defaultDateStr = activeTeam === 'team1' ? '2026-09-02' : '2026-09-07';
-            const startDateStr = teamSchedule.startDate || defaultDateStr;
-            const startDate = new Date(startDateStr + 'T00:00:00+09:00');
-            const now = new Date();
-            const isTimeLocked = now.getTime() >= startDate.getTime();
-            
-            if (!isTest && isTimeLocked) {
+            if (!isTest && isRemoteLocked) {
               setLockUIState(true);
               return;
             }
@@ -2520,16 +2503,16 @@ function loadConfig() {
       const indHeader = document.getElementById('individual-team-header');
       
       if (teamKey === 'team1') {
-        if (toggle) toggle.classList.remove('team2-active');
-        if (btn1) btn1.classList.add('active');
-        if (btn2) btn2.classList.remove('active');
-        header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (수신: 2조)`;
+        toggle.classList.remove('team2-active');
+        btn1.classList.add('active');
+        btn2.classList.remove('active');
+        if (header) header.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--color-team1);"></i> 1조 타임라인 구성 (수신: 2조)`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team1);"></i> 1조 조원별 개인 지령 구성`;
       } else {
-        if (toggle) toggle.classList.add('team2-active');
-        if (btn2) btn2.classList.add('active');
-        if (btn1) btn1.classList.remove('active');
-        header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성 (수신: 1조)`;
+        toggle.classList.add('team2-active');
+        btn2.classList.add('active');
+        btn1.classList.remove('active');
+        if (header) header.innerHTML = `<i class="fa-solid fa-shield-halved" style="color: var(--color-team2);"></i> 2조 타임라인 구성 (수신: 1조)`;
         if (indHeader) indHeader.innerHTML = `<i class="fa-solid fa-users-gear" style="color: var(--color-team2);"></i> 2조 조원별 개인 지령 구성`;
       }
       
@@ -2903,90 +2886,84 @@ function loadConfig() {
       });
     }
     
-    
-    async function triggerInstantSendWorkflow(type, value) {
-      const repoPath = document.getElementById('github-repo').value.trim() || 'mhsssshin/missionwar_t';
-      const pat = document.getElementById('github-pat').value.trim();
-      
-      if (!pat) {
-        showToast("토큰 필요", "통제부 설정에서 GitHub PAT(Token)을 입력해 주세요.", "error");
+    async function sendIndividualMissionInstantly(participantName) {
+      const webhookUrl = document.getElementById('webhook-url').value.trim() || localStorage.getItem('config_webhook_url') || '';
+      if (!webhookUrl) {
+        showToast("발송 실패", "웹훅 주소가 없습니다. GitHub Actions를 1회 실행(Run workflow)하여 시크릿 키를 schedule.json에 동기화해 주시거나, 직접 웹훅 주소를 대시보드에 입력해 주세요.", "error");
         SoundEngine.play('failure');
         return;
       }
       
-      showToast("발송 요청 중", "GitHub Action 즉시 발송 워크플로우를 호출하고 있습니다...", "info");
+      const repoPath = document.getElementById('github-repo').value.trim() || 'mhsssshin/missionwar_t';
+      const pat = document.getElementById('github-pat').value.trim();
       
-      const [owner, repo] = repoPath.split('/');
-      const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/mission_war.yml/dispatches`;
-      
-      let inputs = {
-        send_mode: type === 'team' ? 'instant_session' : 'instant_individual',
-        team: activeTeam
-      };
-      
-      if (type === 'team') {
-        inputs.mission_index = String(value);
-      } else {
-        inputs.participant_name = String(value);
+      const entry = (activeIndividualMissions[activeTeam] || []).find(m => m.participant === participantName);
+      if (!entry || !entry.id) {
+        showToast("발송 실패", "배정된 미션을 찾을 수 없습니다.", "error");
+        SoundEngine.play('failure');
+        return;
       }
       
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': `token ${pat}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
+      let webUrl = window.location.origin;
+      if (window.location.hostname.includes('.github.io') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const repoParts = repoPath.split('/');
+        if (repoParts.length === 2) {
+          webUrl = `https://${repoParts[0].toLowerCase()}.github.io/${repoParts[1]}`;
+        } else {
+          webUrl = "https://glistening-phoenix-ef3ff4.netlify.app";
+        }
+      }
+      
+      const geminiToken = localStorage.getItem('config_gemini_key') || atob('QUl6YVN5QkVlbmc2bmMxTFN3WjQ3NXZLbkVLaWwtNnVWeWpabjY4');
+      
+      const callbackUrl = `${webUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${activeTeam}&type=individual&participant=${encodeURIComponent(entry.participant)}&title=${encodeURIComponent(entry.title)}&content=${encodeURIComponent(entry.content)}&gemini=${encodeURIComponent(geminiToken)}&webhook=${encodeURIComponent(webhookUrl)}`;
+      
+      const payload = {
+        username: `[개인 지령] 시크릿 지휘소`,
+        avatar_url: "https://i.imgur.com/83p1jep.png",
+        embeds: [{
+          title: `👤 🚨 [개인 기습 지령 발령] 🚨`,
+          description: `**${activeTeam === 'team1' ? '1조' : '2조'}**의 **${entry.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\n\n📷 **[여기서 개인 미션 사진 인증 제출하기](${callbackUrl})**`,
+          color: entry.colorHex || 3394815,
+          fields: [
+            { name: "👤 대상 요원", value: `**${entry.participant} 요원**`, inline: true },
+            { name: "🎯 개인 미션", value: `**${entry.title}**`, inline: true },
+            { name: "⏳ 제한 시간", value: `⏳ **${entry.duration} 이내 인증**`, inline: true },
+            { name: "📋 미션 상세 내용", value: `>>> ${entry.content}`, inline: false },
+            { name: "💡 수행 팁", value: `*${entry.tip}*`, inline: false }
+          ],
+          footer: {
+            text: "워크숍 미션전쟁 • 개인 지령 제어 장치",
+            icon_url: "https://i.imgur.com/83p1jep.png"
           },
-          body: JSON.stringify({
-            ref: 'main',
-            inputs: inputs
-          })
+          timestamp: new Date().toISOString()
+        }]
+      };
+      
+      try {
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
-        
-        if (response.ok || response.status === 204) {
-          showToast("호출 성공", "GitHub Actions 즉시 발송이 정상 요청되었습니다. 1~2분 내로 디스코드에 발송됩니다.", "success");
+        if (res.ok) {
+          showToast("즉시 발송 성공", `${entry.participant} 요원의 개인 미션이 디스코드로 전송되었습니다!`, "success");
           SoundEngine.play('success');
           
-          if (type === 'team') {
-            const idx = value - 1;
-            if (activeDeck[idx]) {
-              activeDeck[idx].sent = true;
-              activeDeck[idx].sentAt = new Date().toISOString();
-            }
-          } else {
-            const list = activeIndividualMissions[activeTeam] || [];
-            const entry = list.find(m => m.participant === value);
-            if (entry) {
-              entry.sent = true;
-              entry.sentAt = new Date().toISOString();
-            }
-          }
+          entry.sent = true;
+          entry.sentAt = new Date().toISOString();
           saveConfig();
-          if (type === 'team') renderSlotsList(); else renderIndividualSlots();
+          renderIndividualSlots();
         } else {
-          const errMsg = await response.text();
-          showToast("호출 실패", `오류 코드: ${response.status} ${errMsg}`, "error");
+          showToast("발송 실패", `디스코드 웹훅 전송 실패 (HTTP ${res.status})`, "error");
           SoundEngine.play('failure');
         }
-      } catch (err) {
-        showToast("호출 오류", err.message, "error");
+      } catch (e) {
+        showToast("발송 오류", e.message, "error");
         SoundEngine.play('failure');
       }
     }
 
-    function sendTeamInstantlyFromDetail(sessionIndex) {
-      triggerInstantSendWorkflow('team', sessionIndex);
-      closeDetailModal();
-    }
-
-    function sendIndInstantlyFromDetail(participantName) {
-      triggerInstantSendWorkflow('individual', participantName);
-      closeDetailModal();
-    }
-
-    async function sendIndividualMissionInstantly(participantName) {}
-    
     function clearSlot(idx) {
       if (isDeployedProductionLocked) return;
       activeDeck[idx] = null;
@@ -3217,7 +3194,6 @@ function loadConfig() {
           return {
             sessionIndex: spec.index,
             day: spec.day,
-            id: m.id,
             sessionName: spec.sessionName,
             timeRange: spec.timeRange,
             scheduledTime: activeSchedules[idx] || "예약 시간 미생성",
@@ -3433,7 +3409,183 @@ jobs:
         
         // Step 3: Upload check_and_send.js
         setProgress(60, "PREPARING SCRIPTS", "COMMITTING RUNNER SCRIPT TO SCRIPTS/");
-        
+        const runnerJs = `const fs = require('fs');
+const path = require('path');
+
+const schedulePath = path.join(__dirname, '..', 'schedule.json');
+if (!fs.existsSync(schedulePath)) {
+  console.error("schedule.json not found!");
+  process.exit(1);
+}
+
+const schedule = JSON.parse(fs.readFileSync(schedulePath, 'utf8'));
+const webhookUrl = process.env.DISCORD_WEBHOOK_URL || schedule.discordWebhookUrl;
+
+if (!webhookUrl || !webhookUrl.startsWith('http')) {
+  console.error("Invalid or missing Discord Webhook URL!");
+  process.exit(1);
+}
+
+const now = new Date();
+let scheduleChanged = false;
+
+async function sendWebhook(mission, teamName) {
+  const repoPath = process.env.GITHUB_REPOSITORY || "";
+  const pat = process.env.GITHUB_TOKEN || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || "";
+  const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
+  
+  const callbackUrl = \`\${webAppUrl}/submit.html?repo=\${encodeURIComponent(repoPath)}&pat=\${encodeURIComponent(pat)}&team=\${teamName === '1조' ? 'team1' : 'team2'}&session=\${mission.sessionIndex}&gemini=\${encodeURIComponent(geminiApiKey)}\`;
+
+  const payload = {
+    username: \`[\${teamName}] 시크릿 커맨더\`,
+    avatar_url: teamName.includes("1조") 
+      ? "https://raw.githubusercontent.com/run-llama/llama_index/main/docs/_static/favicon.ico"
+      : "https://i.imgur.com/83p1jep.png",
+    embeds: [{
+      title: \`🚨 [기습 미션 발령] \${teamName === '1조' ? '2조는 들으라!' : '1조는 들으라!'} 🚨\`,
+      description: \`**\${teamName} 시크릿 커맨더**로부터 기습 미션 카드가 투척되었습니다.\\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\\n\\n📷 **[여기서 미션 사진 인증 제출하기](\${callbackUrl})**\`,
+      color: mission.colorHex || 16724870,
+      fields: [
+        { name: "🎯 미션명", value: \`**\${mission.title}**\`, inline: false },
+        { name: "📋 미션 상세 내용", value: \`>>> \${mission.content}\`, inline: false },
+        { name: "📍 발동 시간대", value: \`\${mission.sessionName} (\${mission.timeRange})\`, inline: true },
+        { name: "⏱️ 제한 시간", value: \`⏳ **\${mission.duration} 이내 인증**\`, inline: true },
+        { name: "💡 수행 팁", value: \`*\${mission.tip}*\`, inline: false }
+      ],
+      footer: {
+        text: "워크숍 미션전쟁 • 자동 스케줄러 시스템",
+        icon_url: "https://i.imgur.com/83p1jep.png"
+      },
+      timestamp: new Date().toISOString()
+    }]
+  };
+
+  console.log(\`Sending webhook for mission: \${mission.title} (\${teamName})...\`);
+  
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+      console.log(\`Successfully sent mission: \${mission.title}\`);
+      return true;
+    } else {
+      console.error(\`Failed to send webhook: HTTP \${response.status}\`);
+      return false;
+    }
+  } catch (err) {
+    console.error(\`Error sending webhook: \${err.message}\`);
+    return false;
+  }
+}
+
+async function sendIndividualWebhook(ind, teamName, teamKey) {
+  const repoPath = process.env.GITHUB_REPOSITORY || "";
+  const pat = process.env.GITHUB_TOKEN || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || "";
+  const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
+  
+  const callbackUrl = \`\${webAppUrl}/submit.html?repo=\${encodeURIComponent(repoPath)}&pat=\${encodeURIComponent(pat)}&team=\${teamKey}&type=individual&participant=\${encodeURIComponent(ind.participant)}&title=\${encodeURIComponent(ind.title)}&content=\${encodeURIComponent(ind.content)}&gemini=\${encodeURIComponent(geminiApiKey)}&webhook=\${encodeURIComponent(webhookUrl)}\`;
+
+  const payload = {
+    username: "[개인 지령] 시크릿 지휘소",
+    avatar_url: "https://i.imgur.com/83p1jep.png",
+    embeds: [{
+      title: "👤 🚨 [개인 기습 지령 발령] 🚨",
+      description: \`**\${teamName}**의 **\${ind.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\\n\\n📷 **[여기서 개인 미션 사진 인증 제출하기](\${callbackUrl})**\`,
+      color: ind.colorHex || 3394815,
+      fields: [
+        { name: "👤 대상 요원", value: \`**\${ind.participant} 요원**\`, inline: true },
+        { name: "🎯 개인 미션", value: \`**\${ind.title}**\`, inline: true },
+        { name: "⏳ 제한 시간", value: \`⏳ **\${ind.duration} 이내 인증**\`, inline: true },
+        { name: "📋 미션 상세 내용", value: \`>>> \${ind.content}\`, inline: false },
+        { name: "💡 수행 팁", value: \`*\${ind.tip}*\`, inline: false }
+      ],
+      footer: {
+        text: "워크숍 미션전쟁 • 개인 지령 제어 장치",
+        icon_url: "https://i.imgur.com/83p1jep.png"
+      },
+      timestamp: new Date().toISOString()
+    }]
+  };
+
+  console.log(\`Sending individual webhook for \${ind.participant}...\\n\`);
+  
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+      console.log(\`Successfully sent individual mission for \${ind.participant}\`);
+      return true;
+    } else {
+      console.error(\`Failed to send individual webhook: HTTP \${response.status}\`);
+      return false;
+    }
+  } catch (err) {
+    console.error(\`Error sending individual webhook: \${err.message}\`);
+    return false;
+  }
+}
+
+async function run() {
+  if (process.env.DISCORD_WEBHOOK_URL) {
+    schedule.discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    scheduleChanged = true;
+  }
+  const teams = ['team1', 'team2'];
+  for (const teamKey of teams) {
+    const teamData = schedule[teamKey];
+    if (!teamData) continue;
+    const teamName = teamKey === 'team1' ? '1조' : '2조';
+    
+    // 1. Process Team Scheduled Missions
+    if (teamData.missions) {
+      for (const mission of teamData.missions) {
+        if (mission.sent) continue;
+        const scheduledDate = new Date(mission.scheduledTime);
+        if (now >= scheduledDate) {
+          const success = await sendWebhook(mission, teamName);
+          if (success) {
+            mission.sent = true;
+            mission.sentAt = now.toISOString();
+            scheduleChanged = true;
+          }
+        }
+      }
+    }
+    
+    // 2. Process Individual Scheduled Missions
+    if (teamData.individualMissions) {
+      for (const ind of teamData.individualMissions) {
+        if (ind.sent) continue;
+        const scheduledDate = new Date(ind.scheduledTime);
+        if (now >= scheduledDate) {
+          const success = await sendIndividualWebhook(ind, teamName, teamKey);
+          if (success) {
+            ind.sent = true;
+            ind.sentAt = now.toISOString();
+            scheduleChanged = true;
+          }
+        }
+      }
+    }
+  }
+  if (scheduleChanged) {
+    fs.writeFileSync(schedulePath, JSON.stringify(schedule, null, 2), 'utf8');
+    console.log("schedule.json updated.");
+  } else {
+    console.log("No pending scheduled missions.");
+  }
+}
+run();
+`;
+        await commitToGitHub(owner, repoName, pat, "scripts/check_and_send.js", runnerJs, `🤖 deploy: update check_and_send.js runner`);
         
         // Step 4: Upload schedule.json (Merged)
         setProgress(85, "MERGING CONFIGURATION", "UPLOADING MERGED SCHEDULE.JSON TO REPOSITORY");
@@ -3459,49 +3611,7 @@ jobs:
     // ----------------------------------------------------
     // INITIALIZATION RUN
     // ----------------------------------------------------
-    window.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const response = await fetch('./schedule.json');
-        if (response.ok) {
-          const remoteConfig = await response.json();
-          console.log("Successfully fetched remote config:", remoteConfig);
-          
-          if (remoteConfig.discordWebhookUrl) {
-            localStorage.setItem('config_webhook_url', remoteConfig.discordWebhookUrl);
-            const webhookInput = document.getElementById('webhook-url');
-            if (webhookInput) webhookInput.value = remoteConfig.discordWebhookUrl;
-          }
-          if (remoteConfig.testModeActive !== undefined) {
-            localStorage.setItem('config_test_mode_active', String(remoteConfig.testModeActive));
-          }
-          
-          const teamData = remoteConfig[activeTeam];
-          if (teamData) {
-            if (teamData.startDate) {
-              if (!teamData.startDate.includes("🧪")) {
-                localStorage.setItem(`team_start_date_${activeTeam}`, teamData.startDate);
-              }
-            }
-            if (teamData.missions && teamData.missions.length > 0) {
-              const deckIds = teamData.missions.map(m => {
-                if (!m) return null;
-                if (m.id) return { id: m.id };
-                const dbM = missionsDatabase.find(db => db.title === m.title);
-                return dbM ? { id: dbM.id } : null;
-              });
-              localStorage.setItem(`deck_${activeTeam}`, JSON.stringify(deckIds));
-              
-              const schedules = teamData.missions.map(m => m ? m.scheduledTime : null);
-              localStorage.setItem(`schedules_${activeTeam}`, JSON.stringify(schedules));
-            }
-            if (teamData.individualMissions) {
-              localStorage.setItem(`individual_missions_${activeTeam}`, JSON.stringify(teamData.individualMissions));
-            }
-          }
-        }
-      } catch (e) {
-        console.warn("Could not load remote schedule.json:", e);
-      }
+    window.addEventListener('DOMContentLoaded', () => {
       loadConfig();
     });
   
@@ -3813,6 +3923,92 @@ jobs:
       }
     }
     
+    async function triggerInstantSendWorkflow(type, value) {
+      const repoPath = document.getElementById('github-repo').value.trim() || 'mhsssshin/missionwar_t';
+      const pat = document.getElementById('github-pat').value.trim();
+      
+      if (!pat) {
+        showToast("토큰 필요", "통제부 설정에서 GitHub PAT(Token)을 입력해 주세요.", "error");
+        SoundEngine.play('failure');
+        return;
+      }
+      
+      showToast("발송 요청 중", "GitHub Action 즉시 발송 워크플로우를 호출하고 있습니다...", "info");
+      
+      const [owner, repo] = repoPath.split('/');
+      const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/mission_war.yml/dispatches`;
+      
+      let inputs = {
+        send_mode: type === 'team' ? 'instant_session' : 'instant_individual',
+        team: activeTeam
+      };
+      
+      if (type === 'team') {
+        inputs.mission_index = String(value);
+      } else {
+        inputs.participant_name = String(value);
+      }
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `token ${pat}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            ref: 'main',
+            inputs: inputs
+          })
+        });
+        
+        if (response.ok || response.status === 204) {
+          showToast("호출 성공", "GitHub Actions 즉시 발송이 정상 요청되었습니다. 1~2분 내로 디스코드에 발송됩니다.", "success");
+          SoundEngine.play('success');
+          
+          if (type === 'team') {
+            const idx = value - 1;
+            if (activeDeck[idx]) {
+              activeDeck[idx].sent = true;
+              activeDeck[idx].sentAt = new Date().toISOString();
+            }
+          } else {
+            const list = activeIndividualMissions[activeTeam] || [];
+            const entry = list.find(m => m.participant === value);
+            if (entry) {
+              entry.sent = true;
+              entry.sentAt = new Date().toISOString();
+            }
+          }
+          saveConfig();
+          if (type === 'team') renderSlotsList(); else renderIndividualSlots();
+        } else {
+          const errMsg = await response.text();
+          showToast("호출 실패", `오류 코드: ${response.status} ${errMsg}`, "error");
+          SoundEngine.play('failure');
+        }
+      } catch (err) {
+        showToast("호출 오류", err.message, "error");
+        SoundEngine.play('failure');
+      }
+    }
+
+    function sendTeamInstantlyFromDetail(sessionIndex) {
+      triggerInstantSendWorkflow('team', sessionIndex);
+      closeDetailModal();
+    }
+
+    function sendIndInstantlyFromDetail(participantName) {
+      triggerInstantSendWorkflow('individual', participantName);
+      closeDetailModal();
+    }
+
+    // Override the original sendIndividualMissionInstantly function in browser scope
+    async function sendIndividualMissionInstantly(participantName) {
+      triggerInstantSendWorkflow('individual', participantName);
+    }
+
 </script>
 </body>
 </html>
