@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load schedule.json
 const schedulePath = path.join(__dirname, '..', 'schedule.json');
 if (!fs.existsSync(schedulePath)) {
   console.error("schedule.json not found!");
@@ -9,8 +8,6 @@ if (!fs.existsSync(schedulePath)) {
 }
 
 const schedule = JSON.parse(fs.readFileSync(schedulePath, 'utf8'));
-
-// Determine Discord Webhook URL: environment variable takes precedence
 const webhookUrl = process.env.DISCORD_WEBHOOK_URL || schedule.discordWebhookUrl;
 
 if (!webhookUrl || !webhookUrl.startsWith('http')) {
@@ -21,15 +18,13 @@ if (!webhookUrl || !webhookUrl.startsWith('http')) {
 const now = new Date();
 let scheduleChanged = false;
 
-// Function to send Discord Webhook
 async function sendWebhook(mission, teamName) {
-  // Try to find repository info and token from GitHub Action environment
-  const repoPath = process.env.GITHUB_REPOSITORY || ""; // format: owner/repo
-  const pat = process.env.GITHUB_TOKEN || ""; // Actions standard write token
+  const repoPath = process.env.GITHUB_REPOSITORY || "";
+  const pat = process.env.GITHUB_TOKEN || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || "";
   const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
   
-  // Construct Callback URL for Submission (points directly to submit.html)
-  const callbackUrl = `${webAppUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${teamName === '1조' ? 'team1' : 'team2'}&session=${mission.sessionIndex}`;
+  const callbackUrl = `${webAppUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${teamName === '1조' ? 'team1' : 'team2'}&session=${mission.sessionIndex}&gemini=${encodeURIComponent(geminiApiKey)}`;
 
   const payload = {
     username: `[${teamName}] 시크릿 커맨더`,
@@ -63,7 +58,6 @@ async function sendWebhook(mission, teamName) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    
     if (response.ok) {
       console.log(`Successfully sent mission: ${mission.title}`);
       return true;
@@ -77,39 +71,105 @@ async function sendWebhook(mission, teamName) {
   }
 }
 
-async function run() {
-  const teams = ['team1', 'team2'];
+async function sendIndividualWebhook(ind, teamName, teamKey) {
+  const repoPath = process.env.GITHUB_REPOSITORY || "";
+  const pat = process.env.GITHUB_TOKEN || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || "";
+  const webAppUrl = schedule.webAppUrl || "http://localhost:3002";
   
+  const callbackUrl = `${webAppUrl}/submit.html?repo=${encodeURIComponent(repoPath)}&pat=${encodeURIComponent(pat)}&team=${teamKey}&type=individual&participant=${encodeURIComponent(ind.participant)}&title=${encodeURIComponent(ind.title)}&content=${encodeURIComponent(ind.content)}&gemini=${encodeURIComponent(geminiApiKey)}&webhook=${encodeURIComponent(webhookUrl)}`;
+
+  const payload = {
+    username: "[개인 지령] 시크릿 지휘소",
+    avatar_url: "https://i.imgur.com/83p1jep.png",
+    embeds: [{
+      title: "👤 🚨 [개인 기습 지령 발령] 🚨",
+      description: `**${teamName}**의 **${ind.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\n\n📷 **[여기서 개인 미션 사진 인증 제출하기](${callbackUrl})**`,
+      color: ind.colorHex || 3394815,
+      fields: [
+        { name: "👤 대상 요원", value: `**${ind.participant} 요원**`, inline: true },
+        { name: "🎯 개인 미션", value: `**${ind.title}**`, inline: true },
+        { name: "⏳ 제한 시간", value: `⏳ **${ind.duration} 이내 인증**`, inline: true },
+        { name: "📋 미션 상세 내용", value: `>>> ${ind.content}`, inline: false },
+        { name: "💡 수행 팁", value: `*${ind.tip}*`, inline: false }
+      ],
+      footer: {
+        text: "워크숍 미션전쟁 • 개인 지령 제어 장치",
+        icon_url: "https://i.imgur.com/83p1jep.png"
+      },
+      timestamp: new Date().toISOString()
+    }]
+  };
+
+  console.log(`Sending individual webhook for ${ind.participant}...\n`);
+  
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) {
+      console.log(`Successfully sent individual mission for ${ind.participant}`);
+      return true;
+    } else {
+      console.error(`Failed to send individual webhook: HTTP ${response.status}`);
+      return false;
+    }
+  } catch (err) {
+    console.error(`Error sending individual webhook: ${err.message}`);
+    return false;
+  }
+}
+
+async function run() {
+  if (process.env.DISCORD_WEBHOOK_URL) {
+    schedule.discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    scheduleChanged = true;
+  }
+  const teams = ['team1', 'team2'];
   for (const teamKey of teams) {
     const teamData = schedule[teamKey];
-    if (!teamData || !teamData.missions) continue;
-    
+    if (!teamData) continue;
     const teamName = teamKey === 'team1' ? '1조' : '2조';
     
-    for (const mission of teamData.missions) {
-      if (mission.sent) continue;
-      
-      const scheduledDate = new Date(mission.scheduledTime);
-      
-      // If current time is past the scheduled time
-      if (now >= scheduledDate) {
-        // Send webhook
-        const success = await sendWebhook(mission, teamName);
-        if (success) {
-          mission.sent = true;
-          mission.sentAt = now.toISOString();
-          scheduleChanged = true;
+    // 1. Process Team Scheduled Missions
+    if (teamData.missions) {
+      for (const mission of teamData.missions) {
+        if (mission.sent) continue;
+        const scheduledDate = new Date(mission.scheduledTime);
+        if (now >= scheduledDate) {
+          const success = await sendWebhook(mission, teamName);
+          if (success) {
+            mission.sent = true;
+            mission.sentAt = now.toISOString();
+            scheduleChanged = true;
+          }
+        }
+      }
+    }
+    
+    // 2. Process Individual Scheduled Missions
+    if (teamData.individualMissions) {
+      for (const ind of teamData.individualMissions) {
+        if (ind.sent) continue;
+        const scheduledDate = new Date(ind.scheduledTime);
+        if (now >= scheduledDate) {
+          const success = await sendIndividualWebhook(ind, teamName, teamKey);
+          if (success) {
+            ind.sent = true;
+            ind.sentAt = now.toISOString();
+            scheduleChanged = true;
+          }
         }
       }
     }
   }
-  
   if (scheduleChanged) {
     fs.writeFileSync(schedulePath, JSON.stringify(schedule, null, 2), 'utf8');
-    console.log("schedule.json updated successfully.");
+    console.log("schedule.json updated.");
   } else {
-    console.log("No pending scheduled missions found to send.");
+    console.log("No pending scheduled missions.");
   }
 }
-
 run();
