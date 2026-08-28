@@ -1461,37 +1461,807 @@
     ];
 
     const individualMissionsDatabase = [
-      { id: 101, emoji: "☕", title: "동료에게 커피 배달", content: "조원 중 한 명에게 음료를 타서 대접하고 인증샷", duration: "10분", tip: "마시는 조원의 밝은 미소를 프레임에 담아주세요." },
-      { id: 102, emoji: "✋", title: "하이파이브 릴레이", content: "조원 3명 이상과 하이파이브하는 손바닥 인증샷", duration: "3분", tip: "손을 마주 댄 우정 가득한 앵글이 핵심입니다." },
-      { id: 103, emoji: "💧", title: "시원한 생수 요정", content: "동료에게 생수를 건네며 파이팅 외치고 물병 인증샷", duration: "5분", tip: "물병 라벨이 잘 보이게 직각으로 촬영하세요." },
-      { id: 104, emoji: "🍫", title: "당 충전 초콜릿 배달", content: "동료의 자리나 주머니에 간식을 몰래 얹고 놀란 표정/뒷모습 인증샷", duration: "5분", tip: "상대방이 알아채기 전에 재빨리 스텔스로 촬영하세요." },
-      { id: 105, emoji: "🚮", title: "환경 수호 요정", content: "주변의 재활용 쓰레기 3개 이상을 주워 분리수거통에 넣는 인증샷", duration: "5분", tip: "분리수거함과 쓰레기가 선명하게 나오게 하세요." },
-      { id: 106, emoji: "👍", title: "동료 칭찬 한마디", content: "조원 한 명에게 칭찬을 건네고 다정하게 쌍 따봉 투샷 촬영", duration: "5분", tip: "인위적인 표정보다 정말 수줍어하는 웃음이 고득점의 비결!" },
-      { id: 107, emoji: "🌞", title: "하늘 보기 스트레칭", content: "야외에서 하늘을 배경으로 양팔을 쭉 뻗은 시원한 스트레칭 실루엣 샷", duration: "3분", tip: "태양 광선을 등지고 실루엣 위주로 촬영하면 멋진 화보가 됩니다." },
-      { id: 108, emoji: "📸", title: "동료의 멋진 도촬 샷", content: "활동에 몰두하고 있는 다른 조원의 프로페셔널한 모습을 몰래 도촬하여 선물하고 인증샷", duration: "10분", tip: "얼굴이 흔들리지 않게 집중하여 아련한 아웃포커싱으로 담아내세요." },
-      { id: 109, emoji: "🥤", title: "분리수거 컵 정리", content: "테이블 위에 방치된 일회용 컵들을 가지런히 모아 정리한 컵 탑 샷", duration: "5분", tip: "깨끗하게 비워진 정돈 상태가 돋보여야 합니다." },
-      { id: 110, emoji: "🔋", title: "배터리 충전 요정", content: "배터리가 없는 동료의 휴대폰을 충전기/보조배터리에 연결해 주는 훈훈한 샷", duration: "3분", tip: "충전 표시 번개가 들어오는 액정이 선명하게 보여야 합니다." },
-      { id: 111, emoji: "🍎", title: "비타민/과일 나눔", content: "동료에게 과일이나 비타민을 건네주는 손바닥 투샷", duration: "5분", tip: "비타민 패키지나 과일이 쨍하게 나오게 하세요." },
-      { id: 112, emoji: "🧻", title: "테이블 청소 장인", content: "식사나 간식 시간 후 빈 테이블을 물티슈로 깨끗하게 닦아 정돈한 광택 샷", duration: "5분", tip: "기름기가 남지 않게 깔끔하게 닦인 반사광이 포인트!" },
-      { id: 113, emoji: "👟", title: "구겨진 동료 신발 정돈", content: "어지러진 신발이나 슬리퍼를 가지런히 돌려 정돈한 정밀 샷", duration: "3분", tip: "나란히 코끝이 맞춰진 슬리퍼 샷이 정돈력을 입증합니다." },
-      { id: 114, emoji: "✌️", title: "비밀의 윙크 셀카", content: "카메라를 보며 한쪽 눈을 상큼하게 윙크한 셀카 촬영", duration: "2분", tip: "눈밑 애교살이 도드라지게 유쾌하게 윙크해 보세요." },
-      { id: 115, emoji: "👥", title: "동료와의 데칼코마니", content: "동료와 거울을 보듯 똑같은 포즈를 취하고 찍은 대칭 셀카", duration: "5분", tip: "손가락 브이나 하트 포즈를 거울처럼 맞춰보세요." },
-      { id: 116, emoji: "✈️", title: "종이 비행기 날리기", content: "종이 비행기를 접어 날리는 역동적인 순간 포착 샷", duration: "5분", tip: "비행기가 날아가는 공중 포착 샷이 고득점 기준입니다." },
-      { id: 117, emoji: "🤟", title: "손가락 하트 발사", content: "조원 중 한 명 몰래 그 사람의 등 뒤에서 손가락 하트를 조준해 찍은 샷", duration: "5분", tip: "배경의 동료는 초점이 흐리고 손가락이 선명해야 합니다." },
-      { id: 118, emoji: "📚", title: "독서하는 지성인", content: "주변에 보이는 책이나 가이드북을 비장하게 정독하는 연출 샷", duration: "3분", tip: "책 표지와 진지한 눈빛이 렌즈에 잡히도록 하세요." },
-      { id: 119, emoji: "✏️", title: "종이컵 낙서 드로잉", content: "일회용 종이컵에 조원의 얼굴을 간단하게 캐리커처로 그려 선물하고 인증샷", duration: "5분", tip: "어색하게 웃는 조원과 그려진 컵을 함께 찍어보세요." },
-      { id: 120, emoji: "👍", title: "조용한 엄지척", content: "회의나 식사 도중 조용히 카메라를 보며 엄지척을 내미는 샷", duration: "2분", tip: "배경의 회의 분위기와 내 손가락이 고대비로 나오게 하세요." },
-      { id: 121, emoji: "🥤", title: "하트 빨대 만들기", content: "음료용 빨대를 꺾거나 겹쳐 하트 모양으로 만들어 컵에 꽂은 샷", duration: "5분", tip: "음료 잔과 하트 빨대 실루엣이 부각되게 항공샷으로 촬영하세요." },
-      { id: 122, emoji: "🤝", title: "따뜻한 악수 교환", content: "조원 한 명과 두 손으로 정중하게 악수하며 감사 인사를 나누는 투샷", duration: "3분", tip: "서로 맞잡은 두 손이 프레임 한가운데에 오게 배치하세요." },
-      { id: 123, emoji: "⌚", title: "손목시계 단체 동기화", content: "조원 3명 이상의 손목시계 화면을 나란히 모아 동일한 시각임을 인증하는 샷", duration: "5분", tip: "시계 바늘이나 디지털 숫자가 선명하게 초점이 맺혀야 합니다." },
-      { id: 124, emoji: "💍", title: "나의 애장품 소개", content: "본인이 가져온 소지품 중 가장 아끼는 물건을 한 손으로 들고 쨍하게 촬영", duration: "5분", tip: "사물 광고 컷처럼 멋지고 선명한 앵글로 촬영해보세요." },
-      { id: 125, emoji: "📄", title: "워크숍 교재 정돈", content: "회의 테이블 위의 흩어진 프린트물이나 필기구를 가지런히 줄 세워 정렬한 샷", duration: "5분", tip: "깔끔하고 줄이 맞게 쌓아올린 모습이 찍혀야 합니다." },
-      { id: 126, emoji: "🌸", title: "꽃받침 꽃가루 포즈", content: "야외 자연물 앞에서 턱 밑에 꽃받침 포즈를 한 귀여운 셀카", duration: "3분", tip: "야외 풍경과 꽃받침이 뽀샤시하게 어우러지게 하세요." },
-      { id: 127, emoji: "📌", title: "종이 포스트잇 응원", content: "동료의 노트북이나 물품에 '오늘도 힘내요!' 포스트잇 메모를 남긴 샷", duration: "5분", tip: "메모지 글씨가 또렷하게 클로즈업되도록 하세요." },
-      { id: 128, emoji: "🎒", title: "백팩 지퍼 잠금 천사", content: "동료가 깜빡 열어둔 가방 지퍼를 상냥하게 잠가주며 찍은 손가락 줌인 샷", duration: "3분", tip: "열려 있던 지퍼를 올리는 역동적인 손을 포착하세요." },
-      { id: 129, emoji: "⭐", title: "손가락 별(V) 크로스", content: "두 조원이 검지와 중지를 엇갈려 겹쳐 만든 별 모양 샷", duration: "3분", tip: "접촉한 마디가 수평이 되고 깔끔하게 겹쳐지도록 조절하세요." },
-      { id: 130, emoji: "✨", title: "어깨 먼지 털기 격려", content: "동료의 어깨를 털어주며 활짝 웃는 격려 샷", duration: "3분", tip: "환하게 웃는 상호 대화 앵글을 연출하여 전송하세요." }
-    ];
+  {
+    "id": 101,
+    "emoji": "☕",
+    "title": "동료에게 커피 배달",
+    "content": "조원 중 한 명에게 음료를 타서 대접하고 인증샷",
+    "duration": "10분",
+    "tip": "마시는 조원의 밝은 미소를 프레임에 담아주세요."
+  },
+  {
+    "id": 102,
+    "emoji": "✋",
+    "title": "하이파이브 릴레이",
+    "content": "조원 3명 이상과 하이파이브하는 손바닥 인증샷",
+    "duration": "3분",
+    "tip": "손을 마주 댄 우정 가득한 앵글이 핵심입니다."
+  },
+  {
+    "id": 103,
+    "emoji": "💧",
+    "title": "시원한 생수 요정",
+    "content": "동료에게 생수를 건네며 파이팅 외치고 물병 인증샷",
+    "duration": "5분",
+    "tip": "물병 라벨이 잘 보이게 직각으로 촬영하세요."
+  },
+  {
+    "id": 104,
+    "emoji": "🍫",
+    "title": "당 충전 초콜릿 배달",
+    "content": "동료의 자리나 주머니에 간식을 몰래 얹고 놀란 표정/뒷모습 인증샷",
+    "duration": "5분",
+    "tip": "상대방이 알아채기 전에 재빨리 스텔스로 촬영하세요."
+  },
+  {
+    "id": 105,
+    "emoji": "🚮",
+    "title": "환경 수호 요정",
+    "content": "주변의 재활용 쓰레기 3개 이상을 주워 분리수거통에 넣는 인증샷",
+    "duration": "5분",
+    "tip": "분리수거함과 쓰레기가 선명하게 나오게 하세요."
+  },
+  {
+    "id": 106,
+    "emoji": "👍",
+    "title": "동료 칭찬 한마디",
+    "content": "조원 한 명에게 칭찬을 건네고 다정하게 쌍 따봉 투샷 촬영",
+    "duration": "5분",
+    "tip": "인위적인 표정보다 정말 수줍어하는 웃음이 고득점의 비결!"
+  },
+  {
+    "id": 107,
+    "emoji": "🌞",
+    "title": "하늘 보기 스트레칭",
+    "content": "야외에서 하늘을 배경으로 양팔을 쭉 뻗은 시원한 스트레칭 실루엣 샷",
+    "duration": "3분",
+    "tip": "태양 광선을 등지고 실루엣 위주로 촬영하면 멋진 화보가 됩니다."
+  },
+  {
+    "id": 108,
+    "emoji": "📸",
+    "title": "동료의 멋진 도촬 샷",
+    "content": "활동에 몰두하고 있는 다른 조원의 프로페셔널한 모습을 몰래 도촬하여 선물하고 인증샷",
+    "duration": "10분",
+    "tip": "얼굴이 흔들리지 않게 집중하여 아련한 아웃포커싱으로 담아내세요."
+  },
+  {
+    "id": 109,
+    "emoji": "🥤",
+    "title": "분리수거 컵 정리",
+    "content": "테이블 위에 방치된 일회용 컵들을 가지런히 모아 정리한 컵 탑 샷",
+    "duration": "5분",
+    "tip": "깨끗하게 비워진 정돈 상태가 돋보여야 합니다."
+  },
+  {
+    "id": 110,
+    "emoji": "🔋",
+    "title": "배터리 충전 요정",
+    "content": "배터리가 없는 동료의 휴대폰을 충전기/보조배터리에 연결해 주는 훈훈한 샷",
+    "duration": "3분",
+    "tip": "충전 표시 번개가 들어오는 액정이 선명하게 보여야 합니다."
+  },
+  {
+    "id": 111,
+    "emoji": "🍎",
+    "title": "비타민/과일 나눔",
+    "content": "동료에게 과일이나 비타민을 건네주는 손바닥 투샷",
+    "duration": "5분",
+    "tip": "비타민 패키지나 과일이 쨍하게 나오게 하세요."
+  },
+  {
+    "id": 112,
+    "emoji": "🧻",
+    "title": "테이블 청소 장인",
+    "content": "식사나 간식 시간 후 빈 테이블을 물티슈로 깨끗하게 닦아 정돈한 광택 샷",
+    "duration": "5분",
+    "tip": "기름기가 남지 않게 깔끔하게 닦인 반사광이 포인트!"
+  },
+  {
+    "id": 113,
+    "emoji": "👟",
+    "title": "구겨진 동료 신발 정돈",
+    "content": "어지러진 신발이나 슬리퍼를 가지런히 돌려 정돈한 정밀 샷",
+    "duration": "3분",
+    "tip": "나란히 코끝이 맞춰진 슬리퍼 샷이 정돈력을 입증합니다."
+  },
+  {
+    "id": 114,
+    "emoji": "✌️",
+    "title": "비밀의 윙크 셀카",
+    "content": "카메라를 보며 한쪽 눈을 상큼하게 윙크한 셀카 촬영",
+    "duration": "2분",
+    "tip": "눈밑 애교살이 도드라지게 유쾌하게 윙크해 보세요."
+  },
+  {
+    "id": 115,
+    "emoji": "👥",
+    "title": "동료와의 데칼코마니",
+    "content": "동료와 거울을 보듯 똑같은 포즈를 취하고 찍은 대칭 셀카",
+    "duration": "5분",
+    "tip": "손가락 브이나 하트 포즈를 거울처럼 맞춰보세요."
+  },
+  {
+    "id": 116,
+    "emoji": "✈️",
+    "title": "종이 비행기 날리기",
+    "content": "종이 비행기를 접어 날리는 역동적인 순간 포착 샷",
+    "duration": "5분",
+    "tip": "비행기가 날아가는 공중 포착 샷이 고득점 기준입니다."
+  },
+  {
+    "id": 117,
+    "emoji": "🤟",
+    "title": "손가락 하트 발사",
+    "content": "조원 중 한 명 몰래 그 사람의 등 뒤에서 손가락 하트를 조준해 찍은 샷",
+    "duration": "5분",
+    "tip": "배경의 동료는 초점이 흐리고 손가락이 선명해야 합니다."
+  },
+  {
+    "id": 118,
+    "emoji": "📚",
+    "title": "독서하는 지성인",
+    "content": "주변에 보이는 책이나 가이드북을 비장하게 정독하는 연출 샷",
+    "duration": "3분",
+    "tip": "책 표지와 진지한 눈빛이 렌즈에 잡히도록 하세요."
+  },
+  {
+    "id": 119,
+    "emoji": "✏️",
+    "title": "종이컵 낙서 드로잉",
+    "content": "일회용 종이컵에 조원의 얼굴을 간단하게 캐리커처로 그려 선물하고 인증샷",
+    "duration": "5분",
+    "tip": "어색하게 웃는 조원과 그려진 컵을 함께 찍어보세요."
+  },
+  {
+    "id": 120,
+    "emoji": "👍",
+    "title": "조용한 엄지척",
+    "content": "회의나 식사 도중 조용히 카메라를 보며 엄지척을 내미는 샷",
+    "duration": "2분",
+    "tip": "배경의 회의 분위기와 내 손가락이 고대비로 나오게 하세요."
+  },
+  {
+    "id": 121,
+    "emoji": "🥤",
+    "title": "하트 빨대 만들기",
+    "content": "음료용 빨대를 꺾거나 겹쳐 하트 모양으로 만들어 컵에 꽂은 샷",
+    "duration": "5분",
+    "tip": "음료 잔과 하트 빨대 실루엣이 부각되게 항공샷으로 촬영하세요."
+  },
+  {
+    "id": 122,
+    "emoji": "🤝",
+    "title": "따뜻한 악수 교환",
+    "content": "조원 한 명과 두 손으로 정중하게 악수하며 감사 인사를 나누는 투샷",
+    "duration": "3분",
+    "tip": "서로 맞잡은 두 손이 프레임 한가운데에 오게 배치하세요."
+  },
+  {
+    "id": 123,
+    "emoji": "⌚",
+    "title": "손목시계 단체 동기화",
+    "content": "조원 3명 이상의 손목시계 화면을 나란히 모아 동일한 시각임을 인증하는 샷",
+    "duration": "5분",
+    "tip": "시계 바늘이나 디지털 숫자가 선명하게 초점이 맺혀야 합니다."
+  },
+  {
+    "id": 124,
+    "emoji": "💍",
+    "title": "나의 애장품 소개",
+    "content": "본인이 가져온 소지품 중 가장 아끼는 물건을 한 손으로 들고 쨍하게 촬영",
+    "duration": "5분",
+    "tip": "사물 광고 컷처럼 멋지고 선명한 앵글로 촬영해보세요."
+  },
+  {
+    "id": 125,
+    "emoji": "📄",
+    "title": "워크숍 교재 정돈",
+    "content": "회의 테이블 위의 흩어진 프린트물이나 필기구를 가지런히 줄 세워 정렬한 샷",
+    "duration": "5분",
+    "tip": "깔끔하고 줄이 맞게 쌓아올린 모습이 찍혀야 합니다."
+  },
+  {
+    "id": 126,
+    "emoji": "🌸",
+    "title": "꽃받침 꽃가루 포즈",
+    "content": "야외 자연물 앞에서 턱 밑에 꽃받침 포즈를 한 귀여운 셀카",
+    "duration": "3분",
+    "tip": "야외 풍경과 꽃받침이 뽀샤시하게 어우러지게 하세요."
+  },
+  {
+    "id": 127,
+    "emoji": "📌",
+    "title": "종이 포스트잇 응원",
+    "content": "동료의 노트북이나 물품에 '오늘도 힘내요!' 포스트잇 메모를 남긴 샷",
+    "duration": "5분",
+    "tip": "메모지 글씨가 또렷하게 클로즈업되도록 하세요."
+  },
+  {
+    "id": 128,
+    "emoji": "🎒",
+    "title": "백팩 지퍼 잠금 천사",
+    "content": "동료가 깜빡 열어둔 가방 지퍼를 상냥하게 잠가주며 찍은 손가락 줌인 샷",
+    "duration": "3분",
+    "tip": "열려 있던 지퍼를 올리는 역동적인 손을 포착하세요."
+  },
+  {
+    "id": 129,
+    "emoji": "⭐",
+    "title": "손가락 별(V) 크로스",
+    "content": "두 조원이 검지와 중지를 엇갈려 겹쳐 만든 별 모양 샷",
+    "duration": "3분",
+    "tip": "접촉한 마디가 수평이 되고 깔끔하게 겹쳐지도록 조절하세요."
+  },
+  {
+    "id": 130,
+    "emoji": "✨",
+    "title": "어깨 먼지 털기 격려",
+    "content": "동료의 어깨를 털어주며 활짝 웃는 격려 샷",
+    "duration": "3분",
+    "tip": "환하게 웃는 상호 대화 앵글을 연출하여 전송하세요."
+  },
+  {
+    "id": 131,
+    "emoji": "🕶️",
+    "title": "선글라스 요원",
+    "content": "선글라스를 쓴 조원과 나란히 서서 비장한 표정으로 촬영",
+    "duration": "5분",
+    "tip": "영화 속 비밀 요원처럼 카리스마 넘치는 각도가 중요합니다."
+  },
+  {
+    "id": 132,
+    "emoji": "🧃",
+    "title": "음료수 캔 타워",
+    "content": "빈 음료 캔 4개 이상을 쌓아 올리고 균형을 잡은 모습 인증",
+    "duration": "5분",
+    "tip": "쓰러지기 직전 아슬아슬한 순간을 포착하면 좋습니다."
+  },
+  {
+    "id": 133,
+    "emoji": "📄",
+    "title": "가위바위보 손 모으기",
+    "content": "조원 3명 이상이 가위, 바위, 보를 동시에 내고 손을 모은 항공 샷",
+    "duration": "3분",
+    "tip": "서로 다른 모양이 다채롭게 프레임에 나오도록 위에서 찍으세요."
+  },
+  {
+    "id": 134,
+    "emoji": "🎈",
+    "title": "풍선 불기 요정",
+    "content": "풍선을 부는 동료의 뺨이 볼록해진 순간을 클로즈업 촬영",
+    "duration": "5분",
+    "tip": "풍선 색상이 비비드하게 나오면 더 좋습니다."
+  },
+  {
+    "id": 135,
+    "emoji": "🍎",
+    "title": "빨간 사물 찾기",
+    "content": "워크숍 장소 내에서 빨간색 사물 3개를 한곳에 모아 찍기",
+    "duration": "5분",
+    "tip": "주변 사물과 대비되는 강렬한 빨간색이 돋보여야 합니다."
+  },
+  {
+    "id": 136,
+    "emoji": "✏️",
+    "title": "오각형 펜 정렬",
+    "content": "볼펜 5개를 겹쳐 별 모양이나 오각형을 만들어 찍은 정밀 샷",
+    "duration": "3분",
+    "tip": "꼭짓점이 정밀하게 맞닿아야 합니다."
+  },
+  {
+    "id": 137,
+    "emoji": "📱",
+    "title": "동시 화면 띄우기",
+    "content": "동료 3명의 폰 화면에 똑같은 포털 홈 화면을 띄워 나란히 놓은 인증 샷",
+    "duration": "5분",
+    "tip": "화면 밝기를 비슷하게 맞추면 더 깔끔합니다."
+  },
+  {
+    "id": 138,
+    "emoji": "🧣",
+    "title": "종이 손수건 리본",
+    "content": "티슈나 종이 타월로 리본 모양을 접어 테이블 위에 놓은 정돈 샷",
+    "duration": "3분",
+    "tip": "리본 주름이 선명하게 보이게 촬영하세요."
+  },
+  {
+    "id": 139,
+    "emoji": "🚶",
+    "title": "거인 발자국",
+    "content": "동료의 발걸음 폭을 아주 크게 벌린 유쾌한 도보 인증 샷",
+    "duration": "3분",
+    "tip": "원근감을 살려 아래에서 위로 찍으면 더 커 보입니다."
+  },
+  {
+    "id": 140,
+    "emoji": "🥤",
+    "title": "종이컵 전화기",
+    "content": "종이컵 두 개를 맞댄 척하며 귓속말을 나누는 다정한 투샷",
+    "duration": "5분",
+    "tip": "실제로 대화하는 듯한 자연스러운 표정이 포인트입니다."
+  },
+  {
+    "id": 141,
+    "emoji": "🧩",
+    "title": "퍼즐 조각 맞추기",
+    "content": "두 사람의 손가락 끝을 맞대어 하트나 퍼즐 형태를 연출한 클로즈업 샷",
+    "duration": "3분",
+    "tip": "손가락 접촉면에 초점을 맞추세요."
+  },
+  {
+    "id": 142,
+    "emoji": "👒",
+    "title": "동료에게 모자 씌우기",
+    "content": "동료의 머리 위에 모자나 책을 조심스레 얹어주는 장난기 어린 순간",
+    "duration": "5분",
+    "tip": "동료가 웃음 참는 표정이 백미입니다."
+  },
+  {
+    "id": 143,
+    "emoji": "🧦",
+    "title": "알록달록 양말 크로스",
+    "content": "서로 다른 색상의 양말을 신은 조원 3명의 발목 투샷",
+    "duration": "5분",
+    "tip": "양말 패턴이 잘 보이도록 바지를 살짝 걷고 찍으세요."
+  },
+  {
+    "id": 144,
+    "emoji": "🌂",
+    "title": "우산 런웨이",
+    "content": "우산을 들거나 어깨에 메고 패션쇼 모델처럼 비장하게 걷는 샷",
+    "duration": "5분",
+    "tip": "워크숍 장소 복도를 배경으로 당당하게 걸어보세요."
+  },
+  {
+    "id": 145,
+    "emoji": "🧼",
+    "title": "깨끗한 손 세정",
+    "content": "손 소독제나 비누 거품을 가득 묻힌 두 손을 비비는 역동적인 순간",
+    "duration": "3분",
+    "tip": "하얀 거품의 질감이 선명하게 보이게 촬영하세요."
+  },
+  {
+    "id": 146,
+    "emoji": "🔑",
+    "title": "열쇠고리 모으기",
+    "content": "동료들의 열쇠나 차 키 3개 이상을 손바닥에 모아 찍은 인증 샷",
+    "duration": "3분",
+    "tip": "다양한 모양의 키링이 한눈에 보이게 하세요."
+  },
+  {
+    "id": 147,
+    "emoji": "🥛",
+    "title": "물컵 건배",
+    "content": "물이나 음료가 담긴 컵 3개 이상을 공중에서 맞부딪치는 건배 샷",
+    "duration": "3분",
+    "tip": "잔 안의 음료가 출렁이는 찰나를 흔들림 없이 포착하세요."
+  },
+  {
+    "id": 148,
+    "emoji": "🌿",
+    "title": "초록 잎사귀 교감",
+    "content": "실내 화분이나 야외 나뭇잎 하나를 조심스레 손가락 끝으로 찌르는 샷",
+    "duration": "3분",
+    "tip": "자연의 초록색이 선명하게 표현되게 아웃포커싱 해주세요."
+  },
+  {
+    "id": 149,
+    "emoji": "📝",
+    "title": "도형 낙서 릴레이",
+    "content": "메모지에 동그라미, 세모, 네모를 차례로 이어 그린 합동 도형 샷",
+    "duration": "5분",
+    "tip": "도형의 선이 깔끔하게 이어져야 합니다."
+  },
+  {
+    "id": 150,
+    "emoji": "🥨",
+    "title": "과자 하트",
+    "content": "동그랗거나 하트 모양 과자 2개를 맞대어 온전한 하트를 만든 샷",
+    "duration": "3분",
+    "tip": "한 입 베어 물기 전에 깔끔한 정물 샷으로 촬영하세요."
+  },
+  {
+    "id": 151,
+    "emoji": "📦",
+    "title": "박스 테이프 요정",
+    "content": "상자나 포장용 테이프를 당기는 팽팽한 순간의 손 클로즈업",
+    "duration": "5분",
+    "tip": "팽팽하게 당겨진 테이프의 투명함이 돋보이게 하세요."
+  },
+  {
+    "id": 152,
+    "emoji": "🧣",
+    "title": "포근한 어깨동무",
+    "content": "동료 두 명의 어깨에 팔을 얹고 셋이서 활짝 웃는 우정 가득한 쓰리샷",
+    "duration": "5분",
+    "tip": "자연스러운 미소와 어깨동무 라인이 돋보여야 합니다."
+  },
+  {
+    "id": 153,
+    "emoji": "🎭",
+    "title": "비밀 요원의 눈빛",
+    "content": "가이드북이나 종이 뒤로 눈만 살짝 내밀어 카메라를 응시하는 스파이 샷",
+    "duration": "3분",
+    "tip": "눈동자의 비장함이 살아있어야 고득점!"
+  },
+  {
+    "id": 154,
+    "emoji": "🍩",
+    "title": "동그라미 도넛 링",
+    "content": "손가락으로 동그라미 안경 포즈를 취하고 눈앞에 댄 귀여운 투샷",
+    "duration": "3분",
+    "tip": "두 사람이 양쪽 눈에 각각 대칭으로 만들어 찍으세요."
+  },
+  {
+    "id": 155,
+    "emoji": "🧲",
+    "title": "자석 클립 체인",
+    "content": "자석이나 클립 5개 이상을 일렬로 길게 연결해 세운 체인 샷",
+    "duration": "5분",
+    "tip": "연결 부위가 끊어지지 않은 상태여야 합니다."
+  },
+  {
+    "id": 156,
+    "emoji": "🧴",
+    "title": "화장품 광고 모델",
+    "content": "핸드크림이나 미스트를 들고 뷰티 모델처럼 우아하게 미소 짓는 샷",
+    "duration": "5분",
+    "tip": "제품 로고가 선명하게 잡히도록 고대비로 촬영하세요."
+  },
+  {
+    "id": 157,
+    "emoji": "🧵",
+    "title": "손가락 실뜨기",
+    "content": "고무줄이나 실을 손가락에 얽어 간단한 모양을 만든 추억의 샷",
+    "duration": "5분",
+    "tip": "실 모양이 엉키지 않고 기하학적으로 드러나야 합니다."
+  },
+  {
+    "id": 158,
+    "emoji": "🔔",
+    "title": "스마트폰 손전등 광선",
+    "content": "두 조원이 폰 플래시 광원을 서로 교차하여 빛의 X자를 만든 야간/실내 샷",
+    "duration": "5분",
+    "tip": "어두운 조명 아래에서 플래시 빔이 선명하게 보이게 촬영하세요."
+  },
+  {
+    "id": 159,
+    "emoji": "💌",
+    "title": "메모지 하트 접기",
+    "content": "포스트잇이나 종이 메모를 하트 모양으로 접어 노트북 모니터 귀퉁이에 붙인 샷",
+    "duration": "5분",
+    "tip": "접힌 하트 날개가 입체적으로 보이도록 옆에서 찍으세요."
+  },
+  {
+    "id": 160,
+    "emoji": "🧩",
+    "title": "모니터 프레임 샷",
+    "content": "노트북 모니터 화면 뒤쪽에서 동료의 얼굴이 모니터 경계에 딱 맞게 배치해 찍은 원근 샷",
+    "duration": "5분",
+    "tip": "모니터 프레임이 마치 액자처럼 느껴지도록 구도를 조절하세요."
+  },
+  {
+    "id": 161,
+    "emoji": "🧂",
+    "title": "종이컵 피라미드",
+    "content": "종이컵 6개 이상을 3-2-1 형태로 정밀하게 쌓아 올린 미니 타워",
+    "duration": "5분",
+    "tip": "무너지기 전에 정삼각형 구도로 깔끔하게 촬영하세요."
+  },
+  {
+    "id": 162,
+    "emoji": "🧶",
+    "title": "고무줄 튕기기",
+    "content": "고무줄을 팽팽하게 당겨 손가락 사이에 십자가 모양을 연출한 정밀 샷",
+    "duration": "3분",
+    "tip": "고무줄 탄력이 눈으로 느껴지도록 포커스를 잡으세요."
+  },
+  {
+    "id": 163,
+    "emoji": "🥢",
+    "title": "나무젓가락 정렬",
+    "content": "포장된 나무젓가락 5개 이상을 가지런히 바둑판 격자 형태로 교차해 정돈한 샷",
+    "duration": "5분",
+    "tip": "직각과 평행이 정확하게 맞아야 정돈 능력을 인정받습니다."
+  },
+  {
+    "id": 164,
+    "emoji": "🧼",
+    "title": "비누 거품 하트",
+    "content": "화장실에서 손을 씻은 후 손바닥 위에 하트 모양 거품을 연출해 찍은 샷",
+    "duration": "5분",
+    "tip": "물기가 가득하고 몽글몽글한 거품의 입체감이 살아야 합니다."
+  },
+  {
+    "id": 165,
+    "emoji": "🕶️",
+    "title": "안경 바꿔 쓰기",
+    "content": "동료와 서로 안경을 교환해 쓰고 찍은 코믹하고 유쾌한 투샷 셀카",
+    "duration": "5분",
+    "tip": "서로 안 어울릴수록 재미있고 생동감 넘치는 사진이 됩니다."
+  },
+  {
+    "id": 166,
+    "emoji": "📒",
+    "title": "노트 펜꽂이",
+    "content": "다이어리나 노트 스프링 사이에 펜을 일렬로 예쁘게 꽂아 정렬한 데스크 테리어 샷",
+    "duration": "3분",
+    "tip": "펜 클립의 방향이 한쪽으로 통일되어 정갈해야 합니다."
+  },
+  {
+    "id": 167,
+    "emoji": "🧴",
+    "title": "핸드크림 나눔",
+    "content": "동료의 손등에 핸드크림을 하트 모양으로 예쁘게 짜서 선물한 보습 격려 샷",
+    "duration": "5분",
+    "tip": "하트 크림이 뭉개지기 직전에 클로즈업으로 찍어보세요."
+  },
+  {
+    "id": 168,
+    "emoji": "🥤",
+    "title": "빨대 커플 하트",
+    "content": "두 개의 빨대를 연결해 긴 하나의 선으로 만들고 하트 굴곡을 구현한 샷",
+    "duration": "5분",
+    "tip": "빨대 연결부가 투명 테이프나 핀으로 고정되어 깔끔해야 합니다."
+  },
+  {
+    "id": 169,
+    "emoji": "🧻",
+    "title": "휴지 튜브 정리",
+    "content": "다 쓴 휴지 심이나 종이 컵홀더 3개 이상을 일렬로 포개어 놓은 재활용 정돈 샷",
+    "duration": "3분",
+    "tip": "수평 상태로 나란히 맞물려 있어야 깔끔해 보입니다."
+  },
+  {
+    "id": 170,
+    "emoji": "👣",
+    "title": "그림자 키 맞추기",
+    "content": "야외에서 햇빛을 등지고 서서 두 사람의 그림자 머리끝이 딱 닿게 조절해 찍은 샷",
+    "duration": "3분",
+    "tip": "그림자가 선명한 시멘트 바닥이나 잔디 위가 명당입니다."
+  },
+  {
+    "id": 171,
+    "emoji": "👟",
+    "title": "신발 끈 동기화",
+    "content": "동료와 신발 앞코를 마주 대고 신발 끈이 묶여 있는 매듭을 수직으로 찍은 샷",
+    "duration": "3분",
+    "tip": "두 신발의 브랜드가 다르더라도 매듭 구도는 완벽한 대칭을 이뤄야 합니다."
+  },
+  {
+    "id": 172,
+    "emoji": "🧂",
+    "title": "포스트잇 무지개",
+    "content": "서로 다른 색상의 포스트잇 3장 이상을 모니터나 벽면에 예쁘게 그라데이션으로 붙인 샷",
+    "duration": "5분",
+    "tip": "모서리가 휘어지지 않게 꾹꾹 눌러 붙인 정돈 상태가 핵심입니다."
+  },
+  {
+    "id": 173,
+    "emoji": "🧤",
+    "title": "손가락 온기 교감",
+    "content": "동료와 검지손가락 끝을 마주 대어 마치 영화 ET의 명장면처럼 연출한 샷",
+    "duration": "2분",
+    "tip": "두 손가락 끝 접촉 부분에 카메라 초점을 아주 선명하게 맞추세요."
+  },
+  {
+    "id": 174,
+    "emoji": "🧃",
+    "title": "음료수 병뚜껑 탑",
+    "content": "음료수나 생수 병뚜껑 4개 이상을 수직으로 쌓아 올린 미니 타워 챌린지",
+    "duration": "5분",
+    "tip": "흔들려 떨어지기 전에 흔들림 없는 앵글로 촬영해 제출하세요."
+  },
+  {
+    "id": 175,
+    "emoji": "📁",
+    "title": "가이드북 파일 정리",
+    "content": "워크숍 가이드북이나 유인물을 모아 모서리를 직각으로 톡톡 쳐서 정돈한 칼각 샷",
+    "duration": "3분",
+    "tip": "책상 모서리와 인쇄물의 경계선이 완벽하게 일치해야 합니다."
+  },
+  {
+    "id": 176,
+    "emoji": "🎒",
+    "title": "동료 가방 들어주기",
+    "content": "동료의 가방끈을 대신 잡고 짐을 나눠 들어주며 고마워하는 훈훈한 순간 포착",
+    "duration": "5분",
+    "tip": "인사하는 자연스러운 전신 샷 구도로 따뜻함을 전달하세요."
+  },
+  {
+    "id": 177,
+    "emoji": "🥛",
+    "title": "물컵 나란히 정렬",
+    "content": "회의용 생수 컵이나 음료 잔 4개 이상을 수평 자를 댄 듯 일직선으로 정렬한 샷",
+    "duration": "3분",
+    "tip": "가장 앞쪽 잔에서 뒤쪽 잔까지 일직선 라인이 정렬되도록 옆에서 촬영하세요."
+  },
+  {
+    "id": 178,
+    "emoji": "📱",
+    "title": "보조배터리 도킹",
+    "content": "두 대의 휴대폰에 보조배터리 선을 교차로 꽂아 조율 중인 하이테크 느낌 샷",
+    "duration": "5분",
+    "tip": "케이블선 꼬임 없이 깔끔하게 연결된 단자들이 쨍하게 찍혀야 합니다."
+  },
+  {
+    "id": 179,
+    "emoji": "🔖",
+    "title": "책갈피 꽂기 격려",
+    "content": "동료가 읽던 책이나 노트북 키보드 틈에 정성 어린 쪽지를 살며시 끼워둔 샷",
+    "duration": "5분",
+    "tip": "쪽지에 적힌 짧은 격려 문구가 카메라에 선명하게 드러나야 합니다."
+  },
+  {
+    "id": 180,
+    "emoji": "🥨",
+    "title": "과자 나눔 건배",
+    "content": "빼빼로나 감자칩 과자 2개를 엑스(X)자 모양으로 크로스하여 건배를 연출한 샷",
+    "duration": "3분",
+    "tip": "부러지지 않은 온전한 모양의 과자로 구도를 형성해야 통과됩니다."
+  },
+  {
+    "id": 181,
+    "emoji": "🕶️",
+    "title": "선글라스 반사 샷",
+    "content": "동료의 선글라스 렌즈에 비친 나의 모습을 거울처럼 촬영한 셀카 샷",
+    "duration": "5분",
+    "tip": "렌즈 속에 카메라와 내 모습이 선명하게 아웃포커싱 되도록 집중하세요."
+  },
+  {
+    "id": 182,
+    "emoji": "🛍️",
+    "title": "쇼핑백 칼각 접기",
+    "content": "사용한 종이 백이나 비닐 쇼핑백을 납작하고 단정하게 네모로 각 잡아 접은 샷",
+    "duration": "3분",
+    "tip": "구겨진 주름 없이 완벽하게 수평으로 정돈된 단면이 찍혀야 합니다."
+  },
+  {
+    "id": 183,
+    "emoji": "🥤",
+    "title": "빨대 별 모양",
+    "content": "빨대 5개를 바닥에 교차하여 별 모양을 만들어 정밀하게 촬영한 샷",
+    "duration": "5분",
+    "tip": "빨대 색상이 조화롭게 어우러지고 각 교차각도가 균등해야 완성입니다."
+  },
+  {
+    "id": 184,
+    "emoji": "🧻",
+    "title": "페이퍼 타월 장미",
+    "content": "페이퍼 타월이나 냅킨을 꼬아 간단한 꽃 모양을 연출해 컵 위에 얹은 감성 샷",
+    "duration": "5분",
+    "tip": "주름이 풍성하게 잡히도록 냅킨 꼬임을 유도해 꽃 모양을 완성하세요."
+  },
+  {
+    "id": 185,
+    "emoji": "👣",
+    "title": "발바닥 하이파이브",
+    "content": "동료와 서로 신발 밑창(뒤꿈치)을 마주 대고 뒤를 돌아 웃는 모습의 다이내믹 샷",
+    "duration": "5분",
+    "tip": "서로 등을 기대고 발뒤꿈치만 대는 코믹한 앵글이 높은 점수를 땁니다."
+  },
+  {
+    "id": 186,
+    "emoji": "📒",
+    "title": "노트 닫기 정돈",
+    "content": "회의가 끝난 후 테이블 위에 놓인 조원들의 모든 노트를 다소곳이 닫아 겹친 탑 샷",
+    "duration": "3분",
+    "tip": "가장 큰 크기의 노트가 맨 아래에 가도록 계단형으로 쌓아 정돈하세요."
+  },
+  {
+    "id": 187,
+    "emoji": "🧴",
+    "title": "핸드크림 데칼코마니",
+    "content": "동료와 서로 손등에 핸드크림을 바르고 손등을 마주 대어 대칭을 이룬 샷",
+    "duration": "5분",
+    "tip": "크림이 서로 골고루 펴 발라지는 순간의 질감이 렌즈에 포착되어야 합니다."
+  },
+  {
+    "id": 188,
+    "emoji": "🎒",
+    "title": "백팩 정리 대칭",
+    "content": "동료의 백팩 두 개를 나란히 손잡이를 맞대어 서 있도록 거치한 정갈한 배치 샷",
+    "duration": "3분",
+    "tip": "가방 각이 무너지지 않게 빵빵하게 수평을 맞춰 세워두는 것이 요령입니다."
+  },
+  {
+    "id": 189,
+    "emoji": "🥛",
+    "title": "물방울 크로스",
+    "content": "투명 컵 외벽에 맺힌 차가운 이슬을 손가락 끝으로 닦아 모양을 낸 정밀 접사 샷",
+    "duration": "5분",
+    "tip": "물방울의 투명성과 지문의 궤적이 선명하게 드러나도록 매크로 렌즈처럼 가까이 촬영하세요."
+  },
+  {
+    "id": 190,
+    "emoji": "📱",
+    "title": "멀티 스크린 하트",
+    "content": "두 조원의 스마트폰 화면을 절반씩 포개어 전체가 하나의 큰 하트로 보이게 한 투스크린 샷",
+    "duration": "5분",
+    "tip": "두 화면의 조도와 색감이 어우러지게 화면 중앙 매칭 상태를 조율하세요."
+  },
+  {
+    "id": 191,
+    "emoji": "✏️",
+    "title": "연필 깍지 대칭",
+    "content": "연필이나 펜 2개의 끝을 뾰족하게 서로 맞대어 수평 일직선을 맞춘 접사 샷",
+    "duration": "3분",
+    "tip": "두 펜촉 끝부분이 단 1밀리미터의 오차도 없이 맞물리는 순간 초점을 고정하세요."
+  },
+  {
+    "id": 192,
+    "emoji": "📎",
+    "title": "클립 하트 만들기",
+    "content": "사무용 철제 클립 두 개를 구부려 서로 엮어 하트 모양 펜던트를 만든 창의 샷",
+    "duration": "5분",
+    "tip": "클립 금속 와이어의 정교한 꺾임과 대칭 비례가 선명해야 통과입니다."
+  },
+  {
+    "id": 193,
+    "emoji": "🧃",
+    "title": "음료수 팩 칼정리",
+    "content": "다 마신 종이 음료 팩의 양 날개를 뜯어 납작하게 누르고 반듯하게 접어 쌓은 샷",
+    "duration": "3분",
+    "tip": "재활용 수거 전에 부피를 최소화한 모범적인 정돈 상태가 돋보여야 합니다."
+  },
+  {
+    "id": 194,
+    "emoji": "🧣",
+    "title": "종이 손수건 바람개비",
+    "content": "티슈 네 귀퉁이를 접어 미니 바람개비 형태를 연출해 손가락 위에 얹은 샷",
+    "duration": "5분",
+    "tip": "바람이 불어 회전하기 직전의 균형 잡힌 가벼운 비주얼이 살아야 합니다."
+  },
+  {
+    "id": 195,
+    "emoji": "🚶",
+    "title": "원근감 거인 손바닥",
+    "content": "한 사람은 가깝게, 다른 한 사람은 멀리 서서 마치 손바닥 위에 동료가 얹힌 듯한 착시 샷",
+    "duration": "5분",
+    "tip": "두 사람의 높낮이와 원근 앵글 위치가 소수점 단위로 정확히 어우러져야 착시가 완성됩니다."
+  },
+  {
+    "id": 196,
+    "emoji": "🥨",
+    "title": "감자칩 대칭 크로스",
+    "content": "곡면 모양의 감자칩 2개를 오목한 면끼리 겹쳐 원통형 조형을 만든 아슬아슬 샷",
+    "duration": "5분",
+    "tip": "감자칩이 부서지지 않게 수평 테이블 위에 포갠 균형감이 살아야 합니다."
+  },
+  {
+    "id": 197,
+    "emoji": "🧻",
+    "title": "두루마리 휴지 탑",
+    "content": "새 두루마리 휴지 3개를 수직으로 흔들림 없이 수직 탑 쌓기에 도전한 인증 샷",
+    "duration": "3분",
+    "tip": "원통의 중심이 정확히 맞물려 곧게 서 있어야 정돈으로 인정됩니다."
+  },
+  {
+    "id": 198,
+    "emoji": "👣",
+    "title": "신발장 나란히 각 잡기",
+    "content": "워크숍 실내 진입 구역의 신발들의 앞코가 벽면 라인과 수평이 맞도록 정리 정돈한 전경 샷",
+    "duration": "5분",
+    "tip": "줄이 삐뚤어지지 않게 가지런한 질서 정연함이 전체 프레임에 담겨야 합니다."
+  },
+  {
+    "id": 199,
+    "emoji": "🌿",
+    "title": "나뭇잎 하트 찾기",
+    "content": "야외 자연 조경 속에서 우연히 하트 모양과 유사한 나뭇잎을 찾아 클로즈업 촬영한 샷",
+    "duration": "3분",
+    "tip": "인위적인 손상 없이 온전한 자연 상태의 잎사귀 경계선이 살아야 고득점입니다."
+  },
+  {
+    "id": 200,
+    "emoji": "✨",
+    "title": "동료 미소 찰나",
+    "content": "대화 중 환하게 웃는 동료 요원의 자연스러운 미소를 스포트라이트 각도로 찍은 감성 스냅",
+    "duration": "5분",
+    "tip": "일부러 지어내는 미소보다 진짜 빵 터졌을 때의 찰나의 흔들림 없는 순간이 득점 요인입니다."
+  }
+];
 
     // ----------------------------------------------------
     // STATE & CONFIG MANAGEMENT (SINGLE TEAM FOCUSED)
@@ -1616,6 +2386,20 @@
           
           const indMissions = [];
           const usedIndIds = new Set();
+          
+          // Exclude other team's assigned individual mission IDs to ensure disjoint assignment!
+          const otherTeam = activeTeam === 'team1' ? 'team2' : 'team1';
+          const otherSavedInd = localStorage.getItem(`individual_missions_${otherTeam}`);
+          if (otherSavedInd) {
+            try {
+              const otherList = JSON.parse(otherSavedInd);
+              otherList.forEach(m => {
+                if (m && m.id) usedIndIds.add(m.id);
+              });
+            } catch (e) {
+              console.error("Error parsing other team missions:", e);
+            }
+          }
           
           participants.forEach((name, idx) => {
             const available = individualMissionsDatabase.filter(m => !usedIndIds.has(m.id));
@@ -2129,10 +2913,9 @@
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(finalHour)}:${pad(finalMinute)}:${pad(finalSecond)}+09:00`;
     }
 
+    
     function assignIndividualMissions() {
       try {
-        console.log("assignIndividualMissions called. activeTeam:", activeTeam, "testModeActive:", testModeActive, "list:", activeIndividualMissions[activeTeam]);
-        
         if (isDeployedProductionLocked) {
           showToast("배정 불가", "프로덕션 일정이 이미 확정(잠금)되었습니다.", "error");
           return;
@@ -2140,40 +2923,50 @@
         
         let teamStart = document.getElementById('team-start-date').value;
         if (!teamStart) {
-          teamStart = '2026-09-02';
+          const defaultDate = activeTeam === 'team1' ? '2026-09-02' : '2026-09-07';
+          teamStart = defaultDate;
           document.getElementById('team-start-date').value = teamStart;
-        }
-        if (!testModeActive && !teamStart) {
-          showToast("배정 실패", "나의 워크숍 시작 일자를 먼저 선택해 주세요.", "error");
-          SoundEngine.play('failure');
-          return;
         }
         
         const list = activeIndividualMissions[activeTeam] || [];
         if (list.length === 0) {
-          showToast("배정 불가", "먼저 상단에 조원 참여자 명단을 입력해 주세요.", "error");
+          showToast("배정 불가", "조원 참여자 명단이 비어 있습니다.", "error");
           SoundEngine.play('failure');
           return;
         }
         
-        list.forEach((entry, idx) => {
-          const randIdx = Math.floor(Math.random() * individualMissionsDatabase.length);
-          const dbMission = individualMissionsDatabase[randIdx];
-          if (!dbMission) {
-            throw new Error(`개인 미션 데이터베이스에서 인덱스 ${randIdx}의 값을 찾을 수 없습니다.`);
+        const usedIndIds = new Set();
+        const otherTeam = activeTeam === 'team1' ? 'team2' : 'team1';
+        const otherSavedInd = localStorage.getItem(`individual_missions_${otherTeam}`);
+        if (otherSavedInd) {
+          try {
+            const otherList = JSON.parse(otherSavedInd);
+            otherList.forEach(m => {
+              if (m && m.id) usedIndIds.add(m.id);
+            });
+          } catch (e) {
+            console.error("Error parsing other team missions:", e);
           }
+        }
+        
+        list.forEach((entry, idx) => {
+          const available = individualMissionsDatabase.filter(m => !usedIndIds.has(m.id));
+          const pool = available.length > 0 ? available : individualMissionsDatabase;
+          const dbMission = pool[Math.floor(Math.random() * pool.length)];
+          
+          usedIndIds.add(dbMission.id);
           
           entry.id = dbMission.id;
           entry.title = dbMission.title;
           entry.content = dbMission.content;
           entry.emoji = dbMission.emoji;
           entry.duration = dbMission.duration;
-          entry.tip = dbMission.tip;
+          entry.tip = dbMission.tip || "미션 지령대로 행동해 주세요.";
           entry.colorHex = dbMission.colorHex || 3394815;
           
           if (testModeActive) {
             const nowMs = Date.now();
-            const testOffsetMs = (1 + idx) * 60 * 1000; // 1 min, 2 min...
+            const testOffsetMs = (1 + idx) * 60 * 1000;
             const targetTestDate = new Date(nowMs + testOffsetMs);
             const pad = (n) => String(n).padStart(2, '0');
             entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
@@ -2185,20 +2978,19 @@
           entry.sentAt = null;
         });
         
-        console.log("assignIndividualMissions assignment done. list:", list);
-        
-        showToast("배정 완료", `${list.length}명의 조원에게 개인 미션 및 발송 시간이 무작위 배부되었습니다.`, "success");
-        SoundEngine.play('success');
+        showToast("배정 완료", `${list.length}명의 조원에게 개인 미션 및 발송 시간이 무작위 배부되었습니다. (조별 중복 없음)`, "success");
+        SoundEngine.play('add');
         triggerConfettiBurst();
+        
         saveConfig();
         renderIndividualSlots();
+        updatePreviewJSON();
+        
       } catch (err) {
-        console.error("Error inside assignIndividualMissions:", err);
-        showToast("배정 중 오류 발생", err.message, "error");
+        showToast("배정 오류", err.message, "error");
         SoundEngine.play('failure');
       }
     }
-
     
     function renderIndividualSlots() {
       const container = document.getElementById('individual-slots-container');
@@ -3097,7 +3889,7 @@ run();
           const testOffsetMs = (1 + idx) * 60 * 1000;
           const targetTestDate = new Date(nowMs + testOffsetMs);
           const pad = (n) => String(n).padStart(2, '0');
-          entry.scheduledTime = `${targetTestDate.getFullYear()}-\${pad(targetTestDate.getMonth() + 1)}-\${pad(targetTestDate.getDate())}T\${pad(targetTestDate.getHours())}:\${pad(targetTestDate.getMinutes())}:\${pad(targetTestDate.getSeconds())}+09:00`;
+          entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
         } else if (teamStart) {
           entry.scheduledTime = getRandomIndividualTime(teamStart, idx, list.length);
         }
