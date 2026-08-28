@@ -143,8 +143,8 @@
         "tip": "쪽지에 적힌 짧은 격려 문구가 카메라에 선명하게 드러나야 합니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-08-28T12:57:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-08-28T08:21:33.219Z"
       },
       {
         "participant": "오상철",
