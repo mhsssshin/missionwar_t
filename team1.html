@@ -3172,10 +3172,15 @@ run();
             ⏱️ <strong>제한 시간:</strong> ${mission.duration} 이내 인증
           </div>
           ${isDeployedProductionLocked ? '' : `
-            <div style="text-align:right; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
-              <button type="button" class="slot-btn" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:4px;" onclick="clearSlotFromDetail(${idx})">
-                <i class="fa-solid fa-trash-can"></i> 미션 해제
-              </button>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+              <div>
+                <button type="button" class="slot-btn" style="background:#f59e0b; color:#fff; border:none; padding:6px 12px; border-radius:4px; margin-right:8px;" onclick="changeSlotMissionFromDetail(${idx})">
+                  <i class="fa-solid fa-shuffle"></i> 다른 미션으로 변경
+                </button>
+                <button type="button" class="slot-btn" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:4px;" onclick="clearSlotFromDetail(${idx})">
+                  <i class="fa-solid fa-trash-can"></i> 미션 해제
+                </button>
+              </div>
             </div>
           `}
         `;
@@ -3231,6 +3236,13 @@ run();
     function clearSlotFromDetail(idx) {
       clearSlot(idx);
       closeDetailModal();
+    }
+    
+    function changeSlotMissionFromDetail(slotIdx) {
+      closeDetailModal();
+      setTimeout(() => {
+        openSelectorModalForSlot(slotIdx);
+      }, 350);
     }
     
     function clearIndMissionFromDetail(idx) {
