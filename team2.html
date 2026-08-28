@@ -1051,13 +1051,13 @@
   </div>
 
   <!-- Holographic Admin Settings Modal -->
-  <div class="holo-modal" id="admin-settings-modal" style="display: none;" onclick="closeAdminOnOuter(event)">
-    <div class="holo-modal-content" style="max-width: 480px;">
-      <div class="holo-modal-header">
-        <h2><i class="fa-solid fa-screwdriver-wrench"></i> 통제부 서버 관리 설정</h2>
-        <button type="button" class="holo-modal-close" onclick="closeAdminSettings()">&times;</button>
+  <div class="modal-overlay" id="admin-settings-modal" style="display: none;" onclick="closeAdminOnOuter(event)">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-screwdriver-wrench"></i> 통제부 서버 관리 설정</h3>
+        <button class="modal-close" onclick="closeAdminSettings()">&times;</button>
       </div>
-      <div class="modal-detail-body" style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <div class="modal-detail-body" style="padding: 20px; display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto;">
         <div class="input-group">
           <label><i class="fa-solid fa-flask"></i> 예약 모드 설정</label>
           <div class="test-switch-container" style="height:36px; padding: 0 10px; background:rgba(255,255,255,0.02); border-radius:6px; border:1px solid var(--panel-border); display:flex; justify-content:space-between; align-items:center;">
@@ -1119,17 +1119,14 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Holographic Card Selector Modal -->
-  <div class="holo-modal" id="mission-selector-modal" style="display: none;" onclick="closeModalOnOuter(event)">
-    <div class="holo-modal-content">
-      <div class="holo-modal-header">
-        <h2 id="modal-title-text"><i class="fa-solid fa-folder-open"></i> 미션 카드 선택</h2>
-        <button type="button" class="holo-modal-close" onclick="closeSelectorModal()">&times;</button>
+  <div class="modal-overlay" id="mission-selector-modal" onclick="closeModalOnOuter(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title-text"><i class="fa-solid fa-folder-open"></i> 미션 카드 선택</h3>
+        <button class="modal-close" onclick="closeSelectorModal()">&times;</button>
       </div>
-      <div class="holo-modal-search-row">
-        <div class="modal-search-wrapper">
-          <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" class="modal-search-input" id="modal-search-input" placeholder="미션 제목 또는 내용 검색..." oninput="filterModalMissions()">
-        </div>
+      <div class="modal-search-bar">
+        <input type="text" id="modal-search-input" placeholder="미션 제목 또는 내용 검색..." oninput="filterModalMissions()">
       </div>
       <div class="modal-grid-body" id="modal-grid-container">
         <!-- Cards -->
@@ -1138,17 +1135,14 @@
   </div>
 
   <!-- Individual Mission Selector Modal -->
-  <div class="holo-modal" id="individual-mission-selector-modal" style="display: none;" onclick="closeIndSelectorModalOnOuter(event)">
-    <div class="holo-modal-content">
-      <div class="holo-modal-header">
-        <h2 id="ind-modal-title-text"><i class="fa-solid fa-user-gear"></i> 개인 기습 지령 배정</h2>
-        <button type="button" class="holo-modal-close" onclick="closeIndSelectorModal()">&times;</button>
+  <div class="modal-overlay" id="individual-mission-selector-modal" onclick="closeIndSelectorModalOnOuter(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="ind-modal-title-text"><i class="fa-solid fa-user-gear"></i> 개인 기습 지령 배정</h3>
+        <button class="modal-close" onclick="closeIndSelectorModal()">&times;</button>
       </div>
-      <div class="holo-modal-search-row">
-        <div class="modal-search-wrapper">
-          <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" class="modal-search-input" id="ind-modal-search-input" placeholder="개인 미션 검색..." oninput="filterIndModalMissions()">
-        </div>
+      <div class="modal-search-bar">
+        <input type="text" id="ind-modal-search-input" placeholder="개인 미션 검색..." oninput="filterIndModalMissions()">
       </div>
       <div class="modal-grid-body" id="ind-modal-grid-container">
         <!-- Cards -->
@@ -1157,13 +1151,13 @@
   </div>
 
   <!-- Mission Detail View Modal -->
-  <div class="holo-modal" id="mission-detail-modal" style="display: none;" onclick="closeDetailModalOnOuter(event)">
-    <div class="holo-modal-content" style="max-width: 480px;">
-      <div class="holo-modal-header">
-        <h2 id="detail-modal-title"><i class="fa-solid fa-circle-info"></i> 미션 세부 정보</h2>
-        <button type="button" class="holo-modal-close" onclick="closeDetailModal()">&times;</button>
+  <div class="modal-overlay" id="mission-detail-modal" onclick="closeDetailModalOnOuter(event)">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 id="detail-modal-title"><i class="fa-solid fa-circle-info"></i> 미션 세부 정보</h3>
+        <button class="modal-close" onclick="closeDetailModal()">&times;</button>
       </div>
-      <div class="modal-detail-body" id="detail-modal-body" style="padding: 20px; line-height: 1.5; font-size:0.85rem; color:var(--text-main);">
+      <div class="modal-detail-body" id="detail-modal-body" style="padding: 20px; line-height: 1.5; font-size:0.85rem; color:var(--text-main); max-height: 60vh; overflow-y: auto;">
         <!-- Details populated dynamically -->
       </div>
     </div>
