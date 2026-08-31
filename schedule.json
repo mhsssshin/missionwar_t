@@ -31,8 +31,8 @@
         "duration": "5분",
         "tip": "물건 라벨이 위를 향하게 정렬하면 더 프로페셔널해 보입니다.",
         "colorHex": 3394662,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-08-31T00:50:20.008Z"
       },
       {
         "sessionIndex": 3,
