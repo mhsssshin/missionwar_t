@@ -1046,7 +1046,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v2.9.0 (API URL Fixes)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.0.0 (5-Min Grid & Target Team Fix)</span></p>
       </footer>
   </div>
 
@@ -2739,16 +2739,17 @@ function loadConfig() {
         hourMax = 12.0;
       }
       
-      const totalSecondsRange = (hourMax - hourMin) * 3600;
-      const randomSecondsOffset = Math.floor(Math.random() * totalSecondsRange);
+      const totalFiveMinutes = (hourMax - hourMin) * 12;
+      const randomInterval = Math.floor(Math.random() * (totalFiveMinutes + 1));
+      const minutesToAdd = randomInterval * 5;
       
       const startHour = Math.floor(hourMin);
       const startMinute = (hourMin % 1) * 60;
-      const baseSessionSeconds = (startHour * 3600) + (startMinute * 60) + randomSecondsOffset;
+      const totalMinutes = (startHour * 60) + startMinute + minutesToAdd;
       
-      const finalHour = Math.floor(baseSessionSeconds / 3600);
-      const finalMinute = Math.floor((baseSessionSeconds % 3600) / 60);
-      const finalSecond = Math.floor(baseSessionSeconds % 60);
+      const finalHour = Math.floor(totalMinutes / 60);
+      const finalMinute = totalMinutes % 60;
+      const finalSecond = 0;
       
       const pad = (n) => String(n).padStart(2, '0');
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(finalHour)}:${pad(finalMinute)}:${pad(finalSecond)}+09:00`;
@@ -2807,7 +2808,7 @@ function loadConfig() {
           
           if (testModeActive) {
             const nowMs = Date.now();
-            const testOffsetMs = (1 + idx) * 60 * 1000;
+            const testOffsetMs = (1 + idx) * 5 * 60 * 1000;
             const targetTestDate = new Date(nowMs + testOffsetMs);
             const pad = (n) => String(n).padStart(2, '0');
             entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
@@ -3449,7 +3450,7 @@ async function sendWebhook(mission, teamName) {
       ? "https://raw.githubusercontent.com/run-llama/llama_index/main/docs/_static/favicon.ico"
       : "https://i.imgur.com/83p1jep.png",
     embeds: [{
-      title: \`🚨 [기습 미션 발령] \${teamName === '1조' ? '2조는 들으라!' : '1조는 들으라!'} 🚨\`,
+      title: \`🚨 [기습 미션 발령] \${teamName}는 들으라! 🚨\`,
       description: \`**\${teamName} 시크릿 커맨더**로부터 기습 미션 카드가 투척되었습니다.\\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\\n\\n📷 **[여기서 미션 사진 인증 제출하기](\${callbackUrl})**\`,
       color: mission.colorHex || 16724870,
       fields: [
@@ -3727,7 +3728,7 @@ run();
         const teamStart = document.getElementById('team-start-date').value;
         if (testModeActive) {
           const nowMs = Date.now();
-          const testOffsetMs = (1 + idx) * 60 * 1000;
+          const testOffsetMs = (1 + idx) * 5 * 60 * 1000;
           const targetTestDate = new Date(nowMs + testOffsetMs);
           const pad = (n) => String(n).padStart(2, '0');
           entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;

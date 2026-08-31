@@ -52,7 +52,7 @@ async function sendTeamMissionWebhook(mission, teamKey) {
     embeds: [{
       title: `🔥 기습 미션 #${mission.sessionIndex} 발령!`,
       description: [
-        `**${oppositeTeam}는 들으라!** ${teamName} 시크릿 커맨더로부터 기습 미션이 투척되었습니다.`,
+        `**${teamName}는 들으라!** ${teamName} 시크릿 커맨더로부터 기습 미션이 투척되었습니다.`,
         ``,
         `제한 시간 내에 미션을 완수하고 아래 링크로 인증하세요!`,
         ``,
