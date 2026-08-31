@@ -46,8 +46,8 @@
         "duration": "3분",
         "tip": "연사(연속 사진)로 찍어 가장 해맑게 웃는 프레임을 골라 전송하세요.",
         "colorHex": 16763904,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-08-31T00:55:18.489Z"
       },
       {
         "sessionIndex": 4,
