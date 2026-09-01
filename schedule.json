@@ -16,8 +16,8 @@
         "duration": "5분",
         "tip": "웃음 가득한 도착 기념 컷을 연출해보세요.",
         "colorHex": 16724870,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T02:55:17.779Z"
       },
       {
         "sessionIndex": 2,
@@ -87,8 +87,8 @@
         "tip": "렌즈 속에 카메라와 내 모습이 선명하게 아웃포커싱 되도록 집중하세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T11:54:30+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T02:55:17.779Z"
       },
       {
         "participant": "조성대",
