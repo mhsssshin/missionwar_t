@@ -1053,7 +1053,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.4.0 (Instant Deploy Notice & Clean Webhook Titles)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.5.0 (Dramatic Directional Deploy Notice)</span></p>
       </footer>
   </div>
 
@@ -3621,20 +3621,29 @@ run();
         setProgress(85, "MERGING CONFIGURATION", "UPLOADING MERGED SCHEDULE.JSON TO REPOSITORY");
         await commitToGitHub(owner, repoName, pat, "schedule.json", JSON.stringify(finalScheduleObj, null, 2), `🤖 deploy: update schedule for ${activeTeam}`);
         if (webhook && webhook.startsWith('https://discord.com/api/webhooks/')) {
-          const myTeamName = activeTeam === 'team1' ? '한잔하시조' : '두고보시조';
-          const targetTeamName = activeTeam === 'team1' ? '두고보시조' : '한잔하시조';
+          const attackerTeam = activeTeam === 'team1' ? '두고보시조' : '한잔하시조';
+          const targetTeam = activeTeam === 'team1' ? '한잔하시조' : '두고보시조';
           const deployNoticePayload = {
-            username: `🚨 [${activeTeam === 'team1' ? '1조' : '2조'}] 시크릿 커맨더`,
+            username: `🚨 [시크릿 워 통제본부] 🚨`,
             avatar_url: activeTeam === 'team1'
               ? "https://cdn-icons-png.flaticon.com/512/4436/4436481.png"
               : "https://cdn-icons-png.flaticon.com/512/4436/4436452.png",
-            content: `@everyone 🚨 **[기습 미션 선전포고]** 🚨`,
+            content: `@everyone 🚨 **[기습 미션 전쟁 선포]** 🚨`,
             embeds: [{
-              title: `⚔️ [기습 미션 선전포고] ${myTeamName} -> ${targetTeamName}`,
-              description: `**${myTeamName}**가 **${targetTeamName}**에게 긴급 미션을 부여했습니다.\n\n주어진 미션은 언제 나올지 모르며, 나온 미션은 반드시 수행해야 합니다! 🔥\n\n🎯 **[작전 지휘소 바로가기](${webUrl})**`,
+              title: `⚔️ [극비 작전 발령] ${attackerTeam} ➔ ${targetTeam} ⚔️`,
+              description: [
+                `🔥 **${attackerTeam}**가 **${targetTeam}**에게 족쇄가 될 극비 긴급 미션을 전격 부여했습니다!`,
+                ``,
+                `⚠️ **[시크릿 커맨더 긴급 하사 지령]**`,
+                `언제, 어느 순간에 당신의 턱밑으로 기습 지령 카드가 투척될지 아무도 모릅니다.`,
+                `발동 시각이 도래하는 즉시 모든 대원은 사력을 다해 최우선으로 지령을 완수해야 합니다!`,
+                ``,
+                `☠️ **지령 수행 거부 및 실패는 절대 용납되지 않으며, 참혹한 벌칙이 뒤따릅니다.**`,
+                `단 한 명의 낙오자도 없이, 타깃이 된 미션을 반드시 수행하십시오! 💥`
+              ].join('\n'),
               color: activeTeam === 'team1' ? 16722271 : 65535,
               footer: {
-                text: `Secret Mission War • ${myTeamName} 통제본부`,
+                text: `Secret Mission War • 극비 작전 통제 시스템`,
                 icon_url: "https://cdn-icons-png.flaticon.com/512/3176/3176371.png"
               },
               timestamp: new Date().toISOString()
