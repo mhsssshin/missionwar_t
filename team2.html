@@ -1053,7 +1053,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.7.0 (Hardcoded Default Dates & Rosters)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.6.0 (60 Photo-Only Team Missions)</span></p>
       </footer>
   </div>
 
@@ -2212,6 +2212,8 @@
     // STATE & CONFIG MANAGEMENT (SINGLE TEAM FOCUSED)
     // ----------------------------------------------------
     let activeTeam = 'team2';
+    const DEFAULT_ROSTER = ["박용철","김진혁","박재욱","임동현","김민서","권영재","김민수","박주암","조준형","정우창","염진영"];
+    const DEFAULT_START_DATE = "2026-09-07";
     let activeSlotIndex = null;
     let testModeActive = false;
     let isDeployedProductionLocked = false;
@@ -2382,7 +2384,7 @@ function loadConfig() {
                   activeSent = restoredSent;
                   activeSentAt = restoredSentAt;
                   if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
-                    document.getElementById("team-start-date").value = teamData.startDate || DEFAULT_START_DATE;
+                    document.getElementById('team-start-date').value = teamData.startDate;
                   }
                   renderSlotsList();
                   updateDeckSizeBadge();

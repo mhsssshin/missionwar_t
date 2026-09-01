@@ -1,13 +1,13 @@
 {
   "webAppUrl": "https://mhsssshin.github.io/missionwar_t",
-  "testModeActive": true,
+  "testModeActive": false,
   "team1": {
-    "startDate": "",
+    "startDate": "2026-09-02",
     "missions": [],
     "individualMissions": []
   },
   "team2": {
-    "startDate": "",
+    "startDate": "2026-09-07",
     "missions": [],
     "individualMissions": []
   }
