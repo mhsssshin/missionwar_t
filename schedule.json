@@ -29,8 +29,8 @@
         "duration": "5분",
         "tip": "이쑤시개가 날리지 않게 냅킨 위에서 조립하세요.",
         "colorHex": 16763904,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T05:26:43.449Z"
       },
       {
         "sessionIndex": 3,
@@ -99,8 +99,8 @@
         "tip": "실 모양이 엉키지 않고 기하학적으로 드러나야 합니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T14:23:49+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T05:26:43.449Z"
       },
       {
         "participant": "박재욱",
