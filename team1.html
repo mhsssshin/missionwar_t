@@ -997,6 +997,13 @@
         </div>
       </div>
       <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="test-switch-container" style="display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.35); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--panel-border); height: 32px;">
+          <span style="color: var(--color-green); font-size: 0.75rem; font-weight: 700;" id="mode-text">☀️ 표준 워크숍 일정 모드</span>
+          <label class="test-switch" style="position: relative; display: inline-block; width: 34px; height: 18px; margin: 0; cursor: pointer;">
+            <input type="checkbox" id="test-mode-toggle" onchange="toggleTestMode(this)">
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
         <div class="lock-banner" id="production-lock-banner" style="display: none; padding: 4px 8px; font-size: 0.7rem; gap: 6px; margin-bottom: 0; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; color: #ef4444;">
           <i class="fa-solid fa-lock"></i> 🔒 스케줄 확정됨
         </div>
@@ -1046,7 +1053,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.1.0 (Unlock & Sent Guard & 5-Min Session Grid)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.2.0 (5-Min Grid & Header Test Mode Toggle)</span></p>
       </footer>
   </div>
 
@@ -2466,7 +2473,7 @@ function loadConfig() {
     }
     
     function setLockUIState(locked) {
-      locked = false; // Always unlocked - requested by user to allow editing anytime without lock
+      locked = false; // Always unlocked - requested by user
       isDeployedProductionLocked = locked;
       
       const dateInput = document.getElementById('team-start-date');
@@ -2741,16 +2748,17 @@ function loadConfig() {
         hourMax = 12.0;
       }
       
-      const totalSecondsRange = (hourMax - hourMin) * 3600;
-      const randomSecondsOffset = Math.floor(Math.random() * totalSecondsRange);
+      const totalFiveMinutes = (hourMax - hourMin) * 12;
+      const randomInterval = Math.floor(Math.random() * (totalFiveMinutes + 1));
+      const minutesToAdd = randomInterval * 5;
       
       const startHour = Math.floor(hourMin);
       const startMinute = (hourMin % 1) * 60;
-      const baseSessionSeconds = (startHour * 3600) + (startMinute * 60) + randomSecondsOffset;
+      const totalMinutes = (startHour * 60) + startMinute + minutesToAdd;
       
-      const finalHour = Math.floor(baseSessionSeconds / 3600);
-      const finalMinute = Math.floor((baseSessionSeconds % 3600) / 60);
-      const finalSecond = Math.floor(baseSessionSeconds % 60);
+      const finalHour = Math.floor(totalMinutes / 60);
+      const finalMinute = totalMinutes % 60;
+      const finalSecond = 0;
       
       const pad = (n) => String(n).padStart(2, '0');
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(finalHour)}:${pad(finalMinute)}:${pad(finalSecond)}+09:00`;
@@ -2809,7 +2817,7 @@ function loadConfig() {
           
           if (testModeActive) {
             const nowMs = Date.now();
-            const testOffsetMs = (1 + idx) * 60 * 1000;
+            const testOffsetMs = (1 + idx) * 5 * 60 * 1000;
             const targetTestDate = new Date(nowMs + testOffsetMs);
             const pad = (n) => String(n).padStart(2, '0');
             entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
@@ -3142,7 +3150,7 @@ function loadConfig() {
       if (testModeActive) {
         const nowMs = Date.now();
         sessionsSpec.forEach((spec, idx) => {
-          const testOffsetMs = (1 + idx * 2) * 60 * 1000;
+          const testOffsetMs = (1 + idx) * 5 * 60 * 1000;
           const targetTestDate = new Date(nowMs + testOffsetMs);
           
           const pad = (n) => String(n).padStart(2, '0');
@@ -3151,7 +3159,7 @@ function loadConfig() {
           const day = pad(targetTestDate.getDate());
           const hh = pad(targetTestDate.getHours());
           const mm = pad(targetTestDate.getMinutes());
-          const ss = pad(targetTestDate.getSeconds());
+          const ss = "00";
           
           activeSchedules[idx] = `${year}-${month}-${day}T${hh}:${mm}:${ss}+09:00`;
         });
@@ -3179,16 +3187,17 @@ function loadConfig() {
       const randomOffsetMs = startMs + Math.random() * (endMs - startMs);
       const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       
-      const totalSecondsRange = (spec.hourMax - spec.hourMin) * 3600;
-      const randomSecondsOffset = Math.floor(Math.random() * totalSecondsRange);
+      const totalFiveMinutes = (spec.hourMax - spec.hourMin) * 12;
+      const randomInterval = Math.floor(Math.random() * (totalFiveMinutes + 1));
+      const minutesToAdd = randomInterval * 5;
       
       const startHour = Math.floor(spec.hourMin);
       const startMinute = (spec.hourMin % 1) * 60;
-      const baseSessionSeconds = (startHour * 3600) + (startMinute * 60) + randomSecondsOffset;
+      const totalMinutes = (startHour * 60) + startMinute + minutesToAdd;
       
-      const finalHour = Math.floor(baseSessionSeconds / 3600);
-      const finalMinute = Math.floor((baseSessionSeconds % 3600) / 60);
-      const finalSecond = Math.floor(baseSessionSeconds % 60);
+      const finalHour = Math.floor(totalMinutes / 60);
+      const finalMinute = totalMinutes % 60;
+      const finalSecond = 0;
       
       const pad = (n) => String(n).padStart(2, '0');
       const year = date.getFullYear();
@@ -3738,7 +3747,7 @@ run();
         const teamStart = document.getElementById('team-start-date').value;
         if (testModeActive) {
           const nowMs = Date.now();
-          const testOffsetMs = (1 + idx) * 60 * 1000;
+          const testOffsetMs = (1 + idx) * 5 * 60 * 1000;
           const targetTestDate = new Date(nowMs + testOffsetMs);
           const pad = (n) => String(n).padStart(2, '0');
           entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
