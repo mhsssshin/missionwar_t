@@ -2215,6 +2215,28 @@
     let activeTeam = 'team2';
     const DEFAULT_ROSTER = ["박용철","김진혁","박재욱","임동현","김민서","권영재","김민수","박주암","조준형","정우창","염진영"];
     const DEFAULT_START_DATE = "2026-09-07";
+
+    function createDefaultIndividualMissions() {
+      const start = document.getElementById("team-start-date").value || DEFAULT_START_DATE;
+      return DEFAULT_ROSTER.map((p, idx) => {
+        const available = individualMissionsDatabase;
+        const dbMission = available[idx % available.length];
+        return {
+          participant: p,
+          id: dbMission.id,
+          title: dbMission.title,
+          content: dbMission.content,
+          emoji: dbMission.emoji,
+          duration: dbMission.duration,
+          tip: dbMission.tip || "미션 지령대로 행동해 주세요.",
+          colorHex: dbMission.colorHex || 3394815,
+          scheduledTime: getRandomIndividualTime(start, idx, DEFAULT_ROSTER.length),
+          sent: false,
+          sentAt: null
+        };
+      });
+    }
+
     let activeSlotIndex = null;
     let testModeActive = false;
     let isDeployedProductionLocked = false;
@@ -2393,7 +2415,7 @@ function loadConfig() {
                 }
               }
               
-              if (teamData.individualMissions) {
+              if (teamData.individualMissions && teamData.individualMissions.length > 0) {
                 activeIndividualMissions[teamKey] = teamData.individualMissions;
                 localStorage.setItem(`individual_missions_${teamKey}`, JSON.stringify(teamData.individualMissions));
                 
