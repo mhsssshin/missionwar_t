@@ -72,8 +72,8 @@
         "duration": "5분",
         "tip": "그림자가 겹쳐서 찌그러지지 않게 각 조원들의 손 간격을 띄우세요.",
         "colorHex": 3394662,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:15:21.371Z"
       }
     ],
     "individualMissions": [
@@ -139,8 +139,8 @@
         "tip": "풍선 색상이 비비드하게 나오면 더 좋습니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T12:14:30+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:15:21.371Z"
       },
       {
         "participant": "오상철",
