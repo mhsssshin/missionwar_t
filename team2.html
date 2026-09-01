@@ -2527,16 +2527,20 @@ function loadConfig() {
           activeSchedules = Array(5).fill(null);
         }
         
-        const savedInd = localStorage.getItem(`individual_missions_${activeTeam}`);
+        const savedInd = localStorage.getItem("individual_missions_" + activeTeam);
+        let parsedInd = null;
         if (savedInd) {
-          activeIndividualMissions[activeTeam] = JSON.parse(savedInd);
+          try { parsedInd = JSON.parse(savedInd); } catch (err) {}
+        }
+        if (parsedInd && parsedInd.length > 0) {
+          activeIndividualMissions[activeTeam] = parsedInd;
         } else {
-          activeIndividualMissions[activeTeam] = [];
+          activeIndividualMissions[activeTeam] = createDefaultIndividualMissions();
         }
       } catch (e) {
         activeDeck = Array(5).fill(null);
         activeSchedules = Array(5).fill(null);
-        activeIndividualMissions[activeTeam] = [];
+        activeIndividualMissions[activeTeam] = createDefaultIndividualMissions();
       }
       
       const participantsInput = document.getElementById('team-participants');
@@ -2689,9 +2693,19 @@ function loadConfig() {
         if (existing) {
           updatedList.push(existing);
         } else {
+          const available = individualMissionsDatabase;
+          const dbMission = available[names.indexOf(name) % available.length];
+          const start = document.getElementById("team-start-date").value || DEFAULT_START_DATE;
           updatedList.push({
             participant: name,
-            id: null,
+            id: dbMission.id,
+            title: dbMission.title,
+            content: dbMission.content,
+            emoji: dbMission.emoji,
+            duration: dbMission.duration,
+            tip: dbMission.tip || "미션 지령대로 행동해 주세요.",
+            colorHex: dbMission.colorHex || 3394815,
+            scheduledTime: getRandomIndividualTime(start, names.indexOf(name), names.length),
             title: "",
             content: "",
             emoji: "",
