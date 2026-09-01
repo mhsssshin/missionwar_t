@@ -982,8 +982,8 @@
   <canvas id="confetti-canvas"></canvas>
   
   <!-- Hidden elements to preserve DOM bindings in JS -->
-  <input type="date" id="team-start-date" style="display:none;">
-  <textarea id="team-participants" style="display:none;">박용철, 김진혁, 박재욱, 임동현, 김민서, 김해리, 권영재, 김민수, 박주암, 조준형, 정우창, 염진영</textarea>
+  <input type="date" id="team-start-date" value="2026-09-07" style="display:none;">
+  <textarea id="team-participants" style="display:none;">박용철, 김진혁, 박재욱, 임동현, 김민서, 권영재, 김민수, 박주암, 조준형, 정우창, 염진영</textarea>
   
   <div class="app-container">
     <header class="glass-panel" style="border-color: var(--color-team2); box-shadow: var(--glow-team2);">
@@ -1053,7 +1053,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.6.0 (60 Photo-Only Team Missions)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.7.0 (Hardcoded Default Dates & Rosters)</span></p>
       </footer>
   </div>
 
@@ -2382,7 +2382,7 @@ function loadConfig() {
                   activeSent = restoredSent;
                   activeSentAt = restoredSentAt;
                   if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
-                    document.getElementById('team-start-date').value = teamData.startDate;
+                    document.getElementById("team-start-date").value = teamData.startDate || DEFAULT_START_DATE;
                   }
                   renderSlotsList();
                   updateDeckSizeBadge();
