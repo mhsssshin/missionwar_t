@@ -1053,7 +1053,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v4.6.0 (Clean Individual Agent Notice - No Team Prefix)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.6.0 (60 Photo-Only Team Missions)</span></p>
       </footer>
   </div>
 
@@ -2486,7 +2486,12 @@ function loadConfig() {
       if (playSound) SoundEngine.play('click');
       
       if (!testModeActive) {
-        document.getElementById("team-start-date").value = localStorage.getItem("team_start_date_" + activeTeam) || DEFAULT_START_DATE;
+        let storedDate = localStorage.getItem("team_start_date_" + activeTeam);
+      if (!storedDate || storedDate === "2026-09-02") {
+        storedDate = "2026-09-07";
+        localStorage.setItem("team_start_date_" + activeTeam, storedDate);
+      }
+      document.getElementById("team-start-date").value = storedDate;
       }
       
       try {
@@ -2728,8 +2733,7 @@ function loadConfig() {
         
         let teamStart = document.getElementById('team-start-date').value;
         if (!teamStart) {
-          const defaultDate = activeTeam === 'team1' ? '2026-09-02' : '2026-09-07';
-          teamStart = defaultDate;
+          teamStart = "2026-09-07";
           document.getElementById('team-start-date').value = teamStart;
         }
         
@@ -2895,7 +2899,7 @@ function loadConfig() {
         avatar_url: "https://i.imgur.com/83p1jep.png",
         embeds: [{
           title: `👤 🚨 [개인 기습 지령 발령] 🚨`,
-          description: `**${activeTeam === 'team1' ? '1조' : '2조'}**의 **${entry.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\n\n📷 **[여기서 개인 미션 사진 인증 제출하기](${callbackUrl})**`,
+          description: `**${entry.participant}** 요원은 즉각 본 기습 지령을 수행하십시오!\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\n\n📷 **[여기서 개인 미션 사진 인증 제출하기](${callbackUrl})**`,
           color: entry.colorHex || 3394815,
           fields: [
             { name: "👤 대상 요원", value: `**${entry.participant} 요원**`, inline: true },
@@ -3085,8 +3089,11 @@ function loadConfig() {
     function generateRandomTimesForActiveTeam(showNotify = true) {
       if (isDeployedProductionLocked) return;
       
-      let teamStart = document.getElementById("team-start-date").value || DEFAULT_START_DATE;
-      document.getElementById("team-start-date").value = teamStart;
+      let teamStart = document.getElementById("team-start-date").value;
+      if (!teamStart || teamStart === "2026-09-02") {
+        teamStart = "2026-09-07";
+        document.getElementById("team-start-date").value = teamStart;
+      }
       if (!testModeActive && !teamStart) {
         showToast("생성 실패", "나의 워크숍 시작 일자를 선택해 주세요.", "error");
         SoundEngine.play('failure');
@@ -3303,6 +3310,8 @@ function loadConfig() {
           discordWebhookUrl: webhook || "",
           webAppUrl: webUrl,
           testModeActive: testModeActive,
+          deployNoticePending: true,
+          lastDeployedTeam: activeTeam,
           team1: null,
           team2: null
         };
