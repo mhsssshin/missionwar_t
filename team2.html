@@ -1046,7 +1046,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.0.0 (5-Min Grid & Target Team Fix)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.1.0 (Unlock & Sent Guard & 5-Min Session Grid)</span></p>
       </footer>
   </div>
 
@@ -2262,6 +2262,8 @@
     
     let activeDeck = Array(5).fill(null);
     let activeSchedules = Array(5).fill(null);
+    let activeSent = Array(5).fill(false);
+    let activeSentAt = Array(5).fill(null);
     let activeIndividualMissions = { team1: [], team2: [] };
 
     
@@ -2421,6 +2423,8 @@ function loadConfig() {
                 if (teamKey === activeTeam) {
                   activeDeck = restoredDeck;
                   activeSchedules = restoredSchedules;
+                  activeSent = restoredSent;
+                  activeSentAt = restoredSentAt;
                   if (teamData.startDate && teamData.startDate !== "🧪 테스트 모드 (실시간)") {
                     document.getElementById('team-start-date').value = teamData.startDate;
                   }
@@ -2462,9 +2466,7 @@ function loadConfig() {
     }
     
     function setLockUIState(locked) {
-      if (testModeActive) {
-        locked = false; // Always unlocked in test mode
-      }
+      locked = false; // Always unlocked - requested by user to allow editing anytime without lock
       isDeployedProductionLocked = locked;
       
       const dateInput = document.getElementById('team-start-date');
@@ -2739,17 +2741,16 @@ function loadConfig() {
         hourMax = 12.0;
       }
       
-      const totalFiveMinutes = (hourMax - hourMin) * 12;
-      const randomInterval = Math.floor(Math.random() * (totalFiveMinutes + 1));
-      const minutesToAdd = randomInterval * 5;
+      const totalSecondsRange = (hourMax - hourMin) * 3600;
+      const randomSecondsOffset = Math.floor(Math.random() * totalSecondsRange);
       
       const startHour = Math.floor(hourMin);
       const startMinute = (hourMin % 1) * 60;
-      const totalMinutes = (startHour * 60) + startMinute + minutesToAdd;
+      const baseSessionSeconds = (startHour * 3600) + (startMinute * 60) + randomSecondsOffset;
       
-      const finalHour = Math.floor(totalMinutes / 60);
-      const finalMinute = totalMinutes % 60;
-      const finalSecond = 0;
+      const finalHour = Math.floor(baseSessionSeconds / 3600);
+      const finalMinute = Math.floor((baseSessionSeconds % 3600) / 60);
+      const finalSecond = Math.floor(baseSessionSeconds % 60);
       
       const pad = (n) => String(n).padStart(2, '0');
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(finalHour)}:${pad(finalMinute)}:${pad(finalSecond)}+09:00`;
@@ -2808,7 +2809,7 @@ function loadConfig() {
           
           if (testModeActive) {
             const nowMs = Date.now();
-            const testOffsetMs = (1 + idx) * 5 * 60 * 1000;
+            const testOffsetMs = (1 + idx) * 60 * 1000;
             const targetTestDate = new Date(nowMs + testOffsetMs);
             const pad = (n) => String(n).padStart(2, '0');
             entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
@@ -2972,6 +2973,10 @@ function loadConfig() {
     }
 
     function clearSlot(idx) {
+      if (activeSent && activeSent[idx]) {
+        showToast("제거 불가", "이미 발송된 미션은 해제할 수 없습니다.", "error");
+        return;
+      }
       if (isDeployedProductionLocked) return;
       activeDeck[idx] = null;
       activeSchedules[idx] = null;
@@ -2986,6 +2991,10 @@ function loadConfig() {
     // HOLOGRAPHIC CARD SELECTOR MODAL
     // ----------------------------------------------------
     function openSelectorModalForSlot(slotIdx) {
+      if (activeSent && activeSent[slotIdx]) {
+        showToast("변경 불가", "이미 발송된 미션은 변경할 수 없습니다.", "error");
+        return;
+      }
       if (isDeployedProductionLocked) return;
       activeSlotIndex = slotIdx;
       
@@ -3209,7 +3218,8 @@ function loadConfig() {
             duration: m.duration,
             tip: m.tip,
             colorHex: m.colorHex,
-            sent: false
+            sent: activeSent[idx] || false,
+            sentAt: activeSentAt[idx] || null
           };
         });
       };
@@ -3450,7 +3460,7 @@ async function sendWebhook(mission, teamName) {
       ? "https://raw.githubusercontent.com/run-llama/llama_index/main/docs/_static/favicon.ico"
       : "https://i.imgur.com/83p1jep.png",
     embeds: [{
-      title: \`🚨 [기습 미션 발령] \${teamName}는 들으라! 🚨\`,
+      title: \`🚨 [기습 미션 발령] \${teamName === '1조' ? '2조는 들으라!' : '1조는 들으라!'} 🚨\`,
       description: \`**\${teamName} 시크릿 커맨더**로부터 기습 미션 카드가 투척되었습니다.\\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\\n\\n📷 **[여기서 미션 사진 인증 제출하기](\${callbackUrl})**\`,
       color: mission.colorHex || 16724870,
       fields: [
@@ -3728,7 +3738,7 @@ run();
         const teamStart = document.getElementById('team-start-date').value;
         if (testModeActive) {
           const nowMs = Date.now();
-          const testOffsetMs = (1 + idx) * 5 * 60 * 1000;
+          const testOffsetMs = (1 + idx) * 60 * 1000;
           const targetTestDate = new Date(nowMs + testOffsetMs);
           const pad = (n) => String(n).padStart(2, '0');
           entry.scheduledTime = `${targetTestDate.getFullYear()}-${pad(targetTestDate.getMonth() + 1)}-${pad(targetTestDate.getDate())}T${pad(targetTestDate.getHours())}:${pad(targetTestDate.getMinutes())}:${pad(targetTestDate.getSeconds())}+09:00`;
@@ -3880,9 +3890,13 @@ run();
     }
     
     function clearIndMissionFromDetail(idx) {
-      if (isDeployedProductionLocked) return;
       const list = activeIndividualMissions[activeTeam] || [];
       const entry = list[idx];
+      if (entry && entry.sent) {
+        showToast("해제 불가", "이미 발송된 지령은 해제할 수 없습니다.", "error");
+        return;
+      }
+      if (isDeployedProductionLocked) return;
       if (entry) {
         entry.id = null;
         entry.title = null;
@@ -3904,6 +3918,12 @@ run();
     }
     
     function changeIndMissionFromDetail(participantName) {
+      const list = activeIndividualMissions[activeTeam] || [];
+      const entry = list.find(m => m.participant === participantName);
+      if (entry && entry.sent) {
+        showToast("변경 불가", "이미 발송된 지령은 변경할 수 없습니다.", "error");
+        return;
+      }
       closeDetailModal();
       setTimeout(() => {
         openIndSelectorModalForParticipant(participantName);
