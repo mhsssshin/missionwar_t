@@ -8,7 +8,7 @@ if (!fs.existsSync(schedulePath)) {
 }
 
 const schedule = JSON.parse(fs.readFileSync(schedulePath, 'utf8'));
-const webhookUrl = process.env.DISCORD_WEBHOOK_URL || schedule.discordWebhookUrl;
+const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
 if (!webhookUrl || !webhookUrl.startsWith('http')) {
   console.error("Invalid or missing Discord Webhook URL!");
@@ -124,8 +124,7 @@ async function sendIndividualWebhook(ind, teamName, teamKey) {
 
 async function run() {
   if (process.env.DISCORD_WEBHOOK_URL) {
-    schedule.discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
-    scheduleChanged = true;
+        scheduleChanged = true;
   }
   const teams = ['team1', 'team2'];
   for (const teamKey of teams) {
