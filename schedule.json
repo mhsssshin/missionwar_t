@@ -58,8 +58,8 @@
         "duration": "3분",
         "tip": "팔짱을 낀 보디가드 포즈를 취하면 완성도가 높아집니다.",
         "colorHex": 16724870,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:10:23.450Z"
       },
       {
         "sessionIndex": 5,
@@ -126,8 +126,8 @@
         "tip": "서로 안 어울릴수록 재미있고 생동감 넘치는 사진이 됩니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T12:09:30+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:10:23.450Z"
       },
       {
         "participant": "신명호",
