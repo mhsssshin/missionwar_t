@@ -15,8 +15,8 @@
         "duration": "3분",
         "tip": "신발을 대칭으로 잘 배열하면 예쁜 5각/6각 별이 만들어집니다.",
         "colorHex": 16724870,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T05:22:12.341Z"
       },
       {
         "sessionIndex": 2,
@@ -86,8 +86,8 @@
         "tip": "모니터 프레임이 마치 액자처럼 느껴지도록 구도를 조절하세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T14:18:49+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T05:22:12.341Z"
       },
       {
         "participant": "김진혁",
