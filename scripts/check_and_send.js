@@ -86,7 +86,7 @@ async function sendIndividualMissionWebhook(indMission, teamKey) {
   const submitUrl = `${GITHUB_PAGES_URL}/submit.html?team=${teamKey}&type=individual&participant=${encodeURIComponent(indMission.participant)}&title=${encodeURIComponent(indMission.title)}&content=${encodeURIComponent(indMission.content)}&webhook=${encodeURIComponent(webhookUrl)}`;
 
   const payload = {
-    username: `📩 [${teamName}] 개인 지령관`,
+    username: `📩 시크릿 개인 지령관`,
     avatar_url: "https://cdn-icons-png.flaticon.com/512/2910/2910765.png",
     content: `@everyone ⚡ **[개인 기습 지령 발동]** ⚡`,
     embeds: [{
@@ -107,7 +107,7 @@ async function sendIndividualMissionWebhook(indMission, teamKey) {
         { name: "💡 수행 팁", value: `*${indMission.tip || '미션 지령대로 행동해 주세요.'}*`, inline: false }
       ],
       footer: {
-        text: `워크숍 미션전쟁 • ${myTeamRealName} (${teamName}) 개인 지령 시스템`,
+        text: `워크숍 미션전쟁 • 시크릿 개인 지령 시스템`,
         icon_url: "https://cdn-icons-png.flaticon.com/512/3176/3176371.png"
       },
       timestamp: new Date().toISOString()
