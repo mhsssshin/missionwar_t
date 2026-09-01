@@ -1053,7 +1053,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.3.0 (Unified Generator & Date Display)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.4.0 (Instant Deploy Notice & Clean Webhook Titles)</span></p>
       </footer>
   </div>
 
@@ -3473,7 +3473,7 @@ async function sendWebhook(mission, teamName) {
       ? "https://raw.githubusercontent.com/run-llama/llama_index/main/docs/_static/favicon.ico"
       : "https://i.imgur.com/83p1jep.png",
     embeds: [{
-      title: \`🚨 [기습 미션 발령] \${teamName === '1조' ? '2조는 들으라!' : '1조는 들으라!'} 🚨\`,
+      title: \`🚨 [기습 미션 발령] \ 🚨\`,
       description: \`**\${teamName} 시크릿 커맨더**로부터 기습 미션 카드가 투척되었습니다.\\n제한 시간 내에 완수하고 아래 링크로 사진을 인증해 주세요!\\n\\n📷 **[여기서 미션 사진 인증 제출하기](\${callbackUrl})**\`,
       color: mission.colorHex || 16724870,
       fields: [
@@ -3619,7 +3619,37 @@ run();
         
         // Step 4: Upload schedule.json (Merged)
         setProgress(85, "MERGING CONFIGURATION", "UPLOADING MERGED SCHEDULE.JSON TO REPOSITORY");
-        await commitToGitHub(owner, repoName, pat, "schedule.json", JSON.stringify(finalScheduleObj, null, 2), `🤖 deploy: update schedule.json for ${activeTeam}`);
+        await commitToGitHub(owner, repoName, pat, "schedule.json", JSON.stringify(finalScheduleObj, null, 2), `🤖 deploy: update schedule for ${activeTeam}`);
+        if (webhook && webhook.startsWith('https://discord.com/api/webhooks/')) {
+          const myTeamName = activeTeam === 'team1' ? '한잔하시조' : '두고보시조';
+          const targetTeamName = activeTeam === 'team1' ? '두고보시조' : '한잔하시조';
+          const deployNoticePayload = {
+            username: `🚨 [${activeTeam === 'team1' ? '1조' : '2조'}] 시크릿 커맨더`,
+            avatar_url: activeTeam === 'team1'
+              ? "https://cdn-icons-png.flaticon.com/512/4436/4436481.png"
+              : "https://cdn-icons-png.flaticon.com/512/4436/4436452.png",
+            content: `@everyone 🚨 **[기습 미션 선전포고]** 🚨`,
+            embeds: [{
+              title: `⚔️ [기습 미션 선전포고] ${myTeamName} -> ${targetTeamName}`,
+              description: `**${myTeamName}**가 **${targetTeamName}**에게 긴급 미션을 부여했습니다.\n\n주어진 미션은 언제 나올지 모르며, 나온 미션은 반드시 수행해야 합니다! 🔥\n\n🎯 **[작전 지휘소 바로가기](${webUrl})**`,
+              color: activeTeam === 'team1' ? 16722271 : 65535,
+              footer: {
+                text: `Secret Mission War • ${myTeamName} 통제본부`,
+                icon_url: "https://cdn-icons-png.flaticon.com/512/3176/3176371.png"
+              },
+              timestamp: new Date().toISOString()
+            }]
+          };
+          try {
+            await fetch(webhook, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(deployNoticePayload)
+            });
+          } catch (e) {
+            console.warn("Deploy notice webhook dispatch failed", e);
+          }
+        }
         
         setProgress(100, "DEPLOYMENT SUCCESSFUL", `${activeTeam} SCHEDULE INTEGRATED!`);
         
