@@ -15,8 +15,8 @@
         "duration": "3분",
         "tip": "신발을 대칭으로 잘 배열하면 예쁜 5각/6각 별이 만들어집니다.",
         "colorHex": 16724870,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T06:05:21.322Z"
       },
       {
         "sessionIndex": 2,
@@ -86,8 +86,8 @@
         "tip": "빨대 연결부가 투명 테이프나 핀으로 고정되어 깔끔해야 합니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T15:01:50+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T06:05:21.322Z"
       },
       {
         "participant": "조성대",
