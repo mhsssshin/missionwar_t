@@ -3,40 +3,88 @@ name: Secret Mission War Scheduler
 on:
   schedule:
     - cron: '*/5 * * * *'
+  push:
+    paths:
+      - 'schedule.json'
   workflow_dispatch:
+    inputs:
+      send_mode:
+        description: 'Send mode'
+        required: false
+        default: 'scheduled'
+        type: choice
+        options:
+          - scheduled
+          - instant_session
+          - instant_individual
+      team:
+        description: 'Team (for instant send)'
+        required: false
+        default: 'team1'
+        type: choice
+        options:
+          - team1
+          - team2
+      mission_index:
+        description: 'Session index 1-5 (for instant_session)'
+        required: false
+        type: string
+      participant_name:
+        description: 'Participant name (for instant_individual)'
+        required: false
+        type: string
 
 permissions:
   contents: write
 
+env:
+  TZ: Asia/Seoul
+
 jobs:
   check-and-send:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+          token: ${{ secrets.GHP }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      - name: Run scheduler
+      - name: Run mission scheduler
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SEND_MODE: ${{ github.event.inputs.send_mode || 'scheduled' }}
+          TARGET_TEAM: ${{ github.event.inputs.team || '' }}
+          TARGET_SESSION: ${{ github.event.inputs.mission_index || '' }}
+          TARGET_PARTICIPANT: ${{ github.event.inputs.participant_name || '' }}
+          TZ: Asia/Seoul
         run: node scripts/check_and_send.js
 
-      - name: Commit changes
+      - name: Commit and push schedule updates
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          
           if [ -n "$(git status --porcelain schedule.json)" ]; then
             git add schedule.json
-            git commit -m "🤖 update: mission sent status [skip ci]"
-            git push
+            git commit -m "🤖 auto: mark sent missions [skip ci]"
+            
+            for i in 1 2 3; do
+              if git push; then
+                echo "✅ Push successful on attempt $i"
+                break
+              else
+                echo "⚠️ Push failed on attempt $i, pulling and retrying..."
+                git pull --rebase origin main
+              fi
+            done
           else
-            echo "No changes to schedule.json"
+            echo "ℹ️ No schedule changes to commit."
           fi
