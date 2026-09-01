@@ -1010,8 +1010,8 @@
         <button type="button" class="slot-btn" onclick="openAdminSettings()" style="background: rgba(255, 255, 255, 0.06); color: #fff; border: 1px solid var(--panel-border); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;">
           <i class="fa-solid fa-screwdriver-wrench"></i> 통제부 설정
         </button>
-        <button type="button" class="btn btn-generator" id="btn-times-generate" onclick="generateRandomTimesForActiveTeam()" style="background: rgba(255, 255, 255, 0.06); color: #fff; border: 1px solid var(--panel-border); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; height: auto;">
-          <i class="fa-solid fa-shuffle"></i> 시간표 재배정
+        <button type="button" class="btn btn-generator" id="btn-generate-all" onclick="generateAllMissionsAndTimes()" style="background: linear-gradient(135deg, var(--color-primary), #a855f7); color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; height: 32px;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 전체 미션 일괄 배정
         </button>
         <button type="button" class="btn btn-deploy" id="btn-github-deploy" onclick="deployToGitHub()" style="background: var(--color-team1); color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; box-shadow: var(--glow-team1); height: auto;">
           <i class="fa-solid fa-cloud-arrow-up"></i> GitHub 게시
@@ -1053,7 +1053,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.2.0 (5-Min Grid & Header Test Mode Toggle)</span></p>
+        <p>&copy; 2026 Project Secret Card Command Center. <span style="margin-left: 10px; padding: 3px 8px; background: var(--color-green); border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: #000; display: inline-block; vertical-align: middle;">v3.3.0 (Unified Generator & Date Display)</span></p>
       </footer>
   </div>
 
@@ -2656,7 +2656,9 @@ function loadConfig() {
           if (activeSchedules[idx]) {
             const date = new Date(activeSchedules[idx]);
             const pad = (n) => String(n).padStart(2, '0');
-            timeText = `⏰ ${pad(date.getHours())}:${pad(date.getMinutes())} KST`;
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            timeText = `📅 ${month}/${day} ${pad(date.getHours())}:${pad(date.getMinutes())} KST`;
           }
           
           card.innerHTML = `
@@ -2765,7 +2767,7 @@ function loadConfig() {
     }
 
     
-    function assignIndividualMissions() {
+    function assignIndividualMissions(showNotify = true) {
       try {
         if (isDeployedProductionLocked) {
           showToast("배정 불가", "프로덕션 일정이 이미 확정(잠금)되었습니다.", "error");
@@ -2829,7 +2831,7 @@ function loadConfig() {
           entry.sentAt = null;
         });
         
-        showToast("배정 완료", `${list.length}명의 조원에게 개인 미션 및 발송 시간이 무작위 배부되었습니다. (조별 중복 없음)`, "success");
+        if (showNotify) showToast("배정 완료", "조원들에게 개인 미션 및 발송 시간이 무작위 배부되었습니다.", "success");
         SoundEngine.play('add');
         triggerConfettiBurst();
         
@@ -2869,7 +2871,9 @@ function loadConfig() {
           if (entry.scheduledTime) {
             const date = new Date(entry.scheduledTime);
             const pad = (n) => String(n).padStart(2, '0');
-            timeStr = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            timeStr = `📅 ${month}/${day} ⏰ ${pad(date.getHours())}:${pad(date.getMinutes())}`;
           }
           
           card.innerHTML = `
@@ -3126,7 +3130,7 @@ function loadConfig() {
     // ----------------------------------------------------
     // RANDOM TIME GENERATION ALGORITHM (WITH TEST MODE)
     // ----------------------------------------------------
-    function generateRandomTimesForActiveTeam() {
+    function generateRandomTimesForActiveTeam(showNotify = true) {
       if (isDeployedProductionLocked) return;
       
       let teamStart = document.getElementById('team-start-date').value;
@@ -3168,7 +3172,7 @@ function loadConfig() {
         sessionsSpec.forEach((spec, idx) => {
           activeSchedules[idx] = getRandomTimeInSession(teamStart, spec);
         });
-        showToast("표준 시간 생성", "타임슬롯 허용 범위 내의 무작위 예약 시간이 자동 생성되었습니다.", "success");
+        if (showNotify) showToast("표준 시간 생성", "타임슬롯 허용 범위 내의 무작위 예약 시간이 자동 생성되었습니다.", "success");
       }
       
       SoundEngine.play('success');
@@ -4045,6 +4049,21 @@ run();
       triggerInstantSendWorkflow('individual', participantName);
     }
 
+
+    function generateAllMissionsAndTimes() {
+      try {
+        if (isDeployedProductionLocked) return;
+        generateRandomTimesForActiveTeam(false);
+        assignIndividualMissions(false);
+        SoundEngine.play('success');
+        triggerConfettiBurst();
+        showToast("전체 배정 완료", "팀 미션 시간표 및 개인 기습 지령이 일괄 배정되었습니다!", "success");
+      } catch (err) {
+        showToast("배정 오류", err.message, "error");
+        SoundEngine.play('failure');
+      }
+    }
+    
 </script>
 </body>
 </html>
