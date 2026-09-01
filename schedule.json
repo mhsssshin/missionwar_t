@@ -44,8 +44,8 @@
         "duration": "3분",
         "tip": "연사(연속 사진)로 찍어 가장 해맑게 웃는 프레임을 골라 전송하세요.",
         "colorHex": 16763904,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:05:19.430Z"
       },
       {
         "sessionIndex": 4,
@@ -113,8 +113,8 @@
         "tip": "재활용 수거 전에 부피를 최소화한 모범적인 정돈 상태가 돋보여야 합니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T12:04:30+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:05:19.430Z"
       },
       {
         "participant": "임승하",
