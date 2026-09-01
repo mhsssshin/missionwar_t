@@ -982,7 +982,7 @@
   <canvas id="confetti-canvas"></canvas>
   
   <!-- Hidden elements to preserve DOM bindings in JS -->
-  <input type="date" id="team-start-date" value="2026-09-02" style="display:none;">
+  <input type="date" id="team-start-date" style="display:none;">
   <textarea id="team-participants" style="display:none;">권남훈, 조성대, 권지민, 임승하, 신명호, 오상철, 이영준, 김상민, 이재헌, 박소연</textarea>
   
   <div class="app-container">
@@ -1065,6 +1065,7 @@
         <button class="modal-close" onclick="closeAdminSettings()">&times;</button>
       </div>
       <div class="modal-detail-body" style="padding: 20px; display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto;">
+<div class="input-group">  <label for="team-start-date" style="color: var(--color-green); font-weight:700;"><i class="fa-solid fa-calendar-days"></i> 워크숍 출발/시작 일자 (Day 1)</label>  <div class="input-wrapper">    <input type="date" id="team-start-date" value="2026-09-02" onchange="saveConfig();" style="width: 100%; height: 36px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 6px; color: #fff; padding: 6px 10px; font-family: inherit; font-size: 0.85rem;">  </div>  <span style="font-size: 0.68rem; color: var(--text-muted);">* 설정한 시작일을 기준으로 3일간의 미션 시간표가 자동 산출됩니다.</span></div><div class="input-group">  <label for="team-participants" style="color: var(--color-green); font-weight:700;"><i class="fa-solid fa-users"></i> 조원 참석자 명단 (쉼표 분리)</label>  <div class="input-wrapper">    <textarea id="team-participants" oninput="rebuildIndividualMissionsList(); saveConfig();" style="width: 100%; height: 75px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 6px; color: #fff; padding: 8px 10px; font-family: inherit; font-size: 0.8rem; resize: vertical;">권남훈, 조성대, 권지민, 임승하, 신명호, 오상철, 이영준, 김상민, 이재헌, 박소연</textarea>  </div>  <span style="font-size: 0.68rem; color: var(--text-muted);">* 쉼표(,)로 구분해 조원 이름을 수정하면 개인 미션판이 즉시 갱신됩니다.</span></div>
         <div class="input-group" style="display: none;">
           <label for="webhook-url"><i class="fa-brands fa-discord"></i> Discord Webhook URL</label>
           <div class="input-wrapper">
@@ -2485,7 +2486,7 @@ function loadConfig() {
       if (playSound) SoundEngine.play('click');
       
       if (!testModeActive) {
-        document.getElementById('team-start-date').value = localStorage.getItem(`team_start_date_${activeTeam}`) || '';
+        document.getElementById("team-start-date").value = localStorage.getItem("team_start_date_" + activeTeam) || DEFAULT_START_DATE;
       }
       
       try {
@@ -3084,11 +3085,8 @@ function loadConfig() {
     function generateRandomTimesForActiveTeam(showNotify = true) {
       if (isDeployedProductionLocked) return;
       
-      let teamStart = document.getElementById('team-start-date').value;
-      if (!teamStart) {
-        teamStart = '2026-09-02';
-        document.getElementById('team-start-date').value = teamStart;
-      }
+      let teamStart = document.getElementById("team-start-date").value || DEFAULT_START_DATE;
+      document.getElementById("team-start-date").value = teamStart;
       if (!testModeActive && !teamStart) {
         showToast("생성 실패", "나의 워크숍 시작 일자를 선택해 주세요.", "error");
         SoundEngine.play('failure');
