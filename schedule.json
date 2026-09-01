@@ -30,8 +30,8 @@
         "duration": "5분",
         "tip": "물건 라벨이 위를 향하게 정렬하면 더 프로페셔널해 보입니다.",
         "colorHex": 3394662,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:00:32.864Z"
       },
       {
         "sessionIndex": 3,
@@ -100,8 +100,8 @@
         "tip": "쓰러지기 직전 아슬아슬한 순간을 포착하면 좋습니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-01T11:59:30+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-01T03:00:32.864Z"
       },
       {
         "participant": "권지민",
