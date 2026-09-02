@@ -30,8 +30,8 @@
         "duration": "3분",
         "tip": "젓가락 끝이 수평으로 모여 만나는 지점을 클로즈업하세요.",
         "colorHex": 16763904,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-02T12:30:27.917Z"
       },
       {
         "sessionIndex": 3,
