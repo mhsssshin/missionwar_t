@@ -16,8 +16,8 @@
         "duration": "5분",
         "tip": "웃음 가득한 도착 기념 컷을 연출해보세요.",
         "colorHex": 16724870,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-02T02:20:22.600Z"
       },
       {
         "sessionIndex": 2,
