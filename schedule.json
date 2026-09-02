@@ -87,8 +87,8 @@
         "tip": "열려 있던 지퍼를 올리는 역동적인 손을 포착하세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-02T19:30:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-02T10:30:26.965Z"
       },
       {
         "participant": "조성대",
