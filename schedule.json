@@ -204,8 +204,8 @@
         "tip": "사물 광고 컷처럼 멋지고 선명한 앵글로 촬영해보세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-02T20:50:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-02T11:50:24.087Z"
       }
     ]
   },
