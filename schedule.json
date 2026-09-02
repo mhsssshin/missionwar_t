@@ -100,8 +100,8 @@
         "tip": "리본 주름이 선명하게 보이게 촬영하세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-03T08:45:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-02T23:45:23.872Z"
       },
       {
         "participant": "권지민",
