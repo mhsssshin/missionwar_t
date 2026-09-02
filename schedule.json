@@ -165,8 +165,8 @@
         "tip": "손가락 브이나 하트 포즈를 거울처럼 맞춰보세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-02T16:55:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-02T07:55:18.932Z"
       },
       {
         "participant": "김상민",
