@@ -126,8 +126,8 @@
         "tip": "물방울의 투명성과 지문의 궤적이 선명하게 드러나도록 매크로 렌즈처럼 가까이 촬영하세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-02T21:15:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-02T12:15:20.967Z"
       },
       {
         "participant": "신명호",
