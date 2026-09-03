@@ -72,8 +72,8 @@
         "duration": "5분",
         "tip": "순간 포착으로 역동적인 마네킹 컷을 연출하세요.",
         "colorHex": 10040319,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-03T10:00:38.465Z"
       }
     ],
     "individualMissions": [
