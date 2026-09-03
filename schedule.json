@@ -178,8 +178,8 @@
         "tip": "그림자가 선명한 시멘트 바닥이나 잔디 위가 명당입니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-03T20:20:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-03T11:20:24.356Z"
       },
       {
         "participant": "이재헌",
