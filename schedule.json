@@ -113,8 +113,8 @@
         "tip": "배경의 식사 분위기와 손가락이 나오게 하세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-03T18:45:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-03T09:45:24.742Z"
       },
       {
         "participant": "임승하",
