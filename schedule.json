@@ -139,8 +139,8 @@
         "tip": "가장 앞쪽 잔에서 뒤쪽 잔까지 일직선 라인이 정렬되도록 옆에서 촬영하세요.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-03T13:25:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-03T04:25:20.401Z"
       },
       {
         "participant": "오상철",
