@@ -58,8 +58,8 @@
         "duration": "5분",
         "tip": "줄을 똑바로 맞추고 신나게 연출하세요.",
         "colorHex": 3394662,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-03T06:00:33.676Z"
       },
       {
         "sessionIndex": 5,
