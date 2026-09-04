@@ -191,8 +191,8 @@
         "tip": "줄이 삐뚤어지지 않게 가지런한 질서 정연함이 전체 프레임에 담겨야 합니다.",
         "colorHex": 3394815,
         "scheduledTime": "2026-09-04T09:20:00+09:00",
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-04T00:20:24.671Z"
       },
       {
         "participant": "박소연",
