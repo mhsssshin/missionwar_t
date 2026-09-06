@@ -2213,7 +2213,14 @@
     // STATE & CONFIG MANAGEMENT (SINGLE TEAM FOCUSED)
     // ----------------------------------------------------
     let activeTeam = 'team2';
-    const DEFAULT_ROSTER = ["박용철","김진혁","박재욱","임동현","김민서","권영재","김민수","박주암","조준형","정우창","염진영"];
+    const DEFAULT_ROSTER_TEAM1 = ["권남훈","조성대","권지민","임승하","신명호","오상철","이영준","김상민","이재헌","박소연"];
+    const DEFAULT_ROSTER_TEAM2 = ["박용철","김진혁","박재욱","임동현","김민서","권영재","김민수","박주암","조준형","정우창","염진영"];
+    const DEFAULT_ROSTER = DEFAULT_ROSTER_TEAM2;
+    
+    function getTeamRoster(teamKey) {
+      return teamKey === 'team1' ? DEFAULT_ROSTER_TEAM1 : DEFAULT_ROSTER_TEAM2;
+    }
+
     const DEFAULT_START_DATE = "2026-09-07";
     let activeSlotIndex = null;
     let testModeActive = false;
@@ -2228,7 +2235,7 @@
     
 function loadConfig() {
       // 1. Determine active team and load its deck/schedules into memory first to prevent race condition wipes
-      const savedTeam = localStorage.getItem('active_team_role') || 'team1';
+      const savedTeam = localStorage.getItem('active_team_role') || 'team2';
       selectActiveTeam(savedTeam, false);
 
       // 2. Load inputs
@@ -2393,7 +2400,8 @@ function loadConfig() {
                 }
               }
               
-              if (teamData.individualMissions && teamData.individualMissions.length > 0 && teamData.individualMissions.every(m => DEFAULT_ROSTER.includes(m.participant))) {
+              const teamRoster = getTeamRoster(teamKey);
+              if (teamData.individualMissions && teamData.individualMissions.length > 0 && teamData.individualMissions.every(m => teamRoster.includes(m.participant))) {
                 activeIndividualMissions[teamKey] = teamData.individualMissions;
                 localStorage.setItem(`individual_missions_${teamKey}`, JSON.stringify(teamData.individualMissions));
                 
@@ -2404,14 +2412,14 @@ function loadConfig() {
                   }
                   renderIndividualSlots();
                 }
-              } else if (!activeIndividualMissions[teamKey] || activeIndividualMissions[teamKey].length === 0 || !activeIndividualMissions[teamKey].every(m => DEFAULT_ROSTER.includes(m.participant))) {
-                activeIndividualMissions[teamKey] = DEFAULT_ROSTER.map(p => ({
+              } else if (!activeIndividualMissions[teamKey] || activeIndividualMissions[teamKey].length === 0 || !activeIndividualMissions[teamKey].every(m => teamRoster.includes(m.participant))) {
+                activeIndividualMissions[teamKey] = teamRoster.map(p => ({
                   participant: p, id: null, title: null, content: null, emoji: null, duration: null, tip: null, colorHex: null, scheduledTime: null, sent: false
                 }));
                 if (teamKey === activeTeam) {
                   const participantsInput = document.getElementById('team-participants');
                   if (participantsInput) {
-                    participantsInput.value = DEFAULT_ROSTER.join(', ');
+                    participantsInput.value = teamRoster.join(', ');
                   }
                   renderIndividualSlots();
                 }
@@ -2518,14 +2526,25 @@ function loadConfig() {
         
         const savedInd = localStorage.getItem(`individual_missions_${activeTeam}`);
         if (savedInd) {
-          activeIndividualMissions[activeTeam] = JSON.parse(savedInd);
+          const parsed = JSON.parse(savedInd);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            activeIndividualMissions[activeTeam] = parsed;
+          } else {
+            activeIndividualMissions[activeTeam] = getTeamRoster(activeTeam).map(p => ({
+              participant: p, id: null, title: "", content: "", emoji: "", duration: "", tip: "", scheduledTime: "", sent: false, sentAt: null
+            }));
+          }
         } else {
-          activeIndividualMissions[activeTeam] = [];
+          activeIndividualMissions[activeTeam] = getTeamRoster(activeTeam).map(p => ({
+            participant: p, id: null, title: "", content: "", emoji: "", duration: "", tip: "", scheduledTime: "", sent: false, sentAt: null
+          }));
         }
       } catch (e) {
         activeDeck = Array(5).fill(null);
         activeSchedules = Array(5).fill(null);
-        activeIndividualMissions[activeTeam] = [];
+        activeIndividualMissions[activeTeam] = getTeamRoster(activeTeam).map(p => ({
+          participant: p, id: null, title: "", content: "", emoji: "", duration: "", tip: "", scheduledTime: "", sent: false, sentAt: null
+        }));
       }
       
       const participantsInput = document.getElementById('team-participants');
