@@ -2393,7 +2393,7 @@ function loadConfig() {
                 }
               }
               
-              if (teamData.individualMissions && teamData.individualMissions.length > 0) {
+              if (teamData.individualMissions && teamData.individualMissions.length > 0 && teamData.individualMissions.every(m => DEFAULT_ROSTER.includes(m.participant))) {
                 activeIndividualMissions[teamKey] = teamData.individualMissions;
                 localStorage.setItem(`individual_missions_${teamKey}`, JSON.stringify(teamData.individualMissions));
                 
@@ -2404,7 +2404,7 @@ function loadConfig() {
                   }
                   renderIndividualSlots();
                 }
-              } else if (!activeIndividualMissions[teamKey] || activeIndividualMissions[teamKey].length === 0) {
+              } else if (!activeIndividualMissions[teamKey] || activeIndividualMissions[teamKey].length === 0 || !activeIndividualMissions[teamKey].every(m => DEFAULT_ROSTER.includes(m.participant))) {
                 activeIndividualMissions[teamKey] = DEFAULT_ROSTER.map(p => ({
                   participant: p, id: null, title: null, content: null, emoji: null, duration: null, tip: null, colorHex: null, scheduledTime: null, sent: false
                 }));
