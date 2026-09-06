@@ -2393,7 +2393,7 @@ function loadConfig() {
                 }
               }
               
-              if (teamData.individualMissions) {
+              if (teamData.individualMissions && teamData.individualMissions.length > 0) {
                 activeIndividualMissions[teamKey] = teamData.individualMissions;
                 localStorage.setItem(`individual_missions_${teamKey}`, JSON.stringify(teamData.individualMissions));
                 
@@ -2401,6 +2401,17 @@ function loadConfig() {
                   const participantsInput = document.getElementById('team-participants');
                   if (participantsInput) {
                     participantsInput.value = teamData.individualMissions.map(m => m.participant).join(', ');
+                  }
+                  renderIndividualSlots();
+                }
+              } else if (!activeIndividualMissions[teamKey] || activeIndividualMissions[teamKey].length === 0) {
+                activeIndividualMissions[teamKey] = DEFAULT_ROSTER.map(p => ({
+                  participant: p, id: null, title: null, content: null, emoji: null, duration: null, tip: null, colorHex: null, scheduledTime: null, sent: false
+                }));
+                if (teamKey === activeTeam) {
+                  const participantsInput = document.getElementById('team-participants');
+                  if (participantsInput) {
+                    participantsInput.value = DEFAULT_ROSTER.join(', ');
                   }
                   renderIndividualSlots();
                 }
