@@ -2267,8 +2267,8 @@
     
 function loadConfig() {
       // 1. Determine active team and load its deck/schedules into memory first to prevent race condition wipes
-      const savedTeam = localStorage.getItem('active_team_role') || 'team1';
-      selectActiveTeam(savedTeam, false);
+      const pageTeam = 'team2';
+      selectActiveTeam(pageTeam, false);
 
       // 2. Load inputs
       document.getElementById('webhook-url').value = localStorage.getItem('config_webhook_url') || '';
