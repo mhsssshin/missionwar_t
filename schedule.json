@@ -251,8 +251,8 @@
         "duration": "3분",
         "tip": "아침 시각이 또렷하게 보이게 초점을 맞추세요.",
         "colorHex": 3394662,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-07T23:00:39.932Z"
       },
       {
         "sessionIndex": 4,
