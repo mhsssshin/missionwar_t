@@ -293,8 +293,8 @@
         "duration": "5분",
         "tip": "영화 속 비밀 요원처럼 카리스마 넘치는 각도가 중요합니다.",
         "scheduledTime": "2026-09-07T13:40:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-07T04:40:25.224Z",
         "colorHex": 3394815
       },
       {
