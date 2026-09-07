@@ -332,8 +332,8 @@
         "duration": "5분",
         "tip": "서로 안 어울릴수록 재미있고 생동감 넘치는 사진이 됩니다.",
         "scheduledTime": "2026-09-07T13:35:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-07T04:35:18.297Z",
         "colorHex": 3394815
       },
       {
