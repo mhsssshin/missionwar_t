@@ -371,8 +371,8 @@
         "duration": "5분",
         "tip": "두 사람의 높낮이와 원근 앵글 위치가 소수점 단위로 정확히 어우러져야 착시가 완성됩니다.",
         "scheduledTime": "2026-09-07T19:30:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-07T10:30:29.631Z",
         "colorHex": 3394815
       },
       {
