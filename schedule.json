@@ -410,8 +410,8 @@
         "duration": "3분",
         "tip": "야외 풍경과 꽃받침이 뽀샤시하게 어우러지게 하세요.",
         "scheduledTime": "2026-09-07T21:10:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-07T12:10:26.281Z",
         "colorHex": 3394815
       },
       {
