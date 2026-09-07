@@ -237,8 +237,8 @@
         "duration": "5분",
         "tip": "쓰러지지 않게 차곡차곡 균형을 잡아 촬영하세요.",
         "colorHex": 16763904,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-07T10:05:19.271Z"
       },
       {
         "sessionIndex": 3,
