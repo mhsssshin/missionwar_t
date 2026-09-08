@@ -423,8 +423,8 @@
         "duration": "5분",
         "tip": "손가락 브이나 하트 포즈를 거울처럼 맞춰보세요.",
         "scheduledTime": "2026-09-08T16:25:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-08T07:25:18.553Z",
         "colorHex": 3394815
       }
     ]
