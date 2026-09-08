@@ -265,8 +265,8 @@
         "duration": "10분",
         "tip": "하나 둘 셋 신호에 맞춰 점프하는 타이밍을 잡으세요.",
         "colorHex": 3394662,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-08T04:20:23.888Z"
       },
       {
         "sessionIndex": 5,
