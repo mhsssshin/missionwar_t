@@ -279,8 +279,8 @@
         "duration": "3분",
         "tip": "머리 위로 손가락 왕관이 돋보이게 하세요.",
         "colorHex": 10040319,
-        "sent": false,
-        "sentAt": null
+        "sent": true,
+        "sentAt": "2026-09-08T11:05:20.619Z"
       }
     ],
     "individualMissions": [
