@@ -306,8 +306,8 @@
         "duration": "3분",
         "tip": "하얀 거품의 질감이 선명하게 보이게 촬영하세요.",
         "scheduledTime": "2026-09-08T10:35:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-08T01:35:18.914Z",
         "colorHex": 3394815
       },
       {
