@@ -358,8 +358,8 @@
         "duration": "3분",
         "tip": "눈동자의 비장함이 살아있어야 고득점!",
         "scheduledTime": "2026-09-09T08:55:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-08T23:55:22.485Z",
         "colorHex": 3394815
       },
       {
