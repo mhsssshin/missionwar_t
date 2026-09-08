@@ -319,8 +319,8 @@
         "duration": "5분",
         "tip": "렌즈 속에 카메라와 내 모습이 선명하게 아웃포커싱 되도록 집중하세요.",
         "scheduledTime": "2026-09-08T11:20:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-08T02:20:23.913Z",
         "colorHex": 3394815
       },
       {
@@ -384,8 +384,8 @@
         "duration": "5분",
         "tip": "워크숍 장소 복도를 배경으로 당당하게 걸어보세요.",
         "scheduledTime": "2026-09-08T11:20:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-08T02:20:23.913Z",
         "colorHex": 3394815
       },
       {
