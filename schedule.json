@@ -397,8 +397,8 @@
         "duration": "5분",
         "tip": "서로 등을 기대고 발뒤꿈치만 대는 코믹한 앵글이 높은 점수를 땁니다.",
         "scheduledTime": "2026-09-09T09:40:00+09:00",
-        "sent": false,
-        "sentAt": null,
+        "sent": true,
+        "sentAt": "2026-09-09T00:40:23.845Z",
         "colorHex": 3394815
       },
       {
